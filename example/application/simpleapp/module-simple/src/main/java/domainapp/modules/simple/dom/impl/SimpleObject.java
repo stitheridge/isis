@@ -24,12 +24,14 @@ import javax.jdo.annotations.VersionStrategy;
 import com.google.common.collect.ComparisonChain;
 
 import org.apache.isis.applib.annotation.Action;
+import org.apache.isis.applib.annotation.ActionLayout;
 import org.apache.isis.applib.annotation.Auditing;
 import org.apache.isis.applib.annotation.DomainObject;
 import org.apache.isis.applib.annotation.DomainObjectLayout;
 import org.apache.isis.applib.annotation.Editing;
 import org.apache.isis.applib.annotation.Parameter;
 import org.apache.isis.applib.annotation.ParameterLayout;
+import org.apache.isis.applib.annotation.PromptStyle;
 import org.apache.isis.applib.annotation.Property;
 import org.apache.isis.applib.annotation.Publishing;
 import org.apache.isis.applib.annotation.Title;
@@ -39,6 +41,7 @@ import org.apache.isis.applib.services.repository.RepositoryService;
 import org.apache.isis.applib.services.title.TitleService;
 
 import lombok.AccessLevel;
+import static org.apache.isis.applib.annotation.Redirect.EVEN_IF_SAME;
 import static org.apache.isis.applib.annotation.CommandReification.ENABLED;
 import static org.apache.isis.applib.annotation.SemanticsOf.IDEMPOTENT;
 import static org.apache.isis.applib.annotation.SemanticsOf.NON_IDEMPOTENT_ARE_YOU_SURE;
@@ -62,7 +65,6 @@ public class SimpleObject implements Comparable<SimpleObject> {
     @javax.jdo.annotations.Column(allowsNull = "true", length = 4000)
     @Property(editing = Editing.ENABLED)
     private String notes;
-
 
     @Action(semantics = IDEMPOTENT, command = ENABLED, publishing = Publishing.ENABLED, associateWith = "name")
     public SimpleObject updateName(
@@ -116,5 +118,20 @@ public class SimpleObject implements Comparable<SimpleObject> {
     @javax.jdo.annotations.NotPersistent
     @lombok.Getter(AccessLevel.NONE) @lombok.Setter(AccessLevel.NONE)
     MessageService messageService;
+
+
+    @javax.jdo.annotations.Column(allowsNull = "true", length = 40)
+    private String layout;
+
+    public String layout() {
+        return layout;
+    }
+
+    @Action(semantics = IDEMPOTENT, associateWith = "layout")
+    @ActionLayout(redirectPolicy = EVEN_IF_SAME, promptStyle = PromptStyle.INLINE_AS_IF_EDIT)
+    public SimpleObject changeLayout(String layout) {
+        setLayout(layout);
+        return this;
+    }
 
 }
