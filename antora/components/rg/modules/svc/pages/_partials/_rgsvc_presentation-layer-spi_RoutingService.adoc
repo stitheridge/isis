@@ -26,7 +26,7 @@ Currently the routing service is used only by the xref:ug:vw:ugvw.adoc#[Wicket v
 Unlike most other domain services, the framework will check _all_ available implementations of
 `RoutingService` to return a route, rather than the first implementation found; in other words it uses the
 chain-of-responsibility pattern.  Services are called in the order defined by
-xref:rg:ant:rgant.adoc#_rgant-DomainServiceLayout_menuOrder[`@DomainServiceLayout#menuOrder()`]).  The route used will be the
+xref:rg:ant:rgant.adoc#menuOrder[`@DomainServiceLayout#menuOrder()`]).  The route used will be the
 result of the first implementation checked that declares that it can provide a route.
 ====
 
@@ -53,10 +53,10 @@ public interface RoutingService {
 == Implementation
 
 The framework provides a default implementation - `RoutingServiceDefault` - which will always return the original object provided, or the home page if a `null` or `void` was provided.
-It uses the xref:rg:svc:rgsvc.adoc#_rgsvc_application-layer-spi_HomePageProviderService[`HomePageProviderService`].
+It uses the xref:rg:svc:rgsvc.adoc#HomePageProviderService[`HomePageProviderService`].
 
 There can be multiple implementations of `RoutingService` registered.
-These are checked in turn (chain of responsibility pattern), ordered according to xref:rg:ant:rgant.adoc#_rgant-DomainServiceLayout_menuOrder[`@DomainServiceLayout#menuOrder()`] (as explained in the xref:rg:svc:rgsvc.adoc#__rgsvc_intro_overriding-the-services[introduction] to this guide).
+These are checked in turn (chain of responsibility pattern), ordered according to xref:rg:ant:rgant.adoc#_rgant-DomainServiceLayout_menuOrder[`@DomainServiceLayout#menuOrder()`] (as explained in the xref:rg:svc:rgsvc.adoc#overriding-the-services[introduction] to this guide).
 The route from the first service that returns `true` from its `canRoute(...)` method will be used.
 
 
@@ -66,4 +66,4 @@ The route from the first service that returns `true` from its `canRoute(...)` me
 == Related Services
 
 The default implementation of this service uses the
-xref:rg:svc:rgsvc.adoc#_rgsvc_application-layer-spi_HomePageProviderService[`HomePageProviderService`].
+xref:rg:svc:rgsvc.adoc#HomePageProviderService[`HomePageProviderService`].

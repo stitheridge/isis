@@ -4,7 +4,7 @@ include::_attributes.adoc[]
 
 
 
-The `bookmarking()` attribute indicates if an action (with safe xref:rg:ant:rgant.adoc#_rgant-Action_semantics[action semantics]) is automatically bookmarked.
+The `bookmarking()` attribute indicates if an action (with safe xref:rg:ant:rgant.adoc#semantics[action semantics]) is automatically bookmarked.
 
 
 
@@ -44,15 +44,15 @@ indicates that the `notYetComplete()` action is bookmarkable.
 
 [NOTE]
 ====
-The enum value `AS_CHILD` has no meaning for actions; it relates only to bookmarked xref:rg:ant:rgant.adoc#_rgant-DomainObject_bookmarking[domain object]s.
+The enum value `AS_CHILD` has no meaning for actions; it relates only to bookmarked xref:rg:ant:rgant.adoc#bookmarking[domain object]s.
 ====
 
 
 == Alternatives
 
-As an alternative to using the annotation, the dynamic xref:ug:vw:ugvw.adoc#_ugvw_layout_file-based[file-based layout] can be used instead.
+As an alternative to using the annotation, the dynamic xref:ug:vw:ugvw.adoc#file-based[file-based layout] can be used instead.
 
 
 == See also
 
-This attribute is also supported for xref:rg:ant:rgant.adoc#_rgant-DomainObjectLayout_bookmarking[domain objects].
+This attribute is also supported for xref:rg:ant:rgant.adoc#bookmarking[domain objects].

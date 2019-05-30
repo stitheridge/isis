@@ -32,20 +32,20 @@ public Customer updateName(@javax.annotation.Nullable final String name) {
 ----
 
 Apache Isis does provide several other ways to specify optionality: using the
-xref:rg:ant:rgant.adoc#_rgant-Property_optionality[`@Property#optionality()`] /
-xref:rg:ant:rgant.adoc#_rgant-Parameter_optionality[`@Parameter#optionality()`] annotation.  For properties, the optionality
-can also be inferred from the xref:rg:ant:rgant.adoc#_rgant-Column_allowsNull[`@Column#allowsNull()`] attribute.
+xref:rg:ant:rgant.adoc#optionality[`@Property#optionality()`] /
+xref:rg:ant:rgant.adoc#optionality[`@Parameter#optionality()`] annotation.  For properties, the optionality
+can also be inferred from the xref:rg:ant:rgant.adoc#allowsNull[`@Column#allowsNull()`] attribute.
 
 [TIP]
 ====
 See the
-xref:rg:ant:rgant.adoc#_rgant-Property_optionality[`@Property#optionality()`] documentation for a much fuller discussion on
+xref:rg:ant:rgant.adoc#optionality[`@Property#optionality()`] documentation for a much fuller discussion on
 the relationship between using the Apache Isis annotations vs
-xref:rg:ant:rgant.adoc#_rgant-Column_allowsNull[`@Column#allowsNull()`].
+xref:rg:ant:rgant.adoc#allowsNull[`@Column#allowsNull()`].
 ====
 
 If more than one method is specified then the framework will validate that there are no incompatibilities (and fail to
-boot otherwise).  This can also be verified using the xref:rg:mvn:rgmvn.adoc#_rgmvn_validate[validate goal] of the Apache
+boot otherwise).  This can also be verified using the xref:rg:mvn:rgmvn.adoc#validate[validate goal] of the Apache
 Isis Maven plugin.
 
 

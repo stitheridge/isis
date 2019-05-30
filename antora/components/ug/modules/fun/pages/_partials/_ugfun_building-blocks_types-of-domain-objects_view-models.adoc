@@ -26,7 +26,7 @@ We explore these use cases in more detail below.
 [TIP]
 ====
 Details on how to actually write a view model (the programming model for view models) is
-xref:ug:fun:ugfun.adoc#_ugfun_programming-model_view-models[here].
+xref:ug:fun:ugfun.adoc#view-models[here].
 ====
 
 
@@ -92,7 +92,7 @@ You certainly _shouldn't_ try to build out a domain layer that could support eve
 
 Instead, you should iterate.
 Identify the use case/story/end-user objective that will deliver value to the business.
-Then build out the minimum domain entities to support that use case (refining the xref:ug:fun:ugfun.adoc#__ugfun_core-concepts_philosophy_domain-driven-design_ubiquitous-language[ubiquitous language] as you go).
+Then build out the minimum domain entities to support that use case (refining the xref:ug:fun:ugfun.adoc#ubiquitous-language[ubiquitous language] as you go).
 Then, identify if there any view models that could be introduced which would simplify the end-user interactions with the system (perhaps automating several related use cases together).
 ****
 
@@ -119,17 +119,17 @@ In such cases, exposing domain entities over xref:ug:vro:ugvro.adoc#[RestfulObje
 
 To support this use case, a view model can be defined such that it can act as a DTO.
 This is done by annotating the class using JAXB annotations; this allows the consumer to obtain the DTO in XML format along with a corresponding XSD schema describing the structure of that XML.
-A discussion of how that might be done using an ESB such as link:http://camel.apache.org[Apache Camel(TM)] follows xref:ug:btb:ugbtb.adoc#__ugfun_building-blocks_view-models_dtos_consumers[below].
+A discussion of how that might be done using an ESB such as link:http://camel.apache.org[Apache Camel(TM)] follows xref:ug:btb:ugbtb.adoc#consumers[below].
 
 In case it's not obvious, these DTOs are still usable as "regular" view models; they will render in the xref:ug:vw:ugvw.adoc#[Wicket viewer] just like any other.
-In fact (as the xref:ug:fun:ugfun.adoc#_ugfun_programming-model_view-models_jaxb[programming model] section below makes clear), these JAXB-annotated view models are in many regards the most powerful of all the alternative ways of writing view models.
+In fact (as the xref:ug:fun:ugfun.adoc#jaxb[programming model] section below makes clear), these JAXB-annotated view models are in many regards the most powerful of all the alternative ways of writing view models.
 
 It's also worth noting that it is also possible to download the XML (or XSD) straight from the UI, useful during development.
-The view model simply needs to implement the xref:rg:cms:rgcms.adoc#_rgcms_classes_mixins_Dto[`Dto`] marker interface; the framework has xref:rg:cms:rgcms.adoc#_rgcms_classes_mixins_Dto[mixins] that contribute the download actions to the view model.
+The view model simply needs to implement the xref:rg:cms:rgcms.adoc#_rgcms_classes_mixins_Dto[`Dto`] marker interface; the framework has xref:rg:cms:rgcms.adoc#Dto[mixins] that contribute the download actions to the view model.
 
 [TIP]
 ====
-Details of how to consume such DTOs can be found xref:ug:fun:ugfun.adoc#_ugfun_programming-model_view-models_jaxb_dto-consumers[here].
+Details of how to consume such DTOs can be found xref:ug:fun:ugfun.adoc#dto-consumers[here].
 ====
 
 

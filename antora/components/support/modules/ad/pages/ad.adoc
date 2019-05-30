@@ -79,7 +79,7 @@ Application integration tests typically extend from adapter superclasses defined
 | `isis-core-metamodel`
 | The classes that make up the metamodel which is used to render the UI.
 
-See the xref:ad.adoc#__ad_metamodel[section below] which also includes a simplified UML diagram of these classes.
+See the xref:ad.adoc#metamodel[section below] which also includes a simplified UML diagram of these classes.
 
 | `isis-core-runtime`
 | The classes that make up runtime management and persistence of domain objects, as well as framework for security (concepts of authentication or authorisation). Also provides an implementation of the `WrapperFactory` domain service.

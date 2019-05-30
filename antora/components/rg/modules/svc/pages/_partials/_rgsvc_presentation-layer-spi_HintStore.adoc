@@ -28,7 +28,7 @@ public interface HintStore {
 }
 ----
 <1> obtain a hint (eg which tab to open) for a particular object.  Object identity is represented by `Bookmark`, as
-per the xref:rg:svc:rgsvc.adoc#_rgsvc_integration-api_BookmarkService[`BookmarkService`], so that alternative implementations can easily serialize this state to a string.
+per the xref:rg:svc:rgsvc.adoc#BookmarkService[`BookmarkService`], so that alternative implementations can easily serialize this state to a string.
 <2> set the state of a hint.  (The value of) all hints are represented as strings.
 <3> remove a single hint for an object;
 <4> remove all hints
@@ -40,7 +40,7 @@ per the xref:rg:svc:rgsvc.adoc#_rgsvc_integration-api_BookmarkService[`BookmarkS
 
 The core framework provides a default implementation of this service (`org.apache.isis.viewer.wicket.viewer.services.HintStoreUsingWicketSession`).
 
-To use an alternative implementation, implement the `HintStore` interface and use xref:rg:ant:rgant.adoc#_rgant-DomainServiceLayout_menuOrder[`@DomainServiceLayout#menuOrder()`] (as explained in the xref:rg:svc:rgsvc.adoc#__rgsvc_intro_overriding-the-services[introduction] to this guide).
+To use an alternative implementation, implement the `HintStore` interface and use xref:rg:ant:rgant.adoc#_rgant-DomainServiceLayout_menuOrder[`@DomainServiceLayout#menuOrder()`] (as explained in the xref:rg:svc:rgsvc.adoc#overriding-the-services[introduction] to this guide).
 
 
 == View models
@@ -93,6 +93,6 @@ public class CustomerAndOrders implements HintStore.HintIdProvider {
 
 == Related Services
 
-The xref:ug:vw:ugvw.adoc#[Wicket viewer] exposes the xref:rg:cms:rgcms.adoc#__rgcms_classes_mixins_Object_clearHints["clear hints"]
+The xref:ug:vw:ugvw.adoc#[Wicket viewer] exposes the xref:rg:cms:rgcms.adoc#clearHints["clear hints"]
 mixin action that is for use by end-users of the application to clear any UI hints that have accumulated for a
 domain object.

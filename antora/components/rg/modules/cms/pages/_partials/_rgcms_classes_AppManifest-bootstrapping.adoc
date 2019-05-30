@@ -9,7 +9,7 @@ This section describes how to implement the `AppManifest` interface to bootstrap
 
 [TIP]
 ====
-The framework-provided `AppManifestAbstract2` and `AppManifestAbstract2.Builder` makes it easy to write an `AppManifest`, defined by a set of xref:rgcms.adoc#_rgcms_classes_Module[`Module`] implementations.
+The framework-provided `AppManifestAbstract2` and `AppManifestAbstract2.Builder` makes it easy to write an `AppManifest`, defined by a set of xref:rgcms.adoc#Module[`Module`] implementations.
 The app manifest can then be used both to bootstrap the application "proper", or for integration tests.
 ====
 
@@ -47,7 +47,7 @@ The following sections describe each of these methods in a little more detail.
 === `getModules()`
 
 The most significant method (the only one which must return a non-`null` value) is the `getModules()` method.
-Each module is identified by a class; the framework simply uses that class' package as the root to search for domain services (annotated with xref:rg:ant:rgant.adoc#_rgant-DomainService[`@DomainService`]) and entities (annotated with xref:rg:ant:rgant.adoc#_rgant-PersistenceCapable[`@PersistenceCapable`]).
+Each module is identified by a class; the framework simply uses that class' package as the root to search for domain services (annotated with xref:rg:ant:rgant.adoc#rgant-PersistenceCapable[`@PersistenceCapable`]).
 Generally there is one such module class per Maven module.
 
 A module class for a domain module might for example be defined as:
@@ -186,7 +186,7 @@ public Map<String, String> getConfigurationProperties() {
 
 [NOTE]
 ====
-The recommendations in this section no longer apply if using the xref:rg:cms:rgcms.adoc#__rgcms_classes_AppManifest2-bootstrapping_bootstrapping[`AppManifest2`] interface and ``Module``s to bootstrap your application.
+The recommendations in this section no longer apply if using the xref:rg:cms:rgcms.adoc#bootstrapping[`AppManifest2`] interface and ``Module``s to bootstrap your application.
 ====
 
 One of the primary goals of the `AppManifest` is to unify the bootstrapping of both integration tests and the webapp.
@@ -212,7 +212,7 @@ isis.appManifest=domainapp.app.MyAppAppManifest
 
 * the second is also as a webapp, but from within the context of the IDE. +
 +
-Here, it's common to use the `org.apache.isis.WebServer` class to launch your application from the xref:ug:btb:ugbtb.adoc#_ugbtb_deployment_cmd-line[command line].
+Here, it's common to use the `org.apache.isis.WebServer` class to launch your application from the xref:ug:btb:ugbtb.adoc#cmd-line[command line].
 This allows the `AppManifest` to be specified using the `-m` (or `--manifest`) flag: +
 +
 [source,ini]
@@ -222,7 +222,7 @@ java org.apache.isis.WebServer -m com.mycompany.myapp.MyAppAppManifestWithFixtur
 
 * the third case is within an integration test. +
 +
-The code to boostrap an integration test is shown in the xref:ug:tst:ugtst.adoc#_ugtst_integ-test-support_bootstrapping[testing guide], but once again an `AppManifest` is required.
+The code to boostrap an integration test is shown in the xref:ug:tst:ugtst.adoc#bootstrapping[testing guide], but once again an `AppManifest` is required.
 
 In some cases an integration test uses the exact same `AppManifest` as the regular webapp.
 Sometimes though it is necessary to "tweak" the `AppManifest`:
@@ -238,7 +238,7 @@ The next section describes some helper classes that the framework provides to he
 
 [IMPORTANT]
 ====
-The framework-provided `AppManifestAbstract2` and `AppManifestAbstract2.Builder` supercede `AppManifestAbstract`, making it easy to write an `AppManifest` defined by a set of xref:rgcms.adoc#_rgcms_classes_Module[`Module`] implementations.
+The framework-provided `AppManifestAbstract2` and `AppManifestAbstract2.Builder` supercede `AppManifestAbstract`, making it easy to write an `AppManifest` defined by a set of xref:rgcms.adoc#Module[`Module`] implementations.
 ====
 
 The `AppManifestAbstract` and its associated builder (`AppManifestAbstract.Builder`) make it easy to bootstrap the application both as a webapp and also as an integration test.
@@ -256,7 +256,7 @@ In other words these describe how the application chooses to configure the frame
 +
 The classic example here is the JDBC URL.
 
-For example, the xref:ug:fun:ugfun.adoc#_ugfun_getting-started_simpleapp-archetype[SimpleApp archetype]'s `AppManifest` is defined as:
+For example, the xref:ug:fun:ugfun.adoc#simpleapp-archetype[SimpleApp archetype]'s `AppManifest` is defined as:
 
 [source,java]
 ----

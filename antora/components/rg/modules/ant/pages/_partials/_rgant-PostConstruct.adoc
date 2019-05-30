@@ -5,7 +5,7 @@ include::_attributes.adoc[]
 
 The `@javax.annotation.PostConstruct` annotation, as defined in link:https://jcp.org/en/jsr/detail?id=250[JSR-250],  is recognized by Apache Isis as a callback method on domain services to be called just after they have been constructed, in order that they initialize themselves.
 
-It is also recognized for xref:ug:fun:ugfun.adoc#_ugfun_building-blocks_types-of-domain-objects_view-models[view models] (eg annotated with xref:rg:ant:rgant.adoc#_rgant-ViewModel[`@ViewModel`]).
+It is also recognized for xref:ug:fun:ugfun.adoc#rgant-ViewModel[`@ViewModel`]).
 
 For the default application-scoped (singleton) domain services, this means that the method, if present, is called during the bootstrapping of the application.  For xref:rg:ant:rgant.adoc#_rgant-RequestScoped[`@RequestScoped`] domain services, the method is called at the beginning of the request.
 
@@ -28,11 +28,11 @@ Alternatively - for domain services only, not view models - the method can accep
 @Programmatic
 public void init(Map<String,String> properties) { ... }
 ----
-Apache Isis uses argument to pass in the configuration properties read from all xref:rg:cfg:rgcfg.adoc#_rgcfg_configuration-files[configuration files]:
+Apache Isis uses argument to pass in the configuration properties read from all xref:rg:cfg:rgcfg.adoc#configuration-files[configuration files]:
 
 [TIP]
 ====
-Alternatively, you could inject xref:rg:svc:rgsvc.adoc#_rgsvc_core-domain-api_ConfigurationService[`ConfigurationService`] into the service and read configuration properties using `ConfigurationService#getProperty(...)` and related methods.
+Alternatively, you could inject xref:rg:svc:rgsvc.adoc#ConfigurationService[`ConfigurationService`] into the service and read configuration properties using `ConfigurationService#getProperty(...)` and related methods.
 However, be aware when using this latter API that only those configuration properties keys with an `application.` prefix are provided.
 ====
 

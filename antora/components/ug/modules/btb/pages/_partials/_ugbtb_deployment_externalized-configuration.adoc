@@ -4,7 +4,7 @@ include::_attributes.adoc[]
 
 
 
-As described xref:rg:cfg:rgcfg.adoc#_rgcfg_configuration-files[here], by default Apache Isis itself bootstraps from the
+As described xref:rg:cfg:rgcfg.adoc#configuration-files[here], by default Apache Isis itself bootstraps from the
 `isis.properties` configuration file.
 It will also read configuration from the (optional) component/implementation-specific configuration files (such as `persistor_datanucleus.properties` or `viewer_wicket.properties`), and also (optional) component-specific configuration files (such as `persistor.properties` or `viewer.properties`).
 
@@ -13,7 +13,7 @@ It's generally not good practice to have the same configuration property in more
 [TIP]
 ====
 In addition the framework will also load the `overrides.properties` file.
-This is intended to support deployment through Docker, as discussed xref:ug:btb:ugbtb.adoc#_ugbtb_deployment_docker[next].
+This is intended to support deployment through Docker, as discussed xref:ug:btb:ugbtb.adoc#docker[next].
 ====
 
 All of these files are read from the `WEB-INF` directory.
@@ -34,7 +34,7 @@ Each of these frameworks has its own way of externalizing its configuration.
 
 [TIP]
 ====
-Subsequent sections explain how to externalize configuration for xref:ugbtb.adoc#_ugbtb_deployment_tomcat[Tomcat] and for xref:ugbtb.adoc#_ugbtb_deployment_docker[Docker].
+Subsequent sections explain how to externalize configuration for xref:ugbtb.adoc#_ugbtb_deployment_tomcat[Tomcat] and for xref:ugbtb.adoc#docker[Docker].
 ====
 
 
@@ -73,7 +73,7 @@ Note that running the app using Apache Isis' `org.apache.isis.WebServer` bootstr
 
 == Shiro Config
 
-If using Apache Isis' xref:ug:sec:ugsec.adoc#_ugsec_configuring-isis-to-use-shiro[Shiro integration] for authentication and/or authorization, note that it reads from the `shiro.ini` configuration file.
+If using Apache Isis' xref:ug:sec:ugsec.adoc#configuring-isis-to-use-shiro[Shiro integration] for authentication and/or authorization, note that it reads from the `shiro.ini` configuration file.
 By default this also resides in `WEB-INF`.
 
 Similar to Apache Isis, Shiro lets this configuration directory be altered, by specifying the `shiroConfigLocations` context parameter.
@@ -241,7 +241,7 @@ take a look at link:http://stackoverflow.com/a/10041835/56880[this SO answer] on
 
 == JVM Args
 
-The xref:rg:svc:rgsvc.adoc#_rgsvc_application-layer-api_WrapperFactory[`WrapperFactory`] uses link:http://www.javassist.org[Javassist] to create on-the-fly classes acting as a proxy.
+The xref:rg:svc:rgsvc.adoc#WrapperFactory[`WrapperFactory`] uses link:http://www.javassist.org[Javassist] to create on-the-fly classes acting as a proxy.
 The cost of these proxies can be mitigated using:
 
 [source,ini]
@@ -253,4 +253,4 @@ The cost of these proxies can be mitigated using:
 
 == Using a JNDI Datasource
 
-See the guidance in the xref:ug:odn:ugodn.adoc#_ugodn_configuring_using-jndi-data-source[configuring datanucleus] section.
+See the guidance in the xref:ug:odn:ugodn.adoc#using-jndi-data-source[configuring datanucleus] section.

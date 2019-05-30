@@ -6,7 +6,7 @@ include::_attributes.adoc[]
 The domain service actions can be arranged across menu items using the `menubars.layout.xml` file.
 Not only is this easier to work with, it also can be reloaded dynamically (if in prototype mode), substantially reducing the edit compile run cycle.
 
-As for xref:ugvw.adoc#_ugvw_layout_file-based[file-based object layouts], this offers a number of benefits:
+As for xref:ugvw.adoc#file-based[file-based object layouts], this offers a number of benefits:
 
 * Probably most significantly, the layout can be updated without requiring a recompile of the code and redeploy of the app; fine-tuning the layout with your end users is easy to do
 
@@ -18,14 +18,14 @@ There are some disadvantages to using file-based layouts:
 
 * they also suffer from syntactic fragility: an invalid XML document will result in no metadata for the entire class.
 
-The `menubars.layout.xml` file is just the serialized form of a xref:rg:cms:rgcms.adoc#_rgcms_classes_layout[`MenuBars`] layout class defined within Apache Isis' applib.
+The `menubars.layout.xml` file is just the serialized form of a xref:rg:cms:rgcms.adoc#layout[`MenuBars`] layout class defined within Apache Isis' applib.
 These are JAXB-annotated classes with corresponding XSD schemas; the upshot of that
 is that IDEs such as IntelliJ and Eclipse can provide "intellisense", making it easy to author such layout files.
 
 
 == Obtaining an initial layout
 
-An initial `menubars.layout.xml` - capturing any existing metadata either implicit or explicitly specified through annotations can be downloaded from the xref:rg:svc:rgsvc.adoc#_rgsvc_metadata-api_MenuBarsService[`MenuBarsService`] (exposed on the prototyping menu):
+An initial `menubars.layout.xml` - capturing any existing metadata either implicit or explicitly specified through annotations can be downloaded from the xref:rg:svc:rgsvc.adoc#MenuBarsService[`MenuBarsService`] (exposed on the prototyping menu):
 
 image::/menubars/010-download.png[width="300px",link="{imagesdir}/menubars/010-download.png"]
 

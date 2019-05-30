@@ -4,7 +4,7 @@ include::_attributes.adoc[]
 
 
 
-The Wicket viewer supports the bookmarking of both domain objects and query-only (xref:rg:ant:rgant.adoc#_rgant-Action_semantics[@Action(semantics=...)]) actions.
+The Wicket viewer supports the bookmarking of both domain objects and query-only (xref:rg:ant:rgant.adoc#semantics[@Action(semantics=...)]) actions.
 
 Domain objects, if bookmarkable, can be nested.
 
@@ -90,7 +90,7 @@ Alternatively, `alt+[` will toggle open/close the panel; it can also be closed u
 
 === Related functionality
 
-The xref:ug:vw:ugvw.adoc#_ugvw_features_recent-pages[Recent Pages] also lists recently visited pages, selected from a drop-down.
+The xref:ug:vw:ugvw.adoc#recent-pages[Recent Pages] also lists recently visited pages, selected from a drop-down.
 
 
 

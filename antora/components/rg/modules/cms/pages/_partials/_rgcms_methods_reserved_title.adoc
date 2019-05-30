@@ -19,7 +19,7 @@ The signature of this method is usually:
 public String title() { ... }
 ----
 
-Note that Apache Isis' xref:ug:btb:ugbtb.adoc#_ugbtb_i18n[i18n support] extends this so that titles can also be internationalized.
+Note that Apache Isis' xref:ug:btb:ugbtb.adoc#i18n[i18n support] extends this so that titles can also be internationalized.
 
 For example, the (non-ASF) http://github.com/isisaddons/isis-app-todoapp[Isis addons' todoapp] uses this technique to add an overlay for todo items that have been completed:
 
@@ -42,9 +42,9 @@ public String title() {
     return buf.toString();
 }
 ----
-<1> simple xref:rg:cms:rgcms.adoc#_rgcms_classes_utility_TitleBuffer[utility class] to help construct the title string
+<1> simple xref:rg:cms:rgcms.adoc#TitleBuffer[utility class] to help construct the title string
 <2> imperative conditional logic
-<3> using the xref:rg:svc:rgsvc.adoc#_rgsvc_application-layer-api_WrapperFactory[`WrapperFactory`] to determine if the `dueBy` field is visible for this user ...
+<3> using the xref:rg:svc:rgsvc.adoc#WrapperFactory[`WrapperFactory`] to determine if the `dueBy` field is visible for this user ...
 <4> ... but ignore if not
 
 As the example above shows, the implementation can be as complex as you like.
@@ -58,7 +58,7 @@ In many cases, though, you may be able to use the xref:rg:ant:rgant.adoc#_rgant-
 
 See also:
 
-* xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_iconName[`iconName()`]
-* xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_cssClass[`cssClass()`]
-* xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_layout[`layout()`]
+* xref:rg:cms:rgcms.adoc#iconName[`iconName()`]
+* xref:rg:cms:rgcms.adoc#cssClass[`cssClass()`]
+* xref:rg:cms:rgcms.adoc#layout[`layout()`]
 

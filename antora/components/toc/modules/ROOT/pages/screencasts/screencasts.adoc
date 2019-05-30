@@ -45,14 +45,14 @@ Searching and using the Apache Isis docs
 
 
 |link:https://www.youtube.com/watch?v=OTNHR5EdAs8[001^] +
-Generating an app using the xref:ug:fun:ugfun.adoc#_ugfun_getting-started_simpleapp-archetype[SimpleApp archetype]
+Generating an app using the xref:ug:fun:ugfun.adoc#simpleapp-archetype[SimpleApp archetype]
 
 |x||||||||||
 
 
 
 |link:https://www.youtube.com/watch?v=6GPtec5Hu5Q[002^] +
-Importing the generated app into an xref:support:dg:dg.adoc#_dg_ide[IDE] +
+Importing the generated app into an xref:support:dg:dg.adoc#ide[IDE] +
 
 |x||x||||||||
 
@@ -64,7 +64,7 @@ Walking through the main classes that make up the SimpleApp: `SimpleObject` pers
 
 
 |link:https://www.youtube.com/watch?v=KCJ1ZPPB3pA[004^] +
-Using the optional `Xxx.layout.xml` file to provide xref:ug:vw:ugvw.adoc#_ugvw_layout_file-based[layout metadata] to dynamically render a domain object using the link:http://getbootstrap.com[Bootstrap 3] grid system.
+Using the optional `Xxx.layout.xml` file to provide xref:ug:vw:ugvw.adoc#file-based[layout metadata] to dynamically render a domain object using the link:http://getbootstrap.com[Bootstrap 3] grid system.
 ||x|||||||||
 
 
@@ -79,24 +79,24 @@ include::partial$_screencasts-playlists.adoc[]
 
 
 |link:https://www.youtube.com/watch?v=pH02g0l2GKY[005^] +
-Using xref:ug:tst:ugtst.adoc#_ugtst_fixture-scripts[fixture scripts] to initialize the database, eg while prototyping and for demos
+Using xref:ug:tst:ugtst.adoc#fixture-scripts[fixture scripts] to initialize the database, eg while prototyping and for demos
 ||x|||||||||
 
 
 
 
 |link:https://www.youtube.com/watch?v=dXtmxmYxa30[006^] +
-Implementing xref:ug:fun:ugfun.adoc#_ugfun_business-rules[business rules]for domain object members, using supporting methods ("see it, use it, do it")
+Implementing xref:ug:fun:ugfun.adoc#business-rules[business rules]for domain object members, using supporting methods ("see it, use it, do it")
 |x||||||||||
 
 |link:https://www.youtube.com/watch?v=imHfxQGUgV8[007^] +
-Writing xref:ug:tst:ugtst.adoc#_ugtst_unit-test-support[unit tests] for a domain object responsibility
+Writing xref:ug:tst:ugtst.adoc#unit-test-support[unit tests] for a domain object responsibility
 ||x|||||||||
 
 
 
 |link:https://www.youtube.com/watch?v=-lAt4UWiBjE[008^] +
-Writing end-to-end xref:ug:tst:ugtst.adoc#_ugtst_integ-test-support[integration tests] for a domain object responsibility
+Writing end-to-end xref:ug:tst:ugtst.adoc#integ-test-support[integration tests] for a domain object responsibility
 ||x|||||||||
 
 
@@ -126,7 +126,7 @@ Using the xref:rg:mvn:rgmvn.adoc#[Apache Isis maven plugin] to validate domain o
 
 
 |link:https://www.youtube.com/watch?v=1sNiR3Y84c0[011^] +
-How the framework uses the xref:rg:cms:rgcms.adoc#_rgcms_classes_AppManifest-bootstrapping[`AppManifest`] is used to bootstrap the application
+How the framework uses the xref:rg:cms:rgcms.adoc#AppManifest-bootstrapping[`AppManifest`] is used to bootstrap the application
 ||||||||||x|
 
 
@@ -139,13 +139,13 @@ include::partial$_screencasts-playlists.adoc[]
 
 
 |link:https://www.youtube.com/watch?v=dfRZeYqzMtI[012^] +
-Implementing business logic using a (no-arg) action, and associating with a property using either the xref:rg:ant:rgant.adoc#_rgant-MemberOrder[`@MemberOrder`] annotations or using xref:ug:vw:ugvw.adoc#_ugvw_layout_file-based[dynamic (XML) layouts].
+Implementing business logic using a (no-arg) action, and associating with a property using either the xref:rg:ant:rgant.adoc#_rgant-MemberOrder[`@MemberOrder`] annotations or using xref:ug:vw:ugvw.adoc#file-based[dynamic (XML) layouts].
 |x||||||||x||
 
 
 
 |link:https://www.youtube.com/watch?v=0naoVsWppuQ[013^] +
-Invoking (no-arg) action on multiple objects at once (using xref:rg:ant:rgant.adoc#_rgant-Action_invokeOn[`@Action#invokeOn()`], and using the xref:rg:svc:rgsvc.adoc#_rgsvc_application-layer-api_ActionInvocationContext[`ActionInvocationContext`] domain service for a smoother end-user experience.
+Invoking (no-arg) action on multiple objects at once (using xref:rg:ant:rgant.adoc#_rgant-Action_invokeOn[`@Action#invokeOn()`], and using the xref:rg:svc:rgsvc.adoc#ActionInvocationContext[`ActionInvocationContext`] domain service for a smoother end-user experience.
 |||x||||||x||
 
 
@@ -159,13 +159,13 @@ include::partial$_screencasts-playlists.adoc[]
 
 
 |link:https://www.youtube.com/watch?v=CwM430UH5WE[014^] +
-Using the xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_title[`title()`], xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_iconName[`iconName()`] and xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_cssClass[`cssClass()`] so that end-users can distinguish domain objects within the UI.
+Using the xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_title[`title()`], xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_iconName[`iconName()`] and xref:rg:cms:rgcms.adoc#cssClass[`cssClass()`] so that end-users can distinguish domain objects within the UI.
 |x||x||||||x||
 
 
 
 |link:https://www.youtube.com/watch?v=7ToRKBOeemM[015^] +
-Moving the responsibility to specify the icon for a domain object out and into a subscriber, using the xref:rg:cms:rgcms.adoc#_rgcms_classes_uievent_IconUiEvent[`IconUiEvent`] as per the xref:rg:ant:rgant.adoc#_rgant-DomainObjectLayout_iconUiEvent[`@DomainObjectLayout#iconUiEvent()`] annotation
+Moving the responsibility to specify the icon for a domain object out and into a subscriber, using the xref:rg:cms:rgcms.adoc#_rgcms_classes_uievent_IconUiEvent[`IconUiEvent`] as per the xref:rg:ant:rgant.adoc#iconUiEvent[`@DomainObjectLayout#iconUiEvent()`] annotation
 ||||||x|||||
 
 
@@ -187,7 +187,7 @@ How to implement a derived collection on a domain object.
 
 
 |link:https://www.youtube.com/watch?v=l_oZymgb65I[017^] +
-Extending a xref:ug:tst:ugtst.adoc#_ugtst_fixture-scripts[fixture script] to more easily demonstrate new functionality.
+Extending a xref:ug:tst:ugtst.adoc#fixture-scripts[fixture script] to more easily demonstrate new functionality.
 ||x|||||||||
 
 
@@ -198,7 +198,7 @@ Extending a xref:ug:tst:ugtst.adoc#_ugtst_fixture-scripts[fixture script] to mor
 
 
 |link:https://www.youtube.com/watch?v=39Hpd7C4Kvo[018^] +
-Using xref:ug:vw:ugvw.adoc#_ugvw_layout_file-based[dynamic (XML) layouts] to specify the page size for a domain object's collection.
+Using xref:ug:vw:ugvw.adoc#file-based[dynamic (XML) layouts] to specify the page size for a domain object's collection.
 ||||x|||||||
 
 
@@ -213,7 +213,7 @@ include::partial$_screencasts-playlists.adoc[]
 
 |link:https://www.youtube.com/watch?v=0d713-V4vrg[019^] +
 Demonstrates how Apache Isis' xref:ug:vw:ugvw.adoc#[Wicket viewer] remembers the state of rendered domain objects, and how the end-user of the
- application can clear these UI hints using the (framework-provided) xref:rg:cms:rgcms.adoc#__rgcms_classes_mixins_Object_clearHints["clear hints"] action.
+ application can clear these UI hints using the (framework-provided) xref:rg:cms:rgcms.adoc#clearHints["clear hints"] action.
 |||x||||||||
 
 
@@ -225,7 +225,7 @@ Demonstrates how the end-user can copy and share URLs for domain objects - inclu
 
 
 |link:https://www.youtube.com/watch?v=a0QQLT_16To[021^] +
-Demonstrates how the end-user can use bookmarks and breadcrumbs within Apache Isis' xref:ug:vw:ugvw.adoc#[Wicket viewer], and how the developer can ensure that xref:rg:ant:rgant.adoc#_rgant-DomainObjectLayout_bookmarking[domain objects] and (xref:rg:ant:rgant.adoc#_rgant-Action_semantics[query-only]) xref:rg:ant:rgant.adoc#_rgant-ActionLayout_bookmarking[actions] can be bookmarked.
+Demonstrates how the end-user can use bookmarks and breadcrumbs within Apache Isis' xref:ug:vw:ugvw.adoc#[Wicket viewer], and how the developer can ensure that xref:rg:ant:rgant.adoc#_rgant-DomainObjectLayout_bookmarking[domain objects] and (xref:rg:ant:rgant.adoc#_rgant-Action_semantics[query-only]) xref:rg:ant:rgant.adoc#bookmarking[actions] can be bookmarked.
 |||x||||||||
 
 
@@ -240,26 +240,26 @@ include::partial$_screencasts-playlists.adoc[]
 
 
 |link:https://www.youtube.com/watch?v=Wn5215K7_Jg[022^] +
-Shows how to refactor a domain object to move an action implementation out of the domain object itself, and instead implement as a xref:ug:fun:ugfun.adoc#_ugfun_building-blocks_types-of-domain-objects_mixins[mixin] (useful for decoupling).
+Shows how to refactor a domain object to move an action implementation out of the domain object itself, and instead implement as a xref:ug:fun:ugfun.adoc#mixins[mixin] (useful for decoupling).
 |x|||||x|||||
 
 
 
 |link:https://www.youtube.com/watch?v=m633OEBpWqQ[023^] +
-Shows how to refactor a domain object to move (derived) collections out of the domain object and reimplement as a xref:ug:fun:ugfun.adoc#_ugfun_building-blocks_types-of-domain-objects_mixins[mixin].
+Shows how to refactor a domain object to move (derived) collections out of the domain object and reimplement as a xref:ug:fun:ugfun.adoc#mixins[mixin].
 ||||||x|||||
 
 
 
 |link:https://www.youtube.com/watch?v=-AQJb9GtIqI[024^] +
-Using a domain event xref:rg:cms:rgcms.adoc#_rgcms_classes_super_AbstractSubscriber[subscriber] to xref:ug:fun:ugfun.adoc#_ugfun_building-blocks_events_domain-events[decouple] and abstract business rules (xref:rg:cms:rgcms.adoc#_rgcms_methods_prefixes_validate[validation]).
+Using a domain event xref:rg:cms:rgcms.adoc#_rgcms_classes_super_AbstractSubscriber[subscriber] to xref:ug:fun:ugfun.adoc#_ugfun_building-blocks_events_domain-events[decouple] and abstract business rules (xref:rg:cms:rgcms.adoc#validate[validation]).
 ||||||x|||||
 
 
 
 |link:https://www.youtube.com/watch?v=6GjLW0hlrm4[025^] +
-Using a domain event xref:rg:cms:rgcms.adoc#_rgcms_classes_super_AbstractSubscriber[subscriber] to hide functionality, in this
-  case the xref:rg:cms:rgcms.adoc#__rgcms_classes_mixins_Object_clearHints["clear hints"] action automatically provided by the framework.
+Using a domain event xref:rg:cms:rgcms.adoc#AbstractSubscriber[subscriber] to hide functionality, in this
+  case the xref:rg:cms:rgcms.adoc#clearHints["clear hints"] action automatically provided by the framework.
 ||||||||||x|
 
 
@@ -271,7 +271,7 @@ Using a domain event xref:rg:cms:rgcms.adoc#_rgcms_classes_super_AbstractSubscri
 
 
 |link:https://www.youtube.com/watch?v=qj4bMkQRBUY[026^] +
-Using the xref:rg:ant:rgant.adoc#_rgant-Title[`@Title`] annotation (instead of the xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_title[`title()`] reserved method) to obtain the title of a domain object, so that the end-user can distinguish one object from another.
+Using the xref:rg:ant:rgant.adoc#_rgant-Title[`@Title`] annotation (instead of the xref:rg:cms:rgcms.adoc#title[`title()`] reserved method) to obtain the title of a domain object, so that the end-user can distinguish one object from another.
 |x||||||||x||
 
 
@@ -284,7 +284,7 @@ Using the xref:rg:ant:rgant.adoc#_rgant-Title[`@Title`] annotation (instead of t
 
 
 |link:https://www.youtube.com/watch?v=yi52Gbd3lmY[027^] +
-How to write an xref:ug:tst:ugtst.adoc#_ugtst_integ-test-support[integration test] for an xref:rg:ant:rgant.adoc#_rgant-Mixin[mixin].
+How to write an xref:ug:tst:ugtst.adoc#rgant-Mixin[mixin].
 ||x|||||||||
 
 
@@ -307,7 +307,7 @@ Using link:https://projectlombok.org/[Project Lombok] to remove boilerplate from
 
 
 |link:https://www.youtube.com/watch?v=AXuxULuRtm0[029^] +
-Using the (non-ASF) link:http://platform.incode.org[Incode Platform^]'s paraname8 metamodel extension to remove boilerplate from your domain object (xref:rg:ant:rgant.adoc#_rgant-ParameterLayout_named[`@ParameterLayout#named()`] annotation attribute on action parameters).
+Using the (non-ASF) link:http://platform.incode.org[Incode Platform^]'s paraname8 metamodel extension to remove boilerplate from your domain object (xref:rg:ant:rgant.adoc#named[`@ParameterLayout#named()`] annotation attribute on action parameters).
 |||||x|||x|||
 
 
@@ -322,13 +322,13 @@ include::partial$_screencasts-playlists.adoc[]
 
 
 |link:https://www.youtube.com/watch?v=ORoEYlg6XFM[030^] +
-How to validate action parameters using a supporting xref:rg:cms:rgcms.adoc#_rgcms_methods_prefixes_validate[`validateNXxx()`] method.
+How to validate action parameters using a supporting xref:rg:cms:rgcms.adoc#validate[`validateNXxx()`] method.
 |x||||||||x||
 
 
 
 |link:https://www.youtube.com/watch?v=1Vlzob89pYI[031^] +
-How to validate action parameters using the xref:rg:ant:rgant.adoc#_rgant-Parameter_mustSatisfy[`@Parameter#mustSatisfy()`]  and the Specification interface.
+How to validate action parameters using the xref:rg:ant:rgant.adoc#mustSatisfy[`@Parameter#mustSatisfy()`]  and the Specification interface.
 |||||||||x||
 
 
@@ -341,7 +341,7 @@ How to validate action parameters using the xref:rg:ant:rgant.adoc#_rgant-Parame
 
 
 |link:https://www.youtube.com/watch?v=fYJjXAepWAs[032^] +
-How to instantiate/initialize objects using xref:rg:svc:rgsvc.adoc#_rgsvc_persistence-layer-api_RepositoryService[`RepositoryService`], xref:rg:svc:rgsvc.adoc#_rgsvc_metadata-api_ServiceRegistry[`ServiceRegistry`] and/or xref:rg:svc:rgsvc.adoc#_rgsvc_core-domain-api_FactoryService[`FactoryService`].
+How to instantiate/initialize objects using xref:rg:svc:rgsvc.adoc#_rgsvc_persistence-layer-api_RepositoryService[`RepositoryService`], xref:rg:svc:rgsvc.adoc#_rgsvc_metadata-api_ServiceRegistry[`ServiceRegistry`] and/or xref:rg:svc:rgsvc.adoc#FactoryService[`FactoryService`].
 |x||||||||x||
 
 
@@ -355,19 +355,19 @@ include::partial$_screencasts-playlists.adoc[]
 
 
 |link:https://www.youtube.com/watch?v=cQ06PoMNDPw[033^] +
-How to provide a set of xref:rg:cms:rgcms.adoc#_rgcms_methods_prefixes_choices[choices] (a drop-down list) when editing a property.
+How to provide a set of xref:rg:cms:rgcms.adoc#choices[choices] (a drop-down list) when editing a property.
 |x||||||||x||
 
 
 
 |link:https://www.youtube.com/watch?v=afEnYKljBQs[034^] +
-How to provide a set of xref:rg:cms:rgcms.adoc#_rgcms_methods_prefixes_choices[choices] (a drop-down list) when invoking an action.
+How to provide a set of xref:rg:cms:rgcms.adoc#choices[choices] (a drop-down list) when invoking an action.
 |||||||||x||
 
 
 
 |link:https://www.youtube.com/watch?v=fKo6aTPK-gk[035^] +
-How to use the xref:rg:cms:rgcms.adoc#_rgcms_methods_prefixes_choices[choices] supporting methods as a source for default values within a xref:ug:tst:ugtst.adoc#_ugtst_fixture-scripts[fixture script].
+How to use the xref:rg:cms:rgcms.adoc#_rgcms_methods_prefixes_choices[choices] supporting methods as a source for default values within a xref:ug:tst:ugtst.adoc#fixture-scripts[fixture script].
 ||x|||||||x||
 
 
@@ -387,7 +387,7 @@ include::partial$_screencasts-playlists.adoc[]
 
 
 |link:https://www.youtube.com/watch?v=1SCyBlMM2Bo[037^] +
-How to hide properties as columns in tables (parented collections or standalone collections), using the dynamic XML layout (equivalent to xref:rg:ant:rgant.adoc#_rgant-PropertyLayout_hidden[`@PropertyLayout#hidden()`]).
+How to hide properties as columns in tables (parented collections or standalone collections), using the dynamic XML layout (equivalent to xref:rg:ant:rgant.adoc#hidden[`@PropertyLayout#hidden()`]).
 ||||x|||||||
 
 
@@ -406,7 +406,7 @@ include::partial$_screencasts-playlists.adoc[]
 
 
 |link:https://www.youtube.com/watch?v=NKaR7ZedI8E[039^] +
-Using the xref:rg:cms:rgcms.adoc#_rgcms_classes_super_FixtureScript[`FixtureScript`] `defaultParam(...)` method to reflectively default parameters to fixture scripts that have not been set by the caller.
+Using the xref:rg:cms:rgcms.adoc#FixtureScript[`FixtureScript`] `defaultParam(...)` method to reflectively default parameters to fixture scripts that have not been set by the caller.
 ||x|||||||||
 
 
@@ -446,22 +446,22 @@ include::partial$_screencasts-playlists.adoc[]
 
 
 |link:https://www.youtube.com/watch?v=Rt4JoV4ssVY[043^] +
-How to use the supporting xref:rg:cms:rgcms.adoc#_rgcms_methods_prefixes_default[`defaultXxx(...)`] supporting method to provide a default argument value for action parameters.
+How to use the supporting xref:rg:cms:rgcms.adoc#default[`defaultXxx(...)`] supporting method to provide a default argument value for action parameters.
 |x||||||||x||
 
 
 |link:https://www.youtube.com/watch?v=qAJDGxztWIQ[044^] +
-How to use xref:rg:ant:rgant.adoc#_rgant-DomainObject_bounding[`@DomainObject#bounding()`] so that a drop-down list is automatically provided for any parameters to actions that are for (domain entity) reference types.
+How to use xref:rg:ant:rgant.adoc#bounding[`@DomainObject#bounding()`] so that a drop-down list is automatically provided for any parameters to actions that are for (domain entity) reference types.
 |||||||||x||
 
 
 |link:https://www.youtube.com/watch?v=0ro_YhXOpJU[045^] +
-How to use the xref:rg:cms:rgcms.adoc#_rgcms_methods_prefixes_choices[`choicesXxx(...)`] supporting method to provide a drop-down list for parameters to actions that are for reference types (domain entities or view models).
+How to use the xref:rg:cms:rgcms.adoc#choices[`choicesXxx(...)`] supporting method to provide a drop-down list for parameters to actions that are for reference types (domain entities or view models).
 |||||||||x||
 
 
 |link:https://www.youtube.com/watch?v=K36IJQ_hDfs[046^] +
-How to use the xref:rg:cms:rgcms.adoc#_rgcms_methods_prefixes_autoComplete[`autoCompleteXxx(...)`] supporting method to provide a drop-down list for parameters to actions that are for reference types (domain entities or view models).
+How to use the xref:rg:cms:rgcms.adoc#autoComplete[`autoCompleteXxx(...)`] supporting method to provide a drop-down list for parameters to actions that are for reference types (domain entities or view models).
 |||||||||x||
 
 
@@ -514,22 +514,22 @@ include::partial$_screencasts-playlists.adoc[]
 
 
 |link:https://www.youtube.com/watch?v=puG-pzxRSd0[052^] +
-How to write a xref:ug:fun:ugfun.adoc#_ugfun_programming-model_view-models_jaxb[(JAXB) view model], holding references to two domain objects.
+How to write a xref:ug:fun:ugfun.adoc#jaxb[(JAXB) view model], holding references to two domain objects.
 |x||||||||x||
 
 
 |link:https://www.youtube.com/watch?v=tdBkmA2CCZY[053^] +
-Updating the title, icon and layout of a xref:ug:fun:ugfun.adoc#_ugfun_programming-model_view-models_jaxb[(JAXB) view model].
+Updating the title, icon and layout of a xref:ug:fun:ugfun.adoc#jaxb[(JAXB) view model].
 ||||x|||||||
 
 
 |link:https://www.youtube.com/watch?v=TKF0FB_od00[054^] +
-How to expose information from underlying domain entities referenced by a xref:ug:fun:ugfun.adoc#_ugfun_programming-model_view-models_jaxb[(JAXB) view model] using derived properties
+How to expose information from underlying domain entities referenced by a xref:ug:fun:ugfun.adoc#jaxb[(JAXB) view model] using derived properties
 ||||||||||x|
 
 
 |link:https://www.youtube.com/watch?v=TMMeVhRNi8A[055^] +
-Adding an action to a xref:ug:fun:ugfun.adoc#_ugfun_programming-model_view-models_jaxb[(JAXB) view model], and adjusting the layout using custom CSS.
+Adding an action to a xref:ug:fun:ugfun.adoc#jaxb[(JAXB) view model], and adjusting the layout using custom CSS.
 ||||x|||||||
 
 

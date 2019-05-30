@@ -7,7 +7,7 @@ The framework provides a single mixin that contributes to simply `java.lang.Obje
 It provides the ability to download the layout XML for any domain object (in practical terms: entities and view models).
 
 These mixin actions are all associated with the "Metadata" fieldset.
-A number of other xref:rg:cms:rgcms.adoc#_rgcms_classes_mixins_Persistable[mixins] also contribute properties or actions to the "Metadata" fieldset.
+A number of other xref:rg:cms:rgcms.adoc#Persistable[mixins] also contribute properties or actions to the "Metadata" fieldset.
 
 
 
@@ -30,13 +30,13 @@ public void clearHints() {
 
 === Related Services
 
-This mixin uses the xref:rg:svc:rgsvc.adoc#_rgsvc_presentation-layer-spi_HintStore[`HintStore`] service to store and retrieve UI hints for each rendered object, per user.
+This mixin uses the xref:rg:svc:rgsvc.adoc#HintStore[`HintStore`] service to store and retrieve UI hints for each rendered object, per user.
 
 
 
 == `downloadLayoutXml()`
 
-The `Object_downloadLayoutXml` mixin provides an action to download the xref:ug:vw:ugvw.adoc#_ugvw_layout_file-based[layout XML] for the current domain object.
+The `Object_downloadLayoutXml` mixin provides an action to download the xref:ug:vw:ugvw.adoc#file-based[layout XML] for the current domain object.
 It has the following signature:
 
 [source,java]
@@ -50,13 +50,13 @@ public Object downloadLayoutXml(
 ----
 <1> either current, complete, normalized or minimal.
 
-See the documentation on xref:ug:vw:ugvw.adoc#_ugvw_layout_file-based[layout XML] and also
-the xref:rg:svc:rgsvc.adoc#_rgsvc_metadata-api_LayoutService[`LayoutService`] for more information on these styles
+See the documentation on xref:ug:vw:ugvw.adoc#file-based[layout XML] and also
+the xref:rg:svc:rgsvc.adoc#LayoutService[`LayoutService`] for more information on these styles
 
 
 === Related Services
 
-This mixin calls xref:rg:svc:rgsvc.adoc#_rgsvc_metadata-api_LayoutService[`LayoutService`] to obtain the layout XML.
+This mixin calls xref:rg:svc:rgsvc.adoc#LayoutService[`LayoutService`] to obtain the layout XML.
 
 
 
@@ -76,13 +76,13 @@ public void rebuildMetamodel() {
 
 === Related Services
 
-This mixin calls xref:rg:svc:rgsvc.adoc#_rgsvc_metadata-api_MetamodelService[`MetaModelService`] and the xref:rg:svc:rgsvc.adoc#_rgsvc_presentation-layer-spi_GridService[`GridService`] to invalidate their caches.
+This mixin calls xref:rg:svc:rgsvc.adoc#_rgsvc_metadata-api_MetamodelService[`MetaModelService`] and the xref:rg:svc:rgsvc.adoc#GridService[`GridService`] to invalidate their caches.
 
 
 
 == `downloadLayoutXml()`
 
-The `Object_downloadLayoutXml` mixin provides an action to download the xref:ug:vw:ugvw.adoc#_ugvw_layout_file-based[layout XML] for the current domain object.
+The `Object_downloadLayoutXml` mixin provides an action to download the xref:ug:vw:ugvw.adoc#file-based[layout XML] for the current domain object.
 It has the following signature:
 
 [source,java]
@@ -96,13 +96,13 @@ public Object downloadLayoutXml(
 ----
 <1> either current, complete, normalized or minimal.
 
-See the documentation on xref:ug:vw:ugvw.adoc#_ugvw_layout_file-based[layout XML] and also
-the xref:rg:svc:rgsvc.adoc#_rgsvc_metadata-api_LayoutService[`LayoutService`] for more information on these styles
+See the documentation on xref:ug:vw:ugvw.adoc#file-based[layout XML] and also
+the xref:rg:svc:rgsvc.adoc#LayoutService[`LayoutService`] for more information on these styles
 
 
 === Related Services
 
-This mixin calls xref:rg:svc:rgsvc.adoc#_rgsvc_metadata-api_LayoutService[`LayoutService`] to obtain the layout XML.
+This mixin calls xref:rg:svc:rgsvc.adoc#LayoutService[`LayoutService`] to obtain the layout XML.
 
 
 
@@ -119,7 +119,7 @@ public URL openRestApi() { ... }
 
 === Related Services
 
-This mixin calls xref:rg:svc:rgsvc.adoc#_rgsvc_integration-api_BookmarkService[`BookmarkService`] to build the URL.
+This mixin calls xref:rg:svc:rgsvc.adoc#BookmarkService[`BookmarkService`] to build the URL.
 
 
 

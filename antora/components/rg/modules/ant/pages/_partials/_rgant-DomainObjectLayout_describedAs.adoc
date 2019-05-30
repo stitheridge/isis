@@ -24,9 +24,9 @@ public class ProspectiveSale {
 
 The attribute can also be specified for:
 
-* xref:rg:ant:rgant.adoc#_rgant-CollectionLayout_describedAs[collections]
-* xref:rg:ant:rgant.adoc#_rgant-PropertyLayout_describedAs[properties]
-* xref:rg:ant:rgant.adoc#_rgant-ActionLayout_describedAs[actions]
-* xref:rg:ant:rgant.adoc#_rgant-ParameterLayout_describedAs[parameters] and
-* xref:rg:ant:rgant.adoc#_rgant-ViewModelLayout_describedAs[view models].
+* xref:rg:ant:rgant.adoc#describedAs[collections]
+* xref:rg:ant:rgant.adoc#describedAs[properties]
+* xref:rg:ant:rgant.adoc#describedAs[actions]
+* xref:rg:ant:rgant.adoc#describedAs[parameters] and
+* xref:rg:ant:rgant.adoc#describedAs[view models].
 

@@ -8,8 +8,8 @@ simply exposes the HTTP `Accept` header to the domain.  Its intended use is to s
 
 [NOTE]
 ====
-As an alternative to performing content negotiation within the domain classes, the xref:rg:fis:rgfis.adoc#_rgfis_presentation-layer_ContentNegotiationService[`ContentNegotiationService`] and
-xref:rg:svc:rgsvc.adoc#_rgsvc_presentation-layer-spi_ContentMappingService[`ContentMappingService`] SPI domain services allow the framework to perform the content negotiation responsibility.
+As an alternative to performing content negotiation within the domain classes, the xref:rg:fis:rgfis.adoc#ContentNegotiationService[`ContentNegotiationService`] and
+xref:rg:svc:rgsvc.adoc#ContentMappingService[`ContentMappingService`] SPI domain services allow the framework to perform the content negotiation responsibility.
 ====
 
 == API & Implementation
@@ -37,8 +37,8 @@ Note that the service will only return a list when the request is initiated thro
 ====
 
 To use an alternative implementation, use
-xref:rg:ant:rgant.adoc#_rgant-DomainServiceLayout_menuOrder[`@DomainServiceLayout#menuOrder()`] (as explained
-in the xref:rg:svc:rgsvc.adoc#__rgsvc_intro_overriding-the-services[introduction] to this guide).
+xref:rg:ant:rgant.adoc#menuOrder[`@DomainServiceLayout#menuOrder()`] (as explained
+in the xref:rg:svc:rgsvc.adoc#overriding-the-services[introduction] to this guide).
 
 
 == Usage
@@ -51,7 +51,7 @@ The diagram below illustrated this:
 
 image::reference-services-api/acceptheaderservice.png[width="700px",link="{imagesdir}reference-services-api/acceptheaderservice.png"]
 
-The REST request is submitted to a domain service with a xref:rg:ant:rgant.adoc#_rgant-DomainService_nature[nature] of `VIEW_REST_ONLY` (`MyRestApi` in the diagram).  This uses the `AcceptHeaderService` to obtain the values of the
+The REST request is submitted to a domain service with a xref:rg:ant:rgant.adoc#ONLY` (`MyRestApi` in the diagram).  This uses the `AcceptHeaderService` to obtain the values of the
 HTTP `Accept` header.  Based on this it delegates to the appropriate underlying domain service (with a nature of
 `DOMAIN` so that they are not exposed in the REST API at all).
 
@@ -62,7 +62,7 @@ type/subtype, eg `application/vnd.myrestapi-v1+json`; an alternative is to use a
 `application/json;x-my-rest-api-version=1` (where `x-my-rest-api-version` is the media type parameter).
 
 The Restful Objects specification does this something similar with its own `x-ro-domain-type` media type parameter;
-this is used by the xref:rg:svc:rgsvc.adoc#_rgsvc_presentation-layer-spi_ContentMappingService[`ContentMappingService`] to determine how to
+this is used by the xref:rg:svc:rgsvc.adoc#ContentMappingService[`ContentMappingService`] to determine how to
 map domain objects to view models/DTOs.
 ====
 

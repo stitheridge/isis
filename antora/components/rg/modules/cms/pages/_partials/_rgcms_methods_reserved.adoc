@@ -13,29 +13,29 @@ The table below lists the reserved methods that are recognized as part of Apache
 |Method
 |Description
 
-|xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_cssClass[`cssClass()`]
+|xref:rg:cms:rgcms.adoc#cssClass[`cssClass()`]
 |Provides a CSS class for this object instance.
-In conjunction with xref:rg:cfg:rgcfg.adoc#_rgcfg_application-specific_application-css[`application.css`], can therefore provide custom styling of an object instance wherever it is rendered.
+In conjunction with xref:rg:cfg:rgcfg.adoc#application-css[`application.css`], can therefore provide custom styling of an object instance wherever it is rendered.
 
-|xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_disable[`disable(...)`]
+|xref:rg:cms:rgcms.adoc#disable[`disable(...)`]
 |Disable all or some of an object's properties
 
-|xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_getId[`getId()`]
+|xref:rg:cms:rgcms.adoc#getId[`getId()`]
 |Provides an optional unique identifier of a service.
 
 If not provided, the service's fully-qualified class name is used.
 
-|xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_hide[`hide(...)`]
+|xref:rg:cms:rgcms.adoc#hide[`hide(...)`]
 |Hide all or some of an object's properties
 
-|xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_iconName[`iconName()`]
+|xref:rg:cms:rgcms.adoc#iconName[`iconName()`]
 |Provides the name of the image to render, usually alongside the title, to represent the object.
 If not provided, then the class name is used to locate an image.
 
-|xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_title[`title()`]
+|xref:rg:cms:rgcms.adoc#title[`title()`]
 |Provides a title for the object. +
 
-|xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_validate[`validate()`]
+|xref:rg:cms:rgcms.adoc#validate[`validate()`]
 |Validate the object's state prior to persisting.
 
 |===

@@ -230,9 +230,9 @@ link:http://ciserver:8080[CI Server^]
 |Link to an external hyperlink, with `target=blank`
 
 |....
-xref:dg.adoc#__dg_asciidoc_links-and-xrefs#[background]
+xref:dg.adoc#links-and-xrefs#[background]
 ....
-|xref:dg.adoc#__dg_asciidoc_links-and-xrefs[background]
+|xref:dg.adoc#links-and-xrefs[background]
 |Cross-reference to section in same asciidoc document
 
 |....
@@ -242,9 +242,9 @@ xref:ug:fun:ugfun.adoc#[Fundamentals]
 |Cross-reference to top-level of different asciidoc document
 
 |....
-xref:ug:fun:ugfun.adoc#_ugfun_core-concepts[Core Concepts]
+xref:ug:fun:ugfun.adoc#core-concepts[Core Concepts]
 ....
-|xref:ug:fun:ugfun.adoc#_ugfun_core-concepts[Core Concepts]
+|xref:ug:fun:ugfun.adoc#core-concepts[Core Concepts]
 |Cross-reference to section within different asciidoc document
 
 |===

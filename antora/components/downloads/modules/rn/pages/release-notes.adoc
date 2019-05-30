@@ -27,7 +27,7 @@ This table summarises all releases of Apache Isis to date.
 | 13
 | https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12311171&version=12342393[Release notes for 2.0.0-M2]
 
-| xref:release-notes.adoc#_release-notes_1.17.0[1.17.0]
+| xref:release-notes.adoc#1.17.0[1.17.0]
 | 06-01-2019
 | Sidebar dialogs, metamodel export
 | 4
@@ -46,7 +46,7 @@ This table summarises all releases of Apache Isis to date.
 | https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12311171&version=12342392[Release notes for 2.0.0-M1]
 
 
-| xref:release-notes.adoc#_release-notes_1.16.2[1.16.2]
+| xref:release-notes.adoc#1.16.2[1.16.2]
 | 05-03-2018
 | RO viewer support, performance improvement, fix of severe bug for parented checkboxes
 | 1

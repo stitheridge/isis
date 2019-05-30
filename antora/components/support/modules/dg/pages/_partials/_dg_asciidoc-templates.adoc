@@ -5,7 +5,7 @@ include::_attributes.adoc[]
 
 
 
-//This appendix lists the (IntelliJ) live templates available for xref:support:dg:dg.adoc#_dg_asciidoc[writing documentation] using Asciidoc.  Instructions for installing the templates can be found xref:support:dg:dg.adoc#__dg_ide_intellij_live-templates[here].
+//This appendix lists the (IntelliJ) live templates available for xref:support:dg:dg.adoc#_dg_asciidoc[writing documentation] using Asciidoc.  Instructions for installing the templates can be found xref:support:dg:dg.adoc#live-templates[here].
 //
 //In the examples below the text `xxx`, `yyy`, `zzz` are correspond to template variables (ie placeholders).
 //
@@ -129,7 +129,7 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:support:dg:dg.adoc#_cgcom_cutting-a-release[Cutting a release\]`
+//`\xref:support:dg:dg.adoc#cutting-a-release[Cutting a release\]`
 //
 //|`addg`
 //|`\xref:support:dg:dg.adoc#xxx[ttt]`
@@ -141,9 +141,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:support:dg:dg.adoc#_dg_asciidoc-templates[Asciidoc templates\]`
+//`\xref:support:dg:dg.adoc#asciidoc-templates[Asciidoc templates\]`
 //
-//|xref:support:dg:dg.adoc#_dg_asciidoc-templates[Asciidoc templates]
+//|xref:support:dg:dg.adoc#asciidoc-templates[Asciidoc templates]
 //
 //
 //
@@ -157,9 +157,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:rg:ant:rgant.adoc#_rgant_aaa_main[Core annotations]`
+//`\xref:rg:ant:rgant.adoc#main[Core annotations]`
 //
-//|xref:rg:ant:rgant.adoc#_rgant_aaa_main[Core annotations]
+//|xref:rg:ant:rgant.adoc#main[Core annotations]
 //
 //
 //
@@ -173,9 +173,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:rg:cfg:rgcfg.adoc#_rgcfg_configuring-core[Configuring Core]`
+//`\xref:rg:cfg:rgcfg.adoc#configuring-core[Configuring Core]`
 //
-//|xref:rg:cfg:rgcfg.adoc#_rgcfg_configuring-core[Configuring Core]
+//|xref:rg:cfg:rgcfg.adoc#configuring-core[Configuring Core]
 //
 //
 //
@@ -189,9 +189,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:rg:cms:rgcms.adoc#_rgcms_classes_super_AbstractService[`AbstractService`]`
+//`\xref:rg:cms:rgcms.adoc#AbstractService[`AbstractService`]`
 //
-//|xref:rg:cms:rgcms.adoc#_rgcms_classes_super_AbstractService[`AbstractService`]
+//|xref:rg:cms:rgcms.adoc#AbstractService[`AbstractService`]
 //
 //
 //
@@ -205,9 +205,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:rg:cms:rgcms.adoc#_rgcms_classes_AppManifest-bootstrapping[`AppManifest` bootstrapping]`
+//`\xref:rg:cms:rgcms.adoc#AppManifest-bootstrapping[`AppManifest` bootstrapping]`
 //
-//|xref:rg:cms:rgcms.adoc#_rgcms_classes_AppManifest-bootstrapping[`AppManifest` bootstrapping]
+//|xref:rg:cms:rgcms.adoc#AppManifest-bootstrapping[`AppManifest` bootstrapping]
 //
 //
 //
@@ -221,9 +221,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:rg:mvn:rgmvn.adoc#_rgmvn_validate[validate goal]`
+//`\xref:rg:mvn:rgmvn.adoc#validate[validate goal]`
 //
-//|xref:rg:mvn:rgmvn.adoc#_rgmvn_validate[validate goal]
+//|xref:rg:mvn:rgmvn.adoc#validate[validate goal]
 //
 //
 //
@@ -243,7 +243,7 @@ include::_attributes.adoc[]
 //
 //
 //|`adrgnt`
-//|`\xref:rg:ant:rgant.adoc#_rgant-xxx_ttt[`@xxx#ttt()`]`
+//|`\xref:rg:ant:rgant.adoc#ttt[`@xxx#ttt()`]`
 //
 //a hyperlink to the "man page" for the specific attribute (field) of an annotation within the reference guide for annotations, where:
 //
@@ -252,14 +252,14 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:rg:ant:rgant.adoc#_rgant-Action_semantics[`@Action#semantics()`]`
+//`\xref:rg:ant:rgant.adoc#semantics[`@Action#semantics()`]`
 //
-//|xref:rg:ant:rgant.adoc#_rgant-Action_semantics[`@Action#semantics()`]
+//|xref:rg:ant:rgant.adoc#semantics[`@Action#semantics()`]
 //
 //
 //
 //|`adrgsa`
-//|`\xref:rg:svc:rgsvc.adoc#_rgsvc_api_xxx[`xxx`]`
+//|`\xref:rg:svc:rgsvc.adoc#xxx[`xxx`]`
 //
 //a hyperlink to the "man page" for an (API) domain service within the reference guide for domain services, where:
 //
@@ -267,14 +267,14 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:rg:svc:rgsvc.adoc#_rgsvc_core-domain-api_RepositoryService[`RepositoryService`]`
+//`\xref:rg:svc:rgsvc.adoc#RepositoryService[`RepositoryService`]`
 //
-//|xref:rg:svc:rgsvc.adoc#_rgsvc_core-domain-api_RepositoryService[`RepositoryService`]
+//|xref:rg:svc:rgsvc.adoc#RepositoryService[`RepositoryService`]
 //
 //
 //
 //|`adrgss`
-//|`\xref:rg:svc:rgsvc.adoc#_rgsvc_spi_xxx[`xxx`]`
+//|`\xref:rg:svc:rgsvc.adoc#xxx[`xxx`]`
 //
 //a hyperlink to the "man page" for an (SPI) domain service within the reference guide for domain services, where:
 //
@@ -282,9 +282,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:rg:svc:rgsvc.adoc#_rgsvc_presentation-layer-spi_ContentMappingService[`ContentMappingService`]`
+//`\xref:rg:svc:rgsvc.adoc#ContentMappingService[`ContentMappingService`]`
 //
-//|xref:rg:svc:rgsvc.adoc#_rgsvc_presentation-layer-spi_ContentMappingServicef[`ContentMappingService`]
+//|xref:rg:svc:rgsvc.adoc#ContentMappingServicef[`ContentMappingService`]
 //
 //
 //
@@ -299,9 +299,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:ug:fun:ugfun.adoc#_ugfun_core-concepts[Core concepts]`
+//`\xref:ug:fun:ugfun.adoc#core-concepts[Core concepts]`
 //
-//|xref:ug:fun:ugfun.adoc#_ugfun_core-concepts[Core concepts]
+//|xref:ug:fun:ugfun.adoc#core-concepts[Core concepts]
 //
 //
 //
@@ -316,9 +316,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:ug:vw:ugvw.adoc#_ugvw_customisation[Customisation]`
+//`\xref:ug:vw:ugvw.adoc#customisation[Customisation]`
 //
-//|xref:ug:vw:ugvw.adoc#_ugvw_customisation[Customisation]
+//|xref:ug:vw:ugvw.adoc#customisation[Customisation]
 //
 //
 //|`adugvro`
@@ -331,9 +331,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:ug:vro:ugvro.adoc#_ugvro_ro-spec[RestfulObjects specification]`
+//`\xref:ug:vro:ugvro.adoc#ro-spec[RestfulObjects specification]`
 //
-//|xref:ug:vro:ugvro.adoc#_ugvro_ro-spec[RestfulObjects specification]
+//|xref:ug:vro:ugvro.adoc#ro-spec[RestfulObjects specification]
 //
 //
 //
@@ -347,9 +347,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:ug:sec:ugsec.adoc#_ugsec_hints-and-tips_shiro-caching[Caching and other Shiro Features]`
+//`\xref:ug:sec:ugsec.adoc#shiro-caching[Caching and other Shiro Features]`
 //
-//|xref:ug:sec:ugsec.adoc#_ugsec_hints-and-tips_shiro-caching[Caching and other Shiro Features]
+//|xref:ug:sec:ugsec.adoc#shiro-caching[Caching and other Shiro Features]
 //
 //
 //|`adugtst`
@@ -362,9 +362,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:ug:tst:ugtst.adoc#_ugtst_bdd-spec-support[BDD Spec Support]`
+//`\xref:ug:tst:ugtst.adoc#bdd-spec-support[BDD Spec Support]`
 //
-//|xref:ug:tst:ugtst.adoc#_ugtst_bdd-spec-support[BDD Spec Support]
+//|xref:ug:tst:ugtst.adoc#bdd-spec-support[BDD Spec Support]
 //
 //
 //|`adugbtb`
@@ -377,9 +377,9 @@ include::_attributes.adoc[]
 //
 //for example:
 //
-//`\xref:ug:btb:ugbtb.adoc#_ugbtb_deployment_externalized-configuration[Externalized Configuration]`
+//`\xref:ug:btb:ugbtb.adoc#externalized-configuration[Externalized Configuration]`
 //
-//|xref:ug:btb:ugbtb.adoc#_ugbtb_deployment_externalized-configuration[Externalized Configuration]
+//|xref:ug:btb:ugbtb.adoc#externalized-configuration[Externalized Configuration]
 //
 //
 //

@@ -9,8 +9,8 @@ This value is used internally to generate a string representation of an service 
 This can appear in several contexts, including:
 
 * as the value of `Bookmark#getObjectType()` and in the `toString()` value of `Bookmark`
- (see xref:rg:svc:rgsvc.adoc#_rgsvc_integration-api_BookmarkService[`BookmarkService`])
-* in the serialization of `OidDto` in the xref:rg:cms:rgcms.adoc#_rgcms_schema-cmd[command] and xref:rg:cms:rgcms.adoc#_rgcms_schema-ixn[interaction] schemas
+ (see xref:rg:svc:rgsvc.adoc#BookmarkService[`BookmarkService`])
+* in the serialization of `OidDto` in the xref:rg:cms:rgcms.adoc#_rgcms_schema-cmd[command] and xref:rg:cms:rgcms.adoc#schema-ixn[interaction] schemas
 * in the URLs of the xref:ug:vro:ugvro.adoc#[RestfulObjects viewer]
 * in the URLs of the xref:ug:vw:ugvw.adoc#[Wicket viewer] (specifically, for bookmarked actions)
 
@@ -35,8 +35,8 @@ public class OrderMenu {
 
 The rules of precedence are:
 
-1. xref:rg:ant:rgant.adoc#_rgant-DomainService_objectType[`@DomainService#objectType()`]
-2. xref:rg:cms:rgcms.adoc#_rgcms_methods_reserved_getId[`getId()`]
+1. xref:rg:ant:rgant.adoc#objectType[`@DomainService#objectType()`]
+2. xref:rg:cms:rgcms.adoc#getId[`getId()`]
 3. The fully qualified class name.
 
 

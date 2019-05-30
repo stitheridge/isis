@@ -17,5 +17,5 @@ public class MyService extends AbstractService {
 }
 ----
 
-The framework provides a number of request-scoped services, include a xref:rg:svc:rgsvc.adoc#_rgsvc_core-domain-api_Scratchpad[`Scratchpad`] service query results caching through the xref:rg:svc:rgsvc.adoc#_rgsvc_persistence-layer-api_QueryResultsCache[`QueryResultsCache`], and support for co-ordinating bulk actions through the xref:rg:svc:rgsvc.adoc#_rgsvc_application-layer-api_ActionInvocationContext[`ActionInvocationContext`] service.  See the xref:rg:svc:rgsvc.adoc#[domain services] reference guide for further details.
+The framework provides a number of request-scoped services, include a xref:rg:svc:rgsvc.adoc#_rgsvc_core-domain-api_Scratchpad[`Scratchpad`] service query results caching through the xref:rg:svc:rgsvc.adoc#_rgsvc_persistence-layer-api_QueryResultsCache[`QueryResultsCache`], and support for co-ordinating bulk actions through the xref:rg:svc:rgsvc.adoc#ActionInvocationContext[`ActionInvocationContext`] service.  See the xref:rg:svc:rgsvc.adoc#[domain services] reference guide for further details.
 

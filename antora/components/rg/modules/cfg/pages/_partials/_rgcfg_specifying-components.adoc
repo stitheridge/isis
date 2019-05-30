@@ -11,7 +11,7 @@ Bootstrapping an Apache Isis application involves identifying both:
 * the major components (authentication, persistence mechanisms, viewers) of Apache Isis, and also
 * specifying the domain services and persistent entities that make up the application itself.
 
-This is done using an xref:rg:cms:rgcms.adoc#_rgcms_classes_super_AppManifest[`AppManifest`], specified either programmatically or through the configuration properties.
+This is done using an xref:rg:cms:rgcms.adoc#AppManifest[`AppManifest`], specified either programmatically or through the configuration properties.
 This allows the components, services and entities to be specified from a single class.
 
 To specify the `AppManifest` as a configuration property, use:
@@ -29,7 +29,7 @@ To specify the `AppManifest` as a configuration property, use:
 |`o.a.i.applib.AppManifest` +
 
 By convention this implementation resides in an `myapp-app` Maven module (as opposed to `myapp-dom` or `myapp-fixture`).
-See the xref:ug:fun:ugfun.adoc#_ugfun_getting-started_simpleapp-archetype[SimpleApp archetype] for details.
+See the xref:ug:fun:ugfun.adoc#simpleapp-archetype[SimpleApp archetype] for details.
 
 |===
 
@@ -63,6 +63,6 @@ It is also possible to specify a fully qualified class name to replace either of
 
 == Viewer Configuration
 
-Viewers are specified by way of the filters and servlets in the xref:ug:btb:ugbtb.adoc#_ugbtb_web-xml[`web.xml`] file; these are not bootstrapped by the framework, rather it is the other way around.
+Viewers are specified by way of the filters and servlets in the xref:ug:btb:ugbtb.adoc#web-xml[`web.xml`] file; these are not bootstrapped by the framework, rather it is the other way around.
 
 

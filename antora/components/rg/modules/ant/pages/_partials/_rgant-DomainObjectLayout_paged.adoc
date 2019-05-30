@@ -28,7 +28,7 @@ public class Order {
 ----
 
 
-It is also possible to specify a global default for the page size of standalone collections, using the xref:rg:cfg:rgcfg.adoc#_rgcfg_configuring-core[configuration property] `isis.viewer.paged.standalone`.
+It is also possible to specify a global default for the page size of standalone collections, using the xref:rg:cfg:rgcfg.adoc#configuring-core[configuration property] `isis.viewer.paged.standalone`.
 
 
 
@@ -36,5 +36,5 @@ It is also possible to specify a global default for the page size of standalone 
 
 This attribute can also be applied to:
 
-* xref:rg:ant:rgant.adoc#_rgant-ViewModelLayout_paged[view models], and
-* xref:rg:ant:rgant.adoc#_rgant-CollectionLayout_paged[collections]
+* xref:rg:ant:rgant.adoc#paged[view models], and
+* xref:rg:ant:rgant.adoc#paged[collections]

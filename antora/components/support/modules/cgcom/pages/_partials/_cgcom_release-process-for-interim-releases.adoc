@@ -14,7 +14,7 @@ The tagged release resides __not__ in the xref:toc:ROOT:downloads.adoc#\__downlo
 
 [NOTE]
 ====
-The procedure developed here was put together for the team working on the xref:toc:ROOT:powered-by/powered-by.adoc#_powered-by_estatio[Estatio app], which maintains its own link:https://github.com/incodehq/isis[fork on github] and uses link:https://www.cloudbees.com/[CloudBees] as a Jenkins build server/private Maven repo.
+The procedure developed here was put together for the team working on the xref:toc:ROOT:powered-by/powered-by.adoc#estatio[Estatio app], which maintains its own link:https://github.com/incodehq/isis[fork on github] and uses link:https://www.cloudbees.com/[CloudBees] as a Jenkins build server/private Maven repo.
 ====
 
 
