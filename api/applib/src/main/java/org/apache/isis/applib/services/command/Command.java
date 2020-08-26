@@ -31,6 +31,7 @@ import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.bookmark.BookmarkService;
 import org.apache.isis.applib.services.iactn.Interaction;
 import org.apache.isis.applib.services.wrapper.WrapperFactory;
+import org.apache.isis.applib.services.wrapper.control.AsyncControl;
 import org.apache.isis.schema.cmd.v2.CommandDto;
 
 /**
@@ -250,7 +251,7 @@ public interface Command extends HasUniqueId {
     // end::refguide[]
 
     /**
-     * For actions created through the {@link BackgroundService} and {@link BackgroundCommandService},
+     * For actions created through the {@link WrapperFactory} and {@link BackgroundCommandService},
      * captures the parent action.
      */
     // tag::refguide[]
@@ -303,7 +304,7 @@ public interface Command extends HasUniqueId {
      * {@link org.apache.isis.applib.annotation.Action#commandPersistence() persistence} attribute to
      * {@link org.apache.isis.applib.annotation.CommandPersistence#NOT_PERSISTED}, or it can be set to
      * {@link org.apache.isis.applib.annotation.CommandPersistence#IF_HINTED}, meaning it is dependent
-     * on whether {@link #setPersistHint(boolean) a hint has been set} by some other means.
+     * on whether {@link #isPersistHint() a hint has been set} by some other means.
      *
      * <p>
      * For example, a {@link BackgroundCommandService} implementation that creates persisted background commands ought
@@ -382,6 +383,11 @@ public interface Command extends HasUniqueId {
          * <b>NOT API</b>: intended to be called only by the framework.
          */
         void setExecutor(final Executor executor);
+
+        /**
+         * <b>NOT API</b>: intended to be called only by the framework.
+         */
+        void setExecuteIn(CommandExecuteIn executeIn);
 
         /**
          * <b>NOT API</b>: intended to be called only by the framework.

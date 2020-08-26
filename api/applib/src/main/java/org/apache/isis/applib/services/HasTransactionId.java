@@ -18,22 +18,22 @@
  */
 package org.apache.isis.applib.services;
 
+import java.util.UUID;
+
+
 /**
  * Mix-in interface for objects (usually created by service implementations) that are be persistable,
- * and so can be associated with a username, usually of the user that has performed some operation.
- *
- * <p>
- * Other services can then use this username as a means to contributed actions/collections to render such additional
- * information relating to the activities of the user.
+ * and so can be associated together using a transaction Id.
  */
 // tag::refguide[]
-public interface HasUsername {
+public interface HasTransactionId {
 
+    // end::refguide[]
     /**
-     * The user that created this object.
-     * @return
+     * The unique identifier (a GUID) of the request/interaction/transaction.
      */
-    String getUsername();
+    // tag::refguide[]
+    UUID getTransactionId();
 
 }
 // end::refguide[]

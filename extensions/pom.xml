@@ -169,6 +169,7 @@
 	</dependencies>
 
 	<modules>
+		<module>core/command-log</module>
 		<module>core/flyway</module>
 		<module>core/model-annotation</module>
 		<module>security/secman</module>

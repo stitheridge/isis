@@ -172,6 +172,10 @@ public class CommandDefault implements Command {
         public void setExecutor(Executor executor) {
             CommandDefault.this.executor = executor;
         }
+        @Override
+        public void setExecuteIn(CommandExecuteIn executeIn) {
+            CommandDefault.this.executeIn = executeIn;
+        }
     };
 
     @Override
