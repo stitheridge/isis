@@ -4,11 +4,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import org.apache.isis.applib.annotation.DomainService;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandExecutorService;
 import org.apache.isis.core.runtimeservices.background.BackgroundCommandExecution;
 
-@Service
+@DomainService
 public class BackgroundCommandExecutionFromBackgroundCommandServiceJdo
         extends BackgroundCommandExecution {
 

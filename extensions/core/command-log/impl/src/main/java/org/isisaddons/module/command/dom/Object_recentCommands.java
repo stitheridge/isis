@@ -7,7 +7,7 @@ import org.apache.isis.applib.annotation.ActionLayout;
 import org.apache.isis.applib.annotation.MemberOrder;
 import org.apache.isis.applib.annotation.Mixin;
 import org.apache.isis.applib.annotation.SemanticsOf;
-import org.apache.isis.applib.services.HasTransactionId;
+import org.apache.isis.applib.services.HasUniqueId;
 import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.bookmark.BookmarkService;
 
@@ -15,7 +15,7 @@ import org.isisaddons.module.command.IsisModuleExtCommandLogImpl;
 
 /**
  * This mixin contributes a <tt>recentCommands</tt> action to any domain object
- * (unless also a {@link HasTransactionId} - cmmands don't themselves have commands).
+ * (unless also {@link HasUniqueId} - cmmands don't themselves have commands).
  */
 @Mixin(method = "act")
 @Action(
@@ -42,11 +42,11 @@ public class Object_recentCommands {
         return commandServiceRepository.findRecentByTarget(bookmark);
     }
     /**
-     * Hide if the contributee is itself {@link HasTransactionId}
+     * Hide if the contributee is itself {@link HasUniqueId}
      * (commands don't have commands).
      */
     public boolean hideAct() {
-        return (domainObject instanceof HasTransactionId);
+        return (domainObject instanceof HasUniqueId);
     }
 
     @javax.inject.Inject

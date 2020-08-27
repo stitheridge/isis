@@ -3034,7 +3034,22 @@ public class IsisConfiguration {
              */
             private List<String> exposedHeaders = listOf("Authorization");
         }
-        
+
+        private final CommandReplay commandReplay = new CommandReplay();
+        @Data
+        public static class CommandReplay {
+
+            private final Master master = new Master();
+            @Data
+            public static class Master {
+                private Optional<String> baseUrl;               
+                private Optional<String> password;               
+                private Optional<String> user;               
+                private Optional<String> baseUrlEndUser;               
+                private Integer batchSize = 10;               
+            }
+        }
+
     }
 
     private static List<String> listOf(final String ...values) {

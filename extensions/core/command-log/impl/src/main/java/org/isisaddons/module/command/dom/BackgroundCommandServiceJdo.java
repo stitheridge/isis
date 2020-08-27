@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import org.apache.isis.applib.annotation.CommandExecuteIn;
+import org.apache.isis.applib.annotation.DomainService;
 import org.apache.isis.applib.services.background.BackgroundCommandService;
 import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.clock.ClockService;
@@ -23,7 +24,7 @@ import org.apache.isis.schema.common.v2.OidDto;
  * for example through a Quartz scheduler (using
  * {@link BackgroundCommandExecutionFromBackgroundCommandServiceJdo}).
  */
-@Service()
+@DomainService()
 public class BackgroundCommandServiceJdo implements BackgroundCommandService {
 
     @SuppressWarnings("unused")

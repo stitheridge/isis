@@ -21,9 +21,7 @@ import org.apache.isis.applib.annotation.Programmatic;
  * thus has been annotated with {@link org.apache.isis.applib.annotation.DomainService}.  This means that there is no
  * need to explicitly register it as a service (eg in <tt>isis.properties</tt>).
  */
-@DomainService(
-        nature = NatureOfService.DOMAIN
-)
+@DomainService()
 public class BackgroundCommandServiceJdoRepository {
 
     @SuppressWarnings("unused")

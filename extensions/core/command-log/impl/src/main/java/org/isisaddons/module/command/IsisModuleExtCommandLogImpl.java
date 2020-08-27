@@ -8,12 +8,22 @@ import org.apache.isis.testing.fixtures.applib.modules.ModuleWithFixtures;
 import org.apache.isis.testing.fixtures.applib.teardown.TeardownFixtureAbstract;
 
 import org.isisaddons.module.command.dom.BackgroundCommandExecutionFromBackgroundCommandServiceJdo;
+import org.isisaddons.module.command.dom.BackgroundCommandServiceJdo;
+import org.isisaddons.module.command.dom.BackgroundCommandServiceJdoRepository;
 import org.isisaddons.module.command.dom.CommandJdo;
+import org.isisaddons.module.command.dom.CommandServiceJdo;
+import org.isisaddons.module.command.dom.CommandServiceJdoRepository;
+import org.isisaddons.module.command.dom.CommandServiceMenu;
 
 @Configuration
 @Import({
-        // @Service's
+        // @DomainService's
         BackgroundCommandExecutionFromBackgroundCommandServiceJdo.class
+        , BackgroundCommandServiceJdo.class
+        , BackgroundCommandServiceJdoRepository.class
+        , CommandServiceJdo.class
+        , CommandServiceJdoRepository.class
+        , CommandServiceMenu.class
 })
 public class IsisModuleExtCommandLogImpl implements ModuleWithFixtures {
 

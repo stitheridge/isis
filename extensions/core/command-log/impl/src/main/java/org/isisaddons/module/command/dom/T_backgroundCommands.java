@@ -27,7 +27,7 @@ public abstract class T_backgroundCommands<T> {
         this.domainObject = domainObject;
     }
 
-    public List<CommandJdo> $$() {
+    public List<CommandJdo> coll() {
         return findRecentBackground();
     }
 

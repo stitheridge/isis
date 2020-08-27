@@ -45,7 +45,7 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public abstract class DomainChangeAbstract
-        implements HasTransactionId, HasUsername {
+        implements HasUniqueId, HasUsername {
 
     public static enum ChangeType {
         COMMAND,
