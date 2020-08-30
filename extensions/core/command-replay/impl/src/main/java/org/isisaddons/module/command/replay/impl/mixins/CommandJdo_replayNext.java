@@ -59,7 +59,7 @@ public class CommandJdo_replayNext {
 
 
     private CommandJdo fetchNext() throws StatusException {
-        final CommandDto commandDto = commandFetcher.fetchCommand(this.commandJdo, getSlaveConfig());
+        final CommandDto commandDto = commandFetcher.fetchCommand(this.commandJdo, slaveConfiguration);
         return commandDto == null
                 ? null
                 : commandServiceJdoRepository.saveForReplay(commandDto);
@@ -99,14 +99,14 @@ public class CommandJdo_replayNext {
     }
 
     public boolean hideAct() {
-        return !getSlaveConfig().isConfigured();
+        return !slaveConfiguration.isConfigured();
     }
 
 
     @Inject CommandServiceJdoRepository commandServiceJdoRepository;
     @Inject CommandFetcher commandFetcher;
     @Inject CommandExecutorService commandExecutorService;
-    @Inject IsisConfiguration isisConfiguration;
+    @Inject SlaveConfiguration slaveConfiguration;
     @Inject MessageService messageService;
     @Inject CommandReplayAnalysisService analysisService;
 }

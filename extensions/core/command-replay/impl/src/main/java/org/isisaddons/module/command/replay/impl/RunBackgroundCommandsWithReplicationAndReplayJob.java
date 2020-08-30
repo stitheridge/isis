@@ -1,7 +1,5 @@
 package org.isisaddons.module.command.replay.impl;
 
-import java.util.Map;
-
 import javax.inject.Inject;
 
 import com.google.common.base.Splitter;
@@ -42,8 +40,8 @@ public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
 
         // figure out if this instance is configured to run as master or slave
         authSession = new SimpleSessionFromQuartz(quartzContext);
-        final Map<String, String> isisConfigAsMap = lookupIsisConfigurationAsMap(authSession);
-        slaveConfig = new SlaveConfiguration(isisConfigAsMap);
+        final IsisConfiguration isisConfiguration = lookupIsisConfiguration(authSession);
+        slaveConfig = new SlaveConfiguration(isisConfiguration);
 
         if(!slaveConfig.isConfigured()) {
             runBackgroundCommandsOnMaster();
@@ -54,7 +52,8 @@ public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
 
     private void runBackgroundCommandsOnMaster() {
         // same as the original RunBackgroundCommandsJob
-        new BackgroundCommandExecutionFromBackgroundCommandServiceJdo().execute(authSession, null);
+        val executionService = new BackgroundCommandExecutionFromBackgroundCommandServiceJdo();
+        executionService.execute(authSession, null);
     }
 
     private void runBackgroundCommandsOnSlave(final JobExecutionContext quartzContext) {
@@ -96,13 +95,13 @@ public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
 
     }
 
-    private Map<String,String> lookupIsisConfigurationAsMap(final AuthenticationSession authSession) {
+    private IsisConfiguration lookupIsisConfiguration(final AuthenticationSession authSession) {
 
-        final Holder<Map<String,String>> holder = new Holder<>();
+        final Holder<IsisConfiguration> holder = new Holder<>();
         new AbstractIsisInteractionTemplate() {
             @Override
             protected void doExecuteWithTransaction(final Object unused) {
-                holder.setObject(isisConfiguration.getAsMap());
+                holder.setObject(isisConfiguration);
             }
 
             @Inject
