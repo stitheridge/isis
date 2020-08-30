@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Import;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdo;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceMenu;
+import org.apache.isis.extensions.commandlog.impl.ui.CommandServiceMenu;
 import org.apache.isis.testing.fixtures.applib.fixturescripts.FixtureScript;
 import org.apache.isis.testing.fixtures.applib.modules.ModuleWithFixtures;
 import org.apache.isis.testing.fixtures.applib.teardown.TeardownFixtureAbstract;

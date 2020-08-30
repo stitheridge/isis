@@ -12,6 +12,8 @@ import org.apache.isis.applib.annotation.Programmatic;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
 
+import lombok.extern.log4j.Log4j2;
+
 /**
  * Provides supporting functionality for querying
  * {@link CommandJdo command} entities that have been persisted
@@ -23,10 +25,8 @@ import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepositor
  * need to explicitly register it as a service (eg in <tt>isis.properties</tt>).
  */
 @DomainService()
+@Log4j2
 public class BackgroundCommandServiceJdoRepository {
-
-    @SuppressWarnings("unused")
-    private static final Logger LOG = LoggerFactory.getLogger(BackgroundCommandServiceJdoRepository.class);
 
     @Programmatic
     public List<CommandJdo> findByParent(CommandJdo parent) {

@@ -9,7 +9,10 @@ import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandExecutorService;
 import org.apache.isis.core.runtimeservices.background.BackgroundCommandExecution;
 
+import lombok.extern.log4j.Log4j2;
+
 @DomainService
+@Log4j2
 public class BackgroundCommandExecutionFromBackgroundCommandServiceJdo
         extends BackgroundCommandExecution {
 
@@ -22,6 +25,5 @@ public class BackgroundCommandExecutionFromBackgroundCommandServiceJdo
         return backgroundCommandRepository.findBackgroundCommandsNotYetStarted();
     }
 
-    @Inject
-    BackgroundCommandServiceJdoRepository backgroundCommandRepository;
+    @Inject BackgroundCommandServiceJdoRepository backgroundCommandRepository;
 }

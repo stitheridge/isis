@@ -1,20 +1,29 @@
 package org.apache.isis.extensions.commandlog.impl.jdo;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Service;
 
 import org.apache.isis.applib.annotation.CommandExecuteIn;
 import org.apache.isis.applib.annotation.CommandPersistence;
 import org.apache.isis.applib.annotation.DomainService;
+import org.apache.isis.applib.annotation.OrderPrecedence;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.Command.Executor;
 import org.apache.isis.applib.services.command.spi.CommandService;
 import org.apache.isis.applib.services.factory.FactoryService;
 import org.apache.isis.applib.services.repository.RepositoryService;
 
-@DomainService()
+@Service
+@Named("isisExtensionsCommandLog.CommandServiceJdo")
+@Order(OrderPrecedence.MIDPOINT)
+@Qualifier("Jdo")
 public class CommandServiceJdo implements CommandService {
 
     @SuppressWarnings("unused")

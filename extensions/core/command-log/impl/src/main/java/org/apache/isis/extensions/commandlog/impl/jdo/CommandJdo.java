@@ -221,7 +221,7 @@ import lombok.extern.log4j.Log4j2;
         @javax.jdo.annotations.Index(name = "CommandJdo_startedAt_e_c_IDX", members = {"startedAt", "executeIn", "completedAt"}),
 })
 @DomainObject(
-        objectType = "isisextcorecommandlog.Command",
+        objectType = "isisextcommandlog.Command",
         editing = Editing.DISABLED
 )
 @DomainObjectLayout(named = "Command")

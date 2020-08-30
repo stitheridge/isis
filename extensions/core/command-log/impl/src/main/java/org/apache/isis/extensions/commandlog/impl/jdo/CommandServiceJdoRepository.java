@@ -8,9 +8,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 
+import javax.inject.Named;
+
 import org.joda.time.LocalDate;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Service;
 
 import org.apache.isis.applib.annotation.DomainService;
+import org.apache.isis.applib.annotation.OrderPrecedence;
 import org.apache.isis.applib.annotation.Programmatic;
 import org.apache.isis.applib.jaxb.JavaSqlXMLGregorianCalendarMarshalling;
 import org.apache.isis.applib.query.Query;
@@ -36,7 +42,10 @@ import lombok.var;
  * Provides supporting functionality for querying and persisting
  * {@link CommandJdo command} entities.
  */
-@DomainService()
+@Service
+@Named("isisExtensionsCommandLog.CommandServiceJdoRepository")
+@Order(OrderPrecedence.MIDPOINT)
+@Qualifier("Jdo")
 public class CommandServiceJdoRepository {
 
     public List<CommandJdo> findByFromAndTo(

@@ -20,16 +20,16 @@ import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepositor
 import org.apache.isis.schema.cmd.v2.CommandDto;
 import org.apache.isis.schema.common.v2.OidDto;
 
+import lombok.extern.log4j.Log4j2;
+
 /**
  * Persists a memento-ized action such that it can be executed asynchronously,
  * for example through a Quartz scheduler (using
  * {@link BackgroundCommandExecutionFromBackgroundCommandServiceJdo}).
  */
-@DomainService()
+@DomainService
+@Log4j2
 public class BackgroundCommandServiceJdo implements BackgroundCommandService {
-
-    @SuppressWarnings("unused")
-    private static final Logger LOG = LoggerFactory.getLogger(BackgroundCommandServiceJdo.class);
 
     @Override
     public void schedule(
