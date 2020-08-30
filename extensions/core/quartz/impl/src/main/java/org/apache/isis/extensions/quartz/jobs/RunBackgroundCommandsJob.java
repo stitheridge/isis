@@ -1,4 +1,4 @@
-package org.isisaddons.module.quartz.dom.jobs;
+package org.apache.isis.extensions.quartz.jobs;
 
 
 import com.google.common.base.Splitter;

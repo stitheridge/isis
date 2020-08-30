@@ -1,4 +1,4 @@
-package org.apache.isis.extensions.commandreplay.impl.impl;
+package org.apache.isis.extensions.commandreplay.impl.analysis;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package org.apache.isis.extensions.commandreplay.impl.impl;
+package org.apache.isis.extensions.commandreplay.impl.fetch;
 
 import java.net.URI;
 
