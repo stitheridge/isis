@@ -503,8 +503,14 @@ public class IsisConfiguration {
                      *         If set to any other subtype, then an event <i>is</i> sent.
                      *     </li>
                      * </ul>
+                     *
+                     * <p>
+                     *     The default is <tt>false</tt>, because otherwise the mere presence of <tt>@DomainObjectLayout</tt>
+                     *     (perhaps for some attribute other than this one) will cause any imperative <code>cssClass()</code>
+                     *     method to be ignored.
+                     * </p>
                      */
-                    private boolean postForDefault = true;
+                    private boolean postForDefault = false;
                 }
 
                 private final IconUiEvent iconUiEvent = new IconUiEvent();
@@ -538,8 +544,14 @@ public class IsisConfiguration {
                      *         If set to any other subtype, then an event <i>is</i> sent.
                      *     </li>
                      * </ul>
+                     *
+                     * <p>
+                     *     The default is <tt>false</tt>, because otherwise the mere presence of <tt>@DomainObjectLayout</tt>
+                     *     (perhaps for some attribute other than this one) will cause any imperative <code>iconName()</code>
+                     *     method to be ignored.
+                     * </p>
                      */
-                    private boolean postForDefault = true;
+                    private boolean postForDefault = false;
                 }
 
                 private final LayoutUiEvent layoutUiEvent = new LayoutUiEvent();
@@ -578,8 +590,14 @@ public class IsisConfiguration {
                      *         If set to any other subtype, then an event <i>is</i> sent.
                      *     </li>
                      * </ul>
+                     *
+                     * <p>
+                     *     The default is <tt>false</tt>, because otherwise the mere presence of <tt>@DomainObjectLayout</tt>
+                     *     (perhaps for some attribute other than this one) will cause any imperative <code>layout()</code>
+                     *     method to be ignored.
+                     * </p>
                      */
-                    private boolean postForDefault = true;
+                    private boolean postForDefault = false;
                 }
 
                 private final TitleUiEvent titleUiEvent = new TitleUiEvent();
@@ -613,8 +631,14 @@ public class IsisConfiguration {
                      *         If set to any other subtype, then an event <i>is</i> sent.
                      *     </li>
                      * </ul>
+                     *
+                     * <p>
+                     *     The default is <tt>false</tt>, because otherwise the mere presence of <tt>@DomainObjectLayout</tt>
+                     *     (perhaps for some attribute other than this one) will cause any imperative <code>title()</code>
+                     *     method to be ignored.
+                     * </p>
                      */
-                    private boolean postForDefault = true;
+                    private boolean postForDefault = false;
                 }
             }
 
