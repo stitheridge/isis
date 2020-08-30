@@ -70,6 +70,12 @@
 
 			<dependency>
 				<groupId>org.apache.isis.extensions</groupId>
+				<artifactId>isis-extensions-quartz-impl</artifactId>
+				<version>2.0.0-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.isis.extensions</groupId>
 				<artifactId>isis-extensions-command-replay-impl</artifactId>
 				<version>2.0.0-SNAPSHOT</version>
 			</dependency>
@@ -185,6 +191,8 @@
 		<module>core/command-replay</module>
 		<module>core/flyway</module>
 		<module>core/model-annotation</module>
+		<module>core/quartz</module>
+
 		<module>security/secman</module>
 		<module>security/shiro-realm-ldap</module>
 

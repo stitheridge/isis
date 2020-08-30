@@ -1,7 +1,7 @@
 package org.isisaddons.module.command.replay.impl;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CommandReplayAnalysisService_trimmed_Test {
 

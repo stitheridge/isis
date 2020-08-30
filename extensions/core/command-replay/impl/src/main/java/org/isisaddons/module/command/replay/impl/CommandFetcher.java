@@ -4,12 +4,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
-
+import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.apache.isis.applib.annotation.DomainService;
 import org.apache.isis.applib.annotation.Programmatic;
@@ -27,8 +24,6 @@ import lombok.extern.log4j.Log4j2;
 @DomainService()
 @Log4j2
 public class CommandFetcher {
-
-    private final static Logger LOG = LoggerFactory.getLogger(CommandFetcher.class);
 
     static final String URL_SUFFIX =
             "services/isiscommand.CommandReplayOnMasterService/actions/findCommandsOnMasterSince/invoke";
@@ -49,7 +44,7 @@ public class CommandFetcher {
             final SlaveConfiguration slaveConfig)
             throws StatusException {
 
-        LOG.debug("finding command on master ...");
+        log.debug("finding command on master ...");
 
         final CommandsDto commandsDto = fetchCommands(previousHwm, slaveConfig);
 
@@ -72,7 +67,7 @@ public class CommandFetcher {
             final SlaveConfiguration slaveConfig) throws StatusException {
         final UUID transactionId = previousHwm != null ? previousHwm.getUniqueId() : null;
 
-        LOG.debug("finding commands on master ...");
+        log.debug("finding commands on master ...");
 
         final URI uri = buildUri(transactionId, slaveConfig);
 
@@ -100,7 +95,7 @@ public class CommandFetcher {
                         slaveConfig.masterBaseUrl, URL_SUFFIX, slaveConfig.masterBatchSize)
         );
         final URI uri = uriBuilder.build();
-        LOG.info("uri = {}", uri);
+        log.info("uri = {}", uri);
         return uri;
     }
 
@@ -115,14 +110,14 @@ public class CommandFetcher {
             if(status != Response.Status.OK.getStatusCode()) {
                 final String entity = readEntityFrom(response);
                 if(entity != null) {
-                    LOG.warn("status: {}, entity: \n{}", status, entity);
+                    log.warn("status: {}, entity: \n{}", status, entity);
                 } else {
-                    LOG.warn("status: {}, unable to read entity from response", status);
+                    log.warn("status: {}, unable to read entity from response", status);
                 }
                 throw new StatusException(SlaveStatus.REST_CALL_FAILING);
             }
         } catch(Exception ex) {
-            LOG.warn("rest call failed", ex);
+            log.warn("rest call failed", ex);
             throw new StatusException(SlaveStatus.REST_CALL_FAILING, ex);
         }
         return response;
@@ -135,9 +130,9 @@ public class CommandFetcher {
             entity = readEntityFrom(response);
             final JaxbService jaxbService = new JaxbService.Simple();
             commandsDto = jaxbService.fromXml(CommandsDto.class, entity);
-            LOG.debug("commands:\n{}", entity);
+            log.debug("commands:\n{}", entity);
         } catch(Exception ex) {
-            LOG.warn("unable to unmarshal entity from {} to CommandsDto.class; was:\n{}", uri, entity);
+            log.warn("unable to unmarshal entity from {} to CommandsDto.class; was:\n{}", uri, entity);
             throw new StatusException(SlaveStatus.FAILED_TO_UNMARSHALL_RESPONSE, ex);
         }
         return commandsDto;
@@ -150,5 +145,7 @@ public class CommandFetcher {
             return null;
         }
     }
+
+    @Inject SlaveConfiguration slaveConfiguration;
 
 }

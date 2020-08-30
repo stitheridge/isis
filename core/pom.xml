@@ -1367,6 +1367,12 @@
 			</dependency>
 
 			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-quartz</artifactId>
+				<version>${spring-boot.version}</version>
+			</dependency>
+
+			<dependency>
 				<groupId>org.jmock</groupId>
 				<artifactId>jmock</artifactId>
 				<version>${jmock.version}</version>

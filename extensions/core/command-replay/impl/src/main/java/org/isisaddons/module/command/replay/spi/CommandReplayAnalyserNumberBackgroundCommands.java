@@ -5,18 +5,15 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.isis.applib.annotation.DomainService;
-import org.apache.isis.applib.annotation.NatureOfService;
-import org.apache.isis.applib.conmap.spi.CommandDtoProcessorService;
 import org.apache.isis.applib.services.command.Command;
-import org.apache.isis.schema.cmd.v1.CommandDto;
-import org.apache.isis.schema.utils.CommandDtoUtils;
+import org.apache.isis.applib.services.conmap.command.spi.CommandDtoProcessorService;
+import org.apache.isis.applib.util.schema.CommandDtoUtils;
+import org.apache.isis.schema.cmd.v2.CommandDto;
 
 import org.isisaddons.module.command.dom.CommandJdo;
 import org.isisaddons.module.command.dom.CommandServiceJdoRepository;
 
-@DomainService(
-        nature = NatureOfService.DOMAIN
-)
+@DomainService()
 public class CommandReplayAnalyserNumberBackgroundCommands
         extends CommandReplayAnalyserAbstract
         implements CommandDtoProcessorService {
@@ -74,7 +71,6 @@ public class CommandReplayAnalyserNumberBackgroundCommands
                     masterNumBackgroundCommandsStr, USERDATA_KEY_NUMBER_BACKGROUND_COMMANDS);
         }
 
-
         final CommandJdo commandJdo = (CommandJdo) command;
         final List<CommandJdo> backgroundCommands =
                 commandServiceJdoRepository.findBackgroundCommandsByParent(commandJdo);
@@ -88,7 +84,6 @@ public class CommandReplayAnalyserNumberBackgroundCommands
                 masterNumBackgroundCommands, slaveNumBackgroundCommands);
     }
 
-    @Inject
-    CommandServiceJdoRepository commandServiceJdoRepository;
+    @Inject CommandServiceJdoRepository commandServiceJdoRepository;
 
 }

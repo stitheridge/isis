@@ -4,21 +4,23 @@ import java.net.URI;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.junit.Ignore;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import org.apache.isis.applib.services.jaxb.JaxbService;
-import org.apache.isis.schema.cmd.v1.CommandsDto;
+import org.apache.isis.extensions.jaxrsclient.applib.client.JaxRsClient;
+import org.apache.isis.extensions.jaxrsclient.applib.client.JaxRsResponse;
+import org.apache.isis.extensions.jaxrsclient.impl.client.JaxRsClientDefault;
+import org.apache.isis.schema.cmd.v2.CommandsDto;
 
-import org.incode.module.jaxrsclient.dom.JaxRsClient;
-import org.incode.module.jaxrsclient.dom.JaxRsResponse;
+import lombok.val;
+
 
 public class RunBackgroundCommandsWithReplicationAndReplayJob_Test {
 
-    @Ignore
     @Test
     public void testing_the_unmarshalling() throws Exception {
-        JaxRsClient.Default jaxRsClient = new JaxRsClient.Default();
+        val jaxRsClient = new JaxRsClientDefault();
         final UriBuilder uriBuilder = UriBuilder.fromUri(
                         String.format(
                         "%s%s?batchSize=%d",

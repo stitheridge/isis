@@ -9,6 +9,7 @@ import org.isisaddons.module.command.replay.impl.CommandExecutorServiceWithTime;
 import org.isisaddons.module.command.replay.impl.CommandReplayAnalysisService;
 import org.isisaddons.module.command.replay.impl.CommandReplayOnMasterService;
 import org.isisaddons.module.command.replay.impl.CommandReplayOnSlaveService;
+import org.isisaddons.module.command.replay.impl.SlaveConfiguration;
 import org.isisaddons.module.command.replay.impl.TickingClockService;
 
 @Configuration
@@ -22,6 +23,9 @@ import org.isisaddons.module.command.replay.impl.TickingClockService;
         CommandReplayOnMasterService.class,
         CommandReplayOnSlaveService.class,
         TickingClockService.class,
+
+        // @Service's
+        SlaveConfiguration.class,
 
 })
 public class IsisModuleExtCommandReplayImpl {

@@ -6,8 +6,8 @@ import javax.annotation.PostConstruct;
 
 import org.apache.isis.applib.annotation.Programmatic;
 import org.apache.isis.applib.services.command.Command;
-import org.apache.isis.core.metamodel.facets.object.domainobject.Util;
-import org.apache.isis.schema.cmd.v1.CommandDto;
+import org.apache.isis.core.config.metamodel.facets.Util;
+import org.apache.isis.schema.cmd.v2.CommandDto;
 
 public abstract class CommandReplayAnalyserAbstract implements CommandReplayAnalyser {
 

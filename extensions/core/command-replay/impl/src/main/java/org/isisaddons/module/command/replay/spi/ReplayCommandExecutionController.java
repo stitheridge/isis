@@ -13,7 +13,6 @@ public interface ReplayCommandExecutionController {
      * The current state, or <tt>null</tt> if the service implementing this SPI has not yet been initialized.
      * @return
      */
-    @Programmatic
     State getState();
 
 }

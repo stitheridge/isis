@@ -2,6 +2,7 @@ package org.isisaddons.module.command.replay.impl;
 
 import java.sql.Timestamp;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 import javax.annotation.PostConstruct;
@@ -18,6 +19,7 @@ import org.apache.isis.applib.clock.Clock;
 import org.apache.isis.core.config.IsisConfiguration;
 import org.apache.isis.testing.fixtures.applib.clock.TickingFixtureClock;
 
+import lombok.val;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -40,17 +42,20 @@ public class TickingClockService {
 
     @PostConstruct
     public void init() {
-        isisConfiguration.getExtensions().getCommandReplay().
-        if( notDefined(ConfigurationKeys.MASTER_BASE_URL_ISIS_KEY) ||
-            notDefined(ConfigurationKeys.MASTER_USER_ISIS_KEY) ||
-            notDefined(ConfigurationKeys.MASTER_PASSWORD_ISIS_KEY)) {
-            LOG.info(
+        Optional<String> baseUrl = isisConfiguration.getExtensions().getCommandReplay().getMaster().getBaseUrl();
+        Optional<String> user = isisConfiguration.getExtensions().getCommandReplay().getMaster().getUser();
+        Optional<String> password = isisConfiguration.getExtensions().getCommandReplay().getMaster().getPassword();
+
+        if( !baseUrl.isPresent()||
+            !user.isPresent() ||
+            !password.isPresent()) {
+            log.info(
                     "init() - skipping, one or more {}.* configuration constants missing",
                     ConfigurationKeys.ISIS_KEY_PREFIX);
             return;
         }
 
-        LOG.info("init() - replacing existing clock with TickingFixtureClock");
+        log.info("init() - replacing existing clock with TickingFixtureClock");
         TickingFixtureClock.replaceExisting();
     }
 
@@ -73,15 +78,15 @@ public class TickingClockService {
     public void at(Timestamp timestamp, Runnable runnable) {
         ensureInitialized();
 
-        final TickingFixtureClock instance = (TickingFixtureClock) TickingFixtureClock.getInstance();
-        final long previous = TickingFixtureClock.getTimeAsMillis();
-        final long wallTime0 = System.currentTimeMillis();
+        val tickingFixtureClock = (TickingFixtureClock) TickingFixtureClock.getInstance();
+        val previous = TickingFixtureClock.getEpochMillis();
+        val wallTime0 = System.currentTimeMillis();
         try {
-            instance.setTime(timestamp);
+            tickingFixtureClock.setTime(timestamp);
             runnable.run();
         } finally {
             final long wallTime1 = System.currentTimeMillis();
-            instance.setTime(previous + wallTime1 - wallTime0);
+            tickingFixtureClock.setTime(previous + wallTime1 - wallTime0);
         }
     }
 
@@ -98,17 +103,19 @@ public class TickingClockService {
     public <T> T at(Timestamp timestamp, Callable<T> callable) {
         ensureInitialized();
 
-        final TickingFixtureClock instance = (TickingFixtureClock) TickingFixtureClock.getInstance();
-        final long previous = TickingFixtureClock.getTimeAsMillis();
-        final long wallTime0 = System.currentTimeMillis();
+        val tickingFixtureClock = (TickingFixtureClock) TickingFixtureClock.getInstance();
+
+        val previous = TickingFixtureClock.getEpochMillis();
+        val wallTime0 = System.currentTimeMillis();
+
         try {
-            instance.setTime(timestamp);
+            tickingFixtureClock.setTime(timestamp);
             return callable.call();
         } catch (Exception e) {
             throw new ApplicationException(e);
         } finally {
             final long wallTime1 = System.currentTimeMillis();
-            instance.setTime(previous + wallTime1 - wallTime0);
+            tickingFixtureClock.setTime(previous + wallTime1 - wallTime0);
         }
     }
 

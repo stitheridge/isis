@@ -3,17 +3,14 @@ package org.isisaddons.module.command.replay.spi;
 import com.google.common.base.Objects;
 
 import org.apache.isis.applib.annotation.DomainService;
-import org.apache.isis.applib.annotation.NatureOfService;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandWithDto;
-import org.apache.isis.schema.cmd.v1.CommandDto;
-import org.apache.isis.schema.utils.CommandDtoUtils;
+import org.apache.isis.applib.util.schema.CommandDtoUtils;
+import org.apache.isis.schema.cmd.v2.CommandDto;
 
 import org.isisaddons.module.command.dom.CommandJdo;
 
-@DomainService(
-        nature = NatureOfService.DOMAIN
-)
+@DomainService()
 public class CommandReplayAnalyserResultStr extends CommandReplayAnalyserAbstract {
 
     public static final String ANALYSIS_KEY = "isis.services."

@@ -5,46 +5,36 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.isis.applib.annotation.Action;
-import org.apache.isis.applib.annotation.ActionLayout;
 import org.apache.isis.applib.annotation.CommandPersistence;
-import org.apache.isis.applib.annotation.Contributed;
 import org.apache.isis.applib.annotation.MemberOrder;
-import org.apache.isis.applib.annotation.Mixin;
 import org.apache.isis.applib.annotation.SemanticsOf;
 import org.apache.isis.applib.services.command.CommandExecutorService;
 import org.apache.isis.applib.services.message.MessageService;
-import org.apache.isis.core.metamodel.services.configinternal.ConfigurationServiceInternal;
-import org.apache.isis.schema.cmd.v1.CommandDto;
+import org.apache.isis.core.config.IsisConfiguration;
+import org.apache.isis.schema.cmd.v2.CommandDto;
 
-import org.isisaddons.module.command.CommandModule;
 import org.isisaddons.module.command.dom.CommandJdo;
 import org.isisaddons.module.command.dom.CommandServiceJdoRepository;
+import org.isisaddons.module.command.replay.IsisModuleExtCommandReplayImpl;
 import org.isisaddons.module.command.replay.impl.CommandFetcher;
 import org.isisaddons.module.command.replay.impl.CommandReplayAnalysisService;
 import org.isisaddons.module.command.replay.impl.SlaveConfiguration;
 import org.isisaddons.module.command.replay.impl.StatusException;
 
-@Mixin(method = "act")
+@Action(
+        semantics = SemanticsOf.NON_IDEMPOTENT,
+        domainEvent = CommandJdo_replayNext.ActionDomainEvent.class,
+        commandPersistence = CommandPersistence.NOT_PERSISTED
+)
 public class CommandJdo_replayNext {
 
-    private final CommandJdo commandJdo;
+    public static class ActionDomainEvent extends IsisModuleExtCommandReplayImpl.ActionDomainEvent<CommandJdo_replayNext> { }
 
-    //region > constructor
+    private final CommandJdo commandJdo;
     public CommandJdo_replayNext(CommandJdo commandJdo) {
         this.commandJdo = commandJdo;
     }
-    //endregion
 
-
-    public static class ActionDomainEvent extends CommandModule.ActionDomainEvent<CommandJdo_replayNext> { }
-    @Action(
-            semantics = SemanticsOf.NON_IDEMPOTENT,
-            domainEvent = ActionDomainEvent.class,
-            commandPersistence = CommandPersistence.NOT_PERSISTED
-    )
-    @ActionLayout(
-            contributed = Contributed.AS_ACTION
-    )
     @MemberOrder(name = "executeIn", sequence = "3")
     public CommandJdo act() throws StatusException {
 
@@ -62,7 +52,6 @@ public class CommandJdo_replayNext {
         }
 
         execute(nextHwm);
-
         analysisService.analyse(nextHwm);
 
         return nextHwm;
@@ -70,9 +59,7 @@ public class CommandJdo_replayNext {
 
 
     private CommandJdo fetchNext() throws StatusException {
-        SlaveConfiguration slaveConfig = getSlaveConfig();
-
-        final CommandDto commandDto = commandFetcher.fetchCommand(this.commandJdo, slaveConfig);
+        final CommandDto commandDto = commandFetcher.fetchCommand(this.commandJdo, getSlaveConfig());
         return commandDto == null
                 ? null
                 : commandServiceJdoRepository.saveForReplay(commandDto);
@@ -115,36 +102,11 @@ public class CommandJdo_replayNext {
         return !getSlaveConfig().isConfigured();
     }
 
-    // //////////////////////////////////////
 
-    /**
-     * lazily loaded
-     */
-    SlaveConfiguration slaveConfig;
-    private SlaveConfiguration getSlaveConfig() {
-        if (slaveConfig == null){
-            slaveConfig = new SlaveConfiguration(configurationServiceInternal.asMap());
-        }
-        return slaveConfig;
-    }
-
-    // //////////////////////////////////////
-
-    @javax.inject.Inject
-    CommandServiceJdoRepository commandServiceJdoRepository;
-
-    @javax.inject.Inject
-    CommandFetcher commandFetcher;
-
-    @javax.inject.Inject
-    CommandExecutorService commandExecutorService;
-
-    @javax.inject.Inject
-    ConfigurationServiceInternal configurationServiceInternal;
-
-    @javax.inject.Inject
-    MessageService messageService;
-
-    @Inject
-    CommandReplayAnalysisService analysisService;
+    @Inject CommandServiceJdoRepository commandServiceJdoRepository;
+    @Inject CommandFetcher commandFetcher;
+    @Inject CommandExecutorService commandExecutorService;
+    @Inject IsisConfiguration isisConfiguration;
+    @Inject MessageService messageService;
+    @Inject CommandReplayAnalysisService analysisService;
 }

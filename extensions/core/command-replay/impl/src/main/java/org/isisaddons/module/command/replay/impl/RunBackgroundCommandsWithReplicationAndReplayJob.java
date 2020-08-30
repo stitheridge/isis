@@ -5,7 +5,6 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
@@ -14,10 +13,10 @@ import org.quartz.PersistJobDataAfterExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.isis.core.commons.authentication.AuthenticationSession;
-import org.apache.isis.core.metamodel.services.configinternal.ConfigurationServiceInternal;
-import org.apache.isis.core.runtime.authentication.standard.SimpleSession;
-import org.apache.isis.core.runtime.sessiontemplate.AbstractIsisSessionTemplate;
+import org.apache.isis.core.config.IsisConfiguration;
+import org.apache.isis.core.runtime.iactn.template.AbstractIsisInteractionTemplate;
+import org.apache.isis.core.security.authentication.AuthenticationSession;
+import org.apache.isis.core.security.authentication.standard.SimpleSession;
 
 import org.isisaddons.module.command.dom.BackgroundCommandExecutionFromBackgroundCommandServiceJdo;
 
@@ -26,6 +25,7 @@ import static org.isisaddons.module.command.replay.impl.ConfigurationKeys.SLAVE_
 import static org.isisaddons.module.command.replay.impl.ConfigurationKeys.SLAVE_USER_DEFAULT;
 import static org.isisaddons.module.command.replay.impl.ConfigurationKeys.SLAVE_USER_QUARTZ_KEY;
 
+import lombok.val;
 import lombok.extern.log4j.Log4j2;
 
 @DisallowConcurrentExecution
@@ -99,15 +99,14 @@ public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
     private Map<String,String> lookupIsisConfigurationAsMap(final AuthenticationSession authSession) {
 
         final Holder<Map<String,String>> holder = new Holder<>();
-        new AbstractIsisSessionTemplate() {
+        new AbstractIsisInteractionTemplate() {
             @Override
             protected void doExecuteWithTransaction(final Object unused) {
-                Map<String, String> map = configurationServiceInternal.asMap();
-                holder.setObject(map);
+                holder.setObject(isisConfiguration.getAsMap());
             }
 
             @Inject
-            ConfigurationServiceInternal configurationServiceInternal;
+            IsisConfiguration isisConfiguration;
         }.execute(authSession, null);
 
         return holder.getObject();
@@ -116,7 +115,7 @@ public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
     private boolean lookupTickingClockServiceStatus(final AuthenticationSession authSession) {
 
         final Holder<Boolean> holder = new Holder<>();
-        new AbstractIsisSessionTemplate() {
+        new AbstractIsisInteractionTemplate() {
             @Override
             protected void doExecuteWithTransaction(final Object unused) {
                 holder.setObject(tickingClockService.isInitialized());
@@ -135,10 +134,10 @@ public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
             return getString(quartzContext, SLAVE_USER_QUARTZ_KEY, SLAVE_USER_DEFAULT);
         }
 
-        private static String[] getRoles(final JobExecutionContext quartzContext) {
-            return Iterables.toArray(Splitter.on(",").split(
-                    getString(quartzContext, SLAVE_ROLES_QUARTZ_KEY, SLAVE_ROLES_DEFAULT)),
-                    String.class);
+        private static Iterable<String> getRoles(final JobExecutionContext quartzContext) {
+            val slaveRoles = getString(quartzContext, SLAVE_ROLES_QUARTZ_KEY, SLAVE_ROLES_DEFAULT);
+            return Splitter.on(",").split(
+                    slaveRoles);
         }
 
         SimpleSessionFromQuartz(final JobExecutionContext quartzContext) {
@@ -146,7 +145,6 @@ public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
         }
     }
 
-    //region > quartz configuration; getSlaveStatus/setSlaveStatus
 
     private static final String KEY_SLAVE_STATUS = "slaveStatus";
 
@@ -162,25 +160,24 @@ public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
         }
     }
 
+
     /**
      * Save into quartz configuration for this job, for next invocation.
      */
     private static void setString(JobExecutionContext context, String key, String value) {
         context.getJobDetail().getJobDataMap().put(key, value);
     }
-
-    private SlaveStatus getSlaveStatus(
+    private static SlaveStatus getSlaveStatus(
             final JobExecutionContext context,
             final SlaveStatus defaultStatus) {
         String mode = getString(context, KEY_SLAVE_STATUS, defaultStatus.name());
         return SlaveStatus.valueOf(mode);
     }
 
-    private void setSlaveStatus(final JobExecutionContext context, final SlaveStatus mode) {
+    private static void setSlaveStatus(final JobExecutionContext context, final SlaveStatus mode) {
         setString(context, KEY_SLAVE_STATUS, mode.name());
     }
 
-    //endregion
 
 }
 

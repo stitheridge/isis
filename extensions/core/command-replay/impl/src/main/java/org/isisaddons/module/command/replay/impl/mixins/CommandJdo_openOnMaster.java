@@ -2,6 +2,7 @@ package org.isisaddons.module.command.replay.impl.mixins;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -10,31 +11,28 @@ import org.apache.isis.applib.annotation.Action;
 import org.apache.isis.applib.annotation.ActionLayout;
 import org.apache.isis.applib.annotation.Contributed;
 import org.apache.isis.applib.annotation.MemberOrder;
-import org.apache.isis.applib.annotation.Mixin;
 import org.apache.isis.applib.annotation.SemanticsOf;
-import org.apache.isis.applib.services.bookmark.BookmarkService2;
-import org.apache.isis.core.metamodel.services.configinternal.ConfigurationServiceInternal;
+import org.apache.isis.applib.services.bookmark.BookmarkService;
+import org.apache.isis.core.config.IsisConfiguration;
 
-import org.isisaddons.module.command.CommandModule;
 import org.isisaddons.module.command.dom.CommandJdo;
+import org.isisaddons.module.command.replay.IsisModuleExtCommandReplayImpl;
 import org.isisaddons.module.command.replay.impl.ConfigurationKeys;
 
-@Mixin(method = "act")
+@Action(
+        semantics = SemanticsOf.SAFE,
+        domainEvent = CommandJdo_openOnMaster.ActionDomainEvent.class
+)
 public class CommandJdo_openOnMaster<T> {
+
+    public static class ActionDomainEvent
+            extends IsisModuleExtCommandReplayImpl.ActionDomainEvent<CommandJdo_openOnMaster> { }
 
     private final CommandJdo commandJdo;
     public CommandJdo_openOnMaster(CommandJdo commandJdo) {
         this.commandJdo = commandJdo;
     }
 
-    public static class ActionDomainEvent extends CommandModule.ActionDomainEvent<CommandJdo_openOnMaster> { }
-    @Action(
-            semantics = SemanticsOf.SAFE,
-            domainEvent = ActionDomainEvent.class
-    )
-    @ActionLayout(
-            contributed = Contributed.AS_ACTION
-    )
     @MemberOrder(name = "transactionId", sequence = "1")
     public URL act() {
         final String baseUrlPrefix = lookupBaseUrlPrefix();
@@ -52,20 +50,13 @@ public class CommandJdo_openOnMaster<T> {
     }
 
     private String lookupBaseUrlPrefix() {
-        String masterBaseUrlEndUser = configurationServiceInternal.asMap()
-                .get(ConfigurationKeys.MASTER_BASE_URL_END_USER_URL_ISIS_KEY);
-        if(masterBaseUrlEndUser == null) {
-            return null;
-        }
-        if(!masterBaseUrlEndUser.endsWith("/")) {
-            masterBaseUrlEndUser = masterBaseUrlEndUser + "/";
-        }
-        return masterBaseUrlEndUser + "wicket/entity/";
+        return isisConfiguration.getExtensions().getCommandReplay().getMaster().getBaseUrlEndUser()
+                .map(x -> !x.endsWith("/") ? x + "/" : x)
+                .map(x -> x + "wicket/entity/")
+                .orElse(null);
     }
 
-    @Inject
-    ConfigurationServiceInternal configurationServiceInternal;
-    @Inject
-    BookmarkService2 bookmarkService2;
+    @Inject IsisConfiguration isisConfiguration;
+    @Inject BookmarkService bookmarkService2;
 
 }

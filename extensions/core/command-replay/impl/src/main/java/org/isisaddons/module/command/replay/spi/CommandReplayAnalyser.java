@@ -9,5 +9,4 @@ public interface CommandReplayAnalyser {
     @Programmatic
     String analyzeReplay(final Command command, final CommandDto dto);
 
-
 }
