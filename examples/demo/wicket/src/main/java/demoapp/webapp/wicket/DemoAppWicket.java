@@ -23,6 +23,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Import;
 
+import org.apache.isis.extensions.quartz.IsisModuleExtQuartzImpl;
 import org.apache.isis.extensions.viewer.wicket.pdfjs.ui.IsisModuleExtPdfjsUi;
 import org.apache.isis.valuetypes.asciidoc.metamodel.IsisModuleValAsciidocMetaModel;
 import org.apache.isis.valuetypes.asciidoc.persistence.jdo.dn5.IsisModuleValAsciidocPersistenceJdoDn5;
@@ -53,7 +54,7 @@ import demoapp.web._infra.utils.ThereCanBeOnlyOne;
     IsisModuleExtPdfjsUi.class,
 
     // Persistence (JDO/DN5)
-    IsisModuleValAsciidocPersistenceJdoDn5.class,   //
+    IsisModuleValAsciidocPersistenceJdoDn5.class,
     IsisModuleValMarkdownPersistenceJdoDn5.class,
 
 })

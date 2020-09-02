@@ -1,11 +1,14 @@
 package org.apache.isis.extensions.quartz.jobs;
 
 
+import javax.inject.Inject;
+
 import com.google.common.base.Splitter;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 
+import org.apache.isis.core.config.IsisConfiguration;
 import org.apache.isis.core.security.authentication.AuthenticationSession;
 import org.apache.isis.core.security.authentication.standard.SimpleSession;
 
@@ -22,19 +25,18 @@ public class RunBackgroundCommandsJob implements Job {
         final AuthenticationSession authSession = newAuthSession(context);
 
         log.debug("Running background commands");
-        new BackgroundCommandExecutionFromBackgroundCommandServiceJdo().execute(authSession, null);
-    }
-
-    protected String getKey(JobExecutionContext context, String key) {
-        return context.getMergedJobDataMap().getString(key);
+        backgroundCommandExecutionFromBackgroundCommandServiceJdo.execute(authSession, null);
     }
 
     protected AuthenticationSession newAuthSession(JobExecutionContext context) {
-        val user = getKey(context, "user");
-        val rolesStr = getKey(context, "roles");
-        val roles = Splitter.on(",").split(rolesStr);
+        val user = isisConfiguration.getExtensions().getQuartz().getRunBackgroundCommands().getUser();
+        val roles = isisConfiguration.getExtensions().getQuartz().getRunBackgroundCommands().getRoles();
+        log.debug("background user : {}", user);
+        log.debug("background roles: {}", roles);
         return new SimpleSession(user, roles);
     }
 
+    @Inject BackgroundCommandExecutionFromBackgroundCommandServiceJdo backgroundCommandExecutionFromBackgroundCommandServiceJdo;
+    @Inject IsisConfiguration isisConfiguration;
 
 }

@@ -1,8 +1,10 @@
 package org.apache.isis.extensions.commandlog.impl;
 
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdo;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
@@ -25,6 +27,10 @@ import org.apache.isis.extensions.commandlog.impl.background.BackgroundCommandSe
         , CommandServiceJdoRepository.class
         , CommandServiceMenu.class
 })
+@ComponentScan(
+        basePackageClasses= {
+                IsisModuleExtCommandLogImpl.class
+        })
 public class IsisModuleExtCommandLogImpl implements ModuleWithFixtures {
 
     public abstract static class ActionDomainEvent<S>

@@ -8,14 +8,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 
+import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
-import org.apache.isis.applib.annotation.DomainService;
 import org.apache.isis.applib.annotation.OrderPrecedence;
 import org.apache.isis.applib.annotation.Programmatic;
 import org.apache.isis.applib.jaxb.JavaSqlXMLGregorianCalendarMarshalling;
@@ -27,8 +28,6 @@ import org.apache.isis.applib.services.command.CommandContext;
 import org.apache.isis.applib.services.command.CommandWithDto;
 import org.apache.isis.applib.services.repository.RepositoryService;
 import org.apache.isis.applib.util.schema.CommandDtoUtils;
-import org.apache.isis.extensions.commandlog.impl.jdo.QCommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.ReplayState;
 import org.apache.isis.persistence.jdo.applib.services.IsisJdoSupport_v3_2;
 import org.apache.isis.schema.cmd.v2.CommandDto;
 import org.apache.isis.schema.cmd.v2.CommandsDto;
@@ -37,6 +36,7 @@ import org.apache.isis.schema.common.v2.OidDto;
 
 import lombok.val;
 import lombok.var;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Provides supporting functionality for querying and persisting
@@ -46,6 +46,7 @@ import lombok.var;
 @Named("isisExtensionsCommandLog.CommandServiceJdoRepository")
 @Order(OrderPrecedence.MIDPOINT)
 @Qualifier("Jdo")
+@Log4j2
 public class CommandServiceJdoRepository {
 
     public List<CommandJdo> findByFromAndTo(
@@ -103,10 +104,10 @@ public class CommandServiceJdoRepository {
 
 
     private void persistCurrentCommandIfRequired() {
-        if(commandContext == null || commandService == null) {
+        if(commandContextProvider == null || commandService == null) {
             return;
         } 
-        final Command command = commandContext.getCommand();
+        final Command command = commandContextProvider.get().getCommand();
         final CommandJdo commandJdo = commandService.asUserInitiatedCommandJdo(command);
         if(commandJdo == null) {
             return;
@@ -364,16 +365,9 @@ public class CommandServiceJdoRepository {
 
 
 
-    @javax.inject.Inject
-    CommandServiceJdo commandService;
-
-    @javax.inject.Inject
-    CommandContext commandContext;
-
-    @javax.inject.Inject
-    RepositoryService repositoryService;
-
-    @javax.inject.Inject
-    IsisJdoSupport_v3_2 isisJdoSupport;
+    @Inject CommandServiceJdo commandService;
+    @Inject Provider<CommandContext> commandContextProvider;
+    @Inject RepositoryService repositoryService;
+    @Inject IsisJdoSupport_v3_2 isisJdoSupport;
 
 }

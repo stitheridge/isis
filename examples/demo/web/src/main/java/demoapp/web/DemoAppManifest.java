@@ -26,7 +26,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import org.apache.isis.extensions.commandlog.impl.IsisModuleExtCommandLogImpl;
 import org.apache.isis.extensions.cors.impl.IsisModuleExtCorsImpl;
+import org.apache.isis.extensions.quartz.IsisModuleExtQuartzImpl;
 import org.apache.isis.extensions.secman.encryption.jbcrypt.IsisModuleExtSecmanEncryptionJbcrypt;
 import org.apache.isis.extensions.secman.jdo.IsisModuleExtSecmanPersistenceJdo;
 import org.apache.isis.extensions.secman.model.IsisModuleExtSecmanModel;
@@ -42,14 +44,21 @@ import lombok.extern.log4j.Log4j2;
 
 import demoapp.dom.DemoModule;
 import demoapp.dom._infra.fixtures.DemoFixtureScript;
+import demoapp.web.quartz.BackgroundCommandsQuartzJobConfigurerModule;
 
 /**
  * Makes the integral parts of the 'demo' web application.
  */
 @Configuration
 @Import({
+    // @Configuration's
     DemoModule.class, // shared demo core module
-    
+
+    // background commands
+    BackgroundCommandsQuartzJobConfigurerModule.class,
+    IsisModuleExtCommandLogImpl.class,
+    IsisModuleExtQuartzImpl.class,
+
     // SECURITY
     IsisModuleSecurityShiro.class,
 

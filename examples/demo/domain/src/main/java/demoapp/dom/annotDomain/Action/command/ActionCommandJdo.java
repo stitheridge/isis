@@ -18,6 +18,9 @@
  */
 package demoapp.dom.annotDomain.Action.command;
 
+import java.util.concurrent.ExecutorService;
+
+import javax.inject.Inject;
 import javax.jdo.annotations.DatastoreIdentity;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
@@ -35,6 +38,8 @@ import org.apache.isis.applib.annotation.Nature;
 import org.apache.isis.applib.annotation.Property;
 import org.apache.isis.applib.annotation.Publishing;
 import org.apache.isis.applib.annotation.SemanticsOf;
+import org.apache.isis.applib.services.wrapper.WrapperFactory;
+import org.apache.isis.applib.services.wrapper.control.AsyncControl;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -161,15 +166,21 @@ public class ActionCommandJdo implements HasAsciiDocDescription {
             "@Action(command = ENABLED, commandExecuteIn = BACKGROUND)"
     )
     public ActionCommandJdo updatePropertyInBackground(final String value) {
-        setPropertyUpdateInBackground(value);
+        AsyncControl<Void> control = AsyncControl.control();
+        ActionCommandJdo actionCommandJdo = this.wrapperFactory.asyncWrap(this, control);
+        actionCommandJdo.updatePropertyUsingAnnotation(value);
+        // setPropertyUpdateInBackground(value);
         return this;
     }
     public String default0UpdatePropertyInBackground() {
         return getPropertyUpdateInBackground();
     }
+
+    @Inject WrapperFactory wrapperFactory;
 //end::background[]
 
 
 //tag::class[]
+
 }
 //end::class[]

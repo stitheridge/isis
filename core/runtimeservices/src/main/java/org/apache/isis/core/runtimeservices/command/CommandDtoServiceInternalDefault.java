@@ -161,17 +161,17 @@ public class CommandDtoServiceInternalDefault implements CommandDtoServiceIntern
             final PropertyDto propertyDto,
             final ManagedObject valueAdapter) {
 
-        final String actionIdentifier = CommandUtil.memberIdentifierFor(property);
-        final ObjectSpecification onType = property.getOnType();
-        final String objectType = onType.getSpecId().asString();
-        final String localId = property.getIdentifier().toNameIdentityString();
+        val actionIdentifier = CommandUtil.memberIdentifierFor(property);
+        val onType = property.getOnType();
+        val objectType = onType.getSpecId().asString();
+        val localId = property.getIdentifier().toNameIdentityString();
         propertyDto.setLogicalMemberIdentifier(objectType + "#" + localId);
         propertyDto.setMemberIdentifier(actionIdentifier);
 
-        final ObjectSpecification valueSpec = property.getSpecification();
-        final Class<?> valueType = valueSpec.getCorrespondingClass();
+        val valueSpec = property.getSpecification();
+        val valueType = valueSpec.getCorrespondingClass();
 
-        final ValueWithTypeDto newValue = CommonDtoUtils.newValueWithTypeDto(
+        val newValue = CommonDtoUtils.newValueWithTypeDto(
                 valueType, UnwrapUtil.single(valueAdapter), bookmarkService);
         propertyDto.setNewValue(newValue);
     }

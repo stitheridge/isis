@@ -20,14 +20,14 @@ import org.apache.isis.applib.services.command.spi.CommandService;
 import org.apache.isis.applib.services.factory.FactoryService;
 import org.apache.isis.applib.services.repository.RepositoryService;
 
+import lombok.extern.log4j.Log4j2;
+
 @Service
 @Named("isisExtensionsCommandLog.CommandServiceJdo")
 @Order(OrderPrecedence.MIDPOINT)
 @Qualifier("Jdo")
+@Log4j2
 public class CommandServiceJdo implements CommandService {
-
-    @SuppressWarnings("unused")
-    private static final Logger LOG = LoggerFactory.getLogger(CommandServiceJdo.class);
 
     /**
      * {@inheritDoc}

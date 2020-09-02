@@ -2058,7 +2058,7 @@ public class IsisConfiguration {
             /**
              * The base path at which the Wicket viewer is mounted.
              */
-            @javax.validation.constraints.Pattern(regexp="^[/].*[/]$") @NotNull @NotEmpty
+            @javax.validation.constraints.Pattern(regexp="^[/](.*[/]|)$") @NotNull @NotEmpty
             private String basePath = "/wicket/";
 
             /**
@@ -3057,6 +3057,17 @@ public class IsisConfiguration {
              * </p>
              */
             private List<String> exposedHeaders = listOf("Authorization");
+        }
+
+        private final Quartz quartz = new Quartz();
+        @Data
+        public static class Quartz {
+            private final RunBackgroundCommands runBackgroundCommands = new RunBackgroundCommands();
+            @Data
+            public static class RunBackgroundCommands {
+                private String user = "isisModuleExtQuartzRunBackgroundCommandsUser";
+                private List<String> roles = listOf("isisModuleExtQuartzRunBackgroundCommandsRole");
+            }
         }
 
         private final CommandReplay commandReplay = new CommandReplay();

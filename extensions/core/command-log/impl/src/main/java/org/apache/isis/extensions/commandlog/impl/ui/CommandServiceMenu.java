@@ -29,15 +29,15 @@ import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
 
 @DomainService(
-        nature = NatureOfService.VIEW,
-        objectType = "isisextcommandlog.CommandServiceMenu"
+    nature = NatureOfService.VIEW,
+    objectType = "isisExtensionsCommandLog.CommandServiceMenu"
 )
 @DomainServiceLayout(
-        named = "Activity"
-        , menuBar = DomainServiceLayout.MenuBar.SECONDARY
+    named = "Activity"
+    , menuBar = DomainServiceLayout.MenuBar.SECONDARY
 )
 @Service
-@Named("isisExtensionsCommandLog.CommandServiceJdoRepository")
+@Named("isisExtensionsCommandLog.CommandServiceMenu")
 @Order(OrderPrecedence.MIDPOINT)
 @Qualifier("Jdo")
 public class CommandServiceMenu {
@@ -101,10 +101,7 @@ public class CommandServiceMenu {
     }
 
 
-
     @Inject CommandServiceJdoRepository commandServiceRepository;
-
     @Inject ClockService clockService;
-
 }
 

@@ -48,37 +48,37 @@ import lombok.extern.log4j.Log4j2;
 
 @javax.jdo.annotations.PersistenceCapable(
         identityType=IdentityType.APPLICATION,
-        schema = "isiscoreextcommandlog",
+        schema = "isisextcommandlog",
         table = "Command")
 @javax.jdo.annotations.Queries( {
     @javax.jdo.annotations.Query(
             name="findByTransactionId",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE transactionId == :transactionId "),
     @javax.jdo.annotations.Query(
             name="findBackgroundCommandsByParent",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE parent == :parent "
                     + "&& executeIn == 'BACKGROUND'"),
     @javax.jdo.annotations.Query(
             name="findCurrent",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE completedAt == null "
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
             name="findCompleted",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE completedAt != null "
                     + "&& executeIn == 'FOREGROUND' "
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
             name="findRecentBackgroundByTarget",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE targetStr == :targetStr "
                     + "&& executeIn == 'BACKGROUND' "
                     + "ORDER BY this.timestamp DESC, transactionId DESC "
@@ -86,7 +86,7 @@ import lombok.extern.log4j.Log4j2;
     @javax.jdo.annotations.Query(
             name="findByTargetAndTimestampBetween",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE targetStr == :targetStr " 
                     + "&& timestamp >= :from " 
                     + "&& timestamp <= :to "
@@ -94,65 +94,65 @@ import lombok.extern.log4j.Log4j2;
     @javax.jdo.annotations.Query(
             name="findByTargetAndTimestampAfter",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE targetStr == :targetStr " 
                     + "&& timestamp >= :from "
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
             name="findByTargetAndTimestampBefore",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE targetStr == :targetStr " 
                     + "&& timestamp <= :to "
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
             name="findByTarget",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE targetStr == :targetStr " 
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
             name="findByTimestampBetween",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE timestamp >= :from " 
                     + "&&    timestamp <= :to "
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
             name="findByTimestampAfter",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE timestamp >= :from "
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
             name="findByTimestampBefore",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE timestamp <= :to "
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
             name="find",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
             name="findRecentByUser",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE user == :user "
                     + "ORDER BY this.timestamp DESC "
                     + "RANGE 0,30"),
     @javax.jdo.annotations.Query(
             name="findRecentByTarget",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE targetStr == :targetStr "
                     + "ORDER BY this.timestamp DESC, transactionId DESC "
                     + "RANGE 0,30"),
     @javax.jdo.annotations.Query(
             name="findForegroundFirst",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE executeIn == 'FOREGROUND' "
                     + "   && timestamp   != null "
                     + "   && startedAt   != null "
@@ -164,7 +164,7 @@ import lombok.extern.log4j.Log4j2;
     @javax.jdo.annotations.Query(
             name="findForegroundSince",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE executeIn == 'FOREGROUND' "
                     + "   && timestamp > :timestamp "
                     + "   && startedAt != null "
@@ -173,7 +173,7 @@ import lombok.extern.log4j.Log4j2;
     @javax.jdo.annotations.Query(
             name="findReplayableHwm",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE executeIn == 'REPLAYABLE' "
                     + "ORDER BY this.timestamp DESC "
                     + "RANGE 0,2"),
@@ -182,7 +182,7 @@ import lombok.extern.log4j.Log4j2;
     @javax.jdo.annotations.Query(
             name="findForegroundHwm",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE executeIn == 'FOREGROUND' "
                     + "   && startedAt   != null "
                     + "   && completedAt != null "
@@ -193,14 +193,14 @@ import lombok.extern.log4j.Log4j2;
     @javax.jdo.annotations.Query(
             name="findBackgroundCommandsNotYetStarted",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE executeIn == 'BACKGROUND' "
                     + "   && startedAt == null "
                     + "ORDER BY this.timestamp ASC "),
         @javax.jdo.annotations.Query(
                 name="findReplayableInErrorMostRecent",
                 value="SELECT "
-                        + "FROM CommandJdo "
+                        + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                         + "WHERE executeIn   == 'REPLAYABLE' "
                         + "  && (replayState != 'PENDING' || "
                         + "      replayState != 'OK'      || "
@@ -210,7 +210,7 @@ import lombok.extern.log4j.Log4j2;
     @javax.jdo.annotations.Query(
             name="findReplayableMostRecentStarted",
             value="SELECT "
-                    + "FROM CommandJdo "
+                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE executeIn == 'REPLAYABLE' "
                     + "   && startedAt != null "
                     + "ORDER BY this.timestamp DESC "
@@ -221,7 +221,7 @@ import lombok.extern.log4j.Log4j2;
         @javax.jdo.annotations.Index(name = "CommandJdo_startedAt_e_c_IDX", members = {"startedAt", "executeIn", "completedAt"}),
 })
 @DomainObject(
-        objectType = "isisextcommandlog.Command",
+        objectType = "isisExtensionsCommandLog.Command",
         editing = Editing.DISABLED
 )
 @DomainObjectLayout(named = "Command")
