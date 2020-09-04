@@ -4,7 +4,6 @@ import javax.inject.Inject;
 
 import org.apache.isis.applib.annotation.Action;
 import org.apache.isis.applib.annotation.ActionLayout;
-import org.apache.isis.applib.annotation.CommandPersistence;
 import org.apache.isis.applib.annotation.MemberOrder;
 import org.apache.isis.applib.annotation.ParameterLayout;
 import org.apache.isis.applib.annotation.SemanticsOf;
@@ -38,7 +37,7 @@ public class CommandJdo_download {
     public Clob act(
             @ParameterLayout(named="Filename prefix")
             final String fileNamePrefix) {
-        return commandReplayOnMasterService.downloadCommandById(commandJdo.getTransactionId(), fileNamePrefix);
+        return commandReplayOnMasterService.downloadCommandById(commandJdo.getUniqueId(), fileNamePrefix);
     }
     public String default0Act() {
         return "command";

@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 
 import org.apache.isis.applib.annotation.DomainService;
 import org.apache.isis.applib.services.command.Command;
-import org.apache.isis.applib.services.command.CommandWithDto;
 import org.apache.isis.applib.util.schema.CommandDtoUtils;
 import org.apache.isis.schema.cmd.v2.CommandDto;
 

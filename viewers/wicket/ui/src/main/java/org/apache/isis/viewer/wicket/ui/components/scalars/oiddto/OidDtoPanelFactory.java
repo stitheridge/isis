@@ -16,29 +16,25 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.isis.persistence.jdo.datanucleus5.datanucleus.typeconverters;
 
-import org.datanucleus.store.types.converters.TypeConverter;
+package org.apache.isis.viewer.wicket.ui.components.scalars.oiddto;
 
-import org.apache.isis.applib.value.LocalResourcePath;
-import org.apache.isis.applib.value.Markup;
+import org.apache.wicket.Component;
 
-public class IsisLocalResourcePathConverter implements TypeConverter<LocalResourcePath, String>{
+import org.apache.isis.applib.services.bookmark.Bookmark;
+import org.apache.isis.viewer.wicket.model.models.ScalarModel;
+import org.apache.isis.viewer.wicket.ui.components.scalars.ComponentFactoryScalarAbstract;
+
+public class OidDtoPanelFactory extends ComponentFactoryScalarAbstract {
 
     private static final long serialVersionUID = 1L;
 
-    @Override
-    public String toDatastoreType(final LocalResourcePath memberValue) {
-        return memberValue != null
-                ? memberValue.getPath()
-                        : null;
+    public OidDtoPanelFactory() {
+        super(OidDtoPanel.class, Bookmark.class);
     }
 
     @Override
-    public LocalResourcePath toMemberType(final String datastoreValue) {
-        return datastoreValue != null
-                ? new LocalResourcePath(datastoreValue)
-                        : null;
+    public Component createComponent(final String id, final ScalarModel scalarModel) {
+        return new OidDtoPanel(id, scalarModel);
     }
-
 }

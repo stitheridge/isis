@@ -11,7 +11,7 @@ import org.apache.isis.applib.services.bookmark.BookmarkService;
 import org.apache.isis.applib.services.queryresultscache.QueryResultsCache;
 import org.apache.isis.extensions.commandlog.impl.IsisModuleExtCommandLogImpl;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 
 @Collection(
     domainEvent = T_backgroundCommands.CollectionDomainEvent.class
@@ -35,13 +35,14 @@ public abstract class T_backgroundCommands<T> {
     private List<CommandJdo> findRecentBackground() {
         final Bookmark bookmark = bookmarkService.bookmarkFor(domainObject);
         return queryResultsCache.execute(
-                () -> commandServiceJdoRepository.findRecentBackgroundByTarget(bookmark)
+                () -> commandJdoRepository.findRecentBackgroundByTarget(bookmark)
                 , T_backgroundCommands.class
                 , "findRecentBackground"
                 , domainObject);
     }
 
-    @Inject CommandServiceJdoRepository commandServiceJdoRepository;
+    @Inject
+    CommandJdoRepository commandJdoRepository;
     @Inject BookmarkService bookmarkService;
     @Inject QueryResultsCache queryResultsCache;
 

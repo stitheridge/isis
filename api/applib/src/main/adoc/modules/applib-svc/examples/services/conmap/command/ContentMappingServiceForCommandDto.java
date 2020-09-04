@@ -34,7 +34,6 @@ import org.apache.isis.applib.annotation.OrderPrecedence;
 import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandDtoProcessor;
-import org.apache.isis.applib.services.command.CommandWithDto;
 import org.apache.isis.applib.services.conmap.ContentMappingService;
 import org.apache.isis.applib.services.conmap.command.spi.CommandDtoProcessorService;
 import org.apache.isis.applib.services.metamodel.MetaModelService;

@@ -16,11 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.isis.persistence.jdo.datanucleus5.datanucleus.valuetypes;
+package org.apache.isis.persistence.jdo.datanucleus5.datanucleus.valuetypes.applib;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ClassNameConstants;
@@ -31,16 +30,16 @@ import org.datanucleus.store.rdbms.RDBMSStoreManager;
 import org.datanucleus.store.rdbms.mapping.java.SingleFieldMultiMapping;
 import org.datanucleus.store.rdbms.table.Table;
 
-import org.apache.isis.applib.value.Blob;
+import org.apache.isis.applib.value.Clob;
 
-public class IsisBlobMapping extends SingleFieldMultiMapping {
+public class IsisClobMapping extends SingleFieldMultiMapping {
 
-    public IsisBlobMapping() {
+    public IsisClobMapping() {
     }
 
     @Override
     public Class<?> getJavaType() {
-        return org.apache.isis.applib.value.Blob.class;
+        return org.apache.isis.applib.value.Clob.class;
     }
 
     @Override
@@ -61,19 +60,17 @@ public class IsisBlobMapping extends SingleFieldMultiMapping {
     {
         addColumns(ClassNameConstants.JAVA_LANG_STRING); // name
         addColumns(ClassNameConstants.JAVA_LANG_STRING); // mime type
-        // this mapping type isn't supported out-of-the-box by DN, but the ByteArayBlobRdbmsMapping that we register supports it
-        addColumns(ClassNameConstants.BYTE_ARRAY); // bytes
+        addColumns(ClassNameConstants.JAVA_LANG_STRING); // chars
     }
-
 
     @Override
     public Object getValueForColumnMapping(NucleusContext nucleusCtx, int index, Object value)
     {
-        Blob blob = ((Blob)value);
+        Clob clob = ((Clob)value);
         switch (index) {
-        case 0: return blob.getName();
-        case 1: return blob.getMimeType().getBaseType();
-        case 2: return blob.getBytes();
+        case 0: return clob.getName();
+        case 1: return clob.getMimeType().getBaseType();
+        case 2: return clob.getChars();
         }
         throw new IndexOutOfBoundsException();
     }
@@ -81,24 +78,15 @@ public class IsisBlobMapping extends SingleFieldMultiMapping {
     @Override
     public void setObject(ExecutionContext ec, PreparedStatement preparedStmt, int[] exprIndex, Object value)
     {
-        Blob blob = ((Blob)value);
-        if (blob == null) {
-            getColumnMapping(0).setString(preparedStmt, exprIndex[0], null);
-            getColumnMapping(1).setString(preparedStmt, exprIndex[1], null);
-
-            // using:
-            // getDatastoreMapping(2).setObject(preparedStmt, exprIndex[2], null);
-            // fails for PostgreSQL, as interprets as a reference to an oid (pointer to offline blob)
-            // rather than a bytea (inline blob)
-            try {
-                preparedStmt.setBytes(exprIndex[2], null);
-            } catch (SQLException e) {
-                // ignore
-            }
+        Clob clob = ((Clob)value);
+        if (clob == null) {
+            getColumnMapping(0).setObject(preparedStmt, exprIndex[0], null);
+            getColumnMapping(1).setObject(preparedStmt, exprIndex[1], null);
+            getColumnMapping(2).setObject(preparedStmt, exprIndex[2], null);
         } else {
-            getColumnMapping(0).setString(preparedStmt, exprIndex[0], blob.getName());
-            getColumnMapping(1).setString(preparedStmt, exprIndex[1], blob.getMimeType().getBaseType());
-            getColumnMapping(2).setObject(preparedStmt, exprIndex[2], blob.getBytes());
+            getColumnMapping(0).setString(preparedStmt, exprIndex[0], clob.getName());
+            getColumnMapping(1).setString(preparedStmt, exprIndex[1], clob.getMimeType().getBaseType());
+            getColumnMapping(2).setObject(preparedStmt, exprIndex[2], clob.getChars().toString());
         }
     }
 
@@ -120,12 +108,10 @@ public class IsisBlobMapping extends SingleFieldMultiMapping {
 
         final String name = getColumnMapping(0).getString(resultSet, exprIndex[0]);
         final String mimeTypeBase = getColumnMapping(1).getString(resultSet, exprIndex[1]);
-        final byte[] bytes = (byte[]) getColumnMapping(2).getObject(resultSet, exprIndex[2]);
-        if(name == null || mimeTypeBase == null || bytes == null) {
+        final String str = getColumnMapping(2).getString(resultSet, exprIndex[2]);
+        if(name == null || mimeTypeBase == null || str == null) {
             return null;
         }
-        return new Blob(name, mimeTypeBase, bytes);
+        return new Clob(name, mimeTypeBase, str.toCharArray());
     }
-
-
 }

@@ -16,12 +16,29 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+package org.apache.isis.persistence.jdo.datanucleus5.datanucleus.typeconverters.schema.v2;
 
-/**
- * The {@link org.apache.isis.applib.services.background.BackgroundService2} domain service, and also the companion
- * {@link org.apache.isis.applib.services.background.BackgroundCommandService2} SPI service, enable commands to be
- * persisted such that they may be invoked in the background
- *
- *
- */
-package org.apache.isis.applib.services.background;
+import org.datanucleus.store.types.converters.TypeConverter;
+
+import org.apache.isis.applib.util.schema.ChangesDtoUtils;
+import org.apache.isis.schema.chg.v2.ChangesDto;
+
+public class IsisChangesDtoConverter implements TypeConverter<ChangesDto, String>{
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public String toDatastoreType(final ChangesDto memberValue) {
+        return memberValue != null
+                ? ChangesDtoUtils.toXml(memberValue)
+                        : null;
+    }
+
+    @Override
+    public ChangesDto toMemberType(final String datastoreValue) {
+        return datastoreValue != null
+                ? ChangesDtoUtils.fromXml(datastoreValue)
+                        : null;
+    }
+
+}

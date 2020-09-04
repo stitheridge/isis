@@ -123,12 +123,6 @@ implements FormExecutor {
                 return false;
             }
 
-            val commandContext = currentCommandContext().orElse(null);
-            if (commandContext != null) {
-                command = commandContext.getCommand();
-                command.internal().setExecutor(Command.Executor.USER);
-            }
-
 
             //
             // the following line will (attempt to) invoke the action, and will in turn either:
@@ -248,11 +242,7 @@ implements FormExecutor {
             // irrespective, capture error in the Command, and propagate
             if (command != null) {
                 
-                val stackTraceAsString = 
-                _Exceptions.streamStacktraceLines(ex, 1000)
-                .collect(Collectors.joining("\n"));
-                
-                command.internal().setException(stackTraceAsString);
+                command.internal().setException(ex);
                 
                 //XXX legacy of
                 //command.internal().setException(Throwables.getStackTraceAsString(ex));

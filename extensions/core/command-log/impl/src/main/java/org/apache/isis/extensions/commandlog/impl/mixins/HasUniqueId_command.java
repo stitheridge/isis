@@ -12,7 +12,7 @@ import org.apache.isis.applib.services.command.Command;
 
 import org.apache.isis.extensions.commandlog.impl.IsisModuleExtCommandLogImpl;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 
 
 /**
@@ -53,9 +53,10 @@ public class HasUniqueId_command {
     private CommandJdo findCommand() {
         final UUID transactionId = hasUniqueId.getUniqueId();
         return commandServiceRepository
-                .findByTransactionId(transactionId)
+                .findByUniqueId(transactionId)
                 .orElse(null);
     }
 
-    @Inject CommandServiceJdoRepository commandServiceRepository;
+    @Inject
+    CommandJdoRepository commandServiceRepository;
 }

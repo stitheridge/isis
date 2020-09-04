@@ -16,7 +16,6 @@ import org.apache.isis.core.runtime.iactn.template.AbstractIsisInteractionTempla
 import org.apache.isis.core.security.authentication.AuthenticationSession;
 import org.apache.isis.core.security.authentication.standard.SimpleSession;
 
-import org.apache.isis.extensions.commandlog.impl.background.BackgroundCommandExecutionFromBackgroundCommandServiceJdo;
 import org.apache.isis.extensions.commandreplay.impl.clock.TickingClockService;
 import org.apache.isis.extensions.commandreplay.impl.util.Holder;
 import org.apache.isis.extensions.commandreplay.impl.executor.ReplayableCommandExecution;

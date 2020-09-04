@@ -16,20 +16,29 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.isis.applib.services.command;
+package org.apache.isis.persistence.jdo.datanucleus5.datanucleus.typeconverters.applib;
 
-import org.apache.isis.applib.annotation.Programmatic;
-import org.apache.isis.schema.cmd.v2.CommandDto;
+import org.datanucleus.store.types.converters.TypeConverter;
 
-// tag::refguide[]
-public interface CommandWithDto extends Command {
+import org.apache.isis.applib.value.LocalResourcePath;
+import org.apache.isis.applib.value.Markup;
 
-    String USERDATA_KEY_TARGET_CLASS = "targetClass";
-    String USERDATA_KEY_TARGET_ACTION = "targetAction";
-    String USERDATA_KEY_ARGUMENTS = "arguments";
-    String USERDATA_KEY_RETURN_VALUE = "returnValue";
-    String USERDATA_KEY_EXCEPTION = "exception";
+public class IsisLocalResourcePathConverter implements TypeConverter<LocalResourcePath, String>{
 
-    CommandDto asDto();
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public String toDatastoreType(final LocalResourcePath memberValue) {
+        return memberValue != null
+                ? memberValue.getPath()
+                        : null;
+    }
+
+    @Override
+    public LocalResourcePath toMemberType(final String datastoreValue) {
+        return datastoreValue != null
+                ? new LocalResourcePath(datastoreValue)
+                        : null;
+    }
+
 }
-// end::refguide[]

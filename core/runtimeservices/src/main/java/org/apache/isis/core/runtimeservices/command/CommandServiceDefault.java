@@ -27,12 +27,11 @@ import org.springframework.stereotype.Service;
 
 import org.apache.isis.applib.annotation.OrderPrecedence;
 import org.apache.isis.applib.services.command.Command;
-import org.apache.isis.applib.services.command.CommandDefault;
 import org.apache.isis.applib.services.command.spi.CommandService;
 
 @Service
 @Named("isisRuntimeServices.CommandServiceDefault")
-@Order(OrderPrecedence.MIDPOINT)
+@Order(OrderPrecedence.LATE)
 @Primary
 @Qualifier("Default")
 public class CommandServiceDefault implements CommandService {

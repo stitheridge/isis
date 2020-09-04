@@ -18,8 +18,6 @@
  */
 package demoapp.dom.annotDomain.Action.command;
 
-import java.util.concurrent.ExecutorService;
-
 import javax.inject.Inject;
 import javax.jdo.annotations.DatastoreIdentity;
 import javax.jdo.annotations.IdGeneratorStrategy;
@@ -28,15 +26,11 @@ import javax.jdo.annotations.PersistenceCapable;
 
 import org.apache.isis.applib.annotation.Action;
 import org.apache.isis.applib.annotation.ActionLayout;
-import org.apache.isis.applib.annotation.CommandExecuteIn;
-import org.apache.isis.applib.annotation.CommandPersistence;
-import org.apache.isis.applib.annotation.CommandReification;
 import org.apache.isis.applib.annotation.DomainObject;
 import org.apache.isis.applib.annotation.Editing;
 import org.apache.isis.applib.annotation.MemberOrder;
 import org.apache.isis.applib.annotation.Nature;
 import org.apache.isis.applib.annotation.Property;
-import org.apache.isis.applib.annotation.Publishing;
 import org.apache.isis.applib.annotation.SemanticsOf;
 import org.apache.isis.applib.services.wrapper.WrapperFactory;
 import org.apache.isis.applib.services.wrapper.control.AsyncControl;

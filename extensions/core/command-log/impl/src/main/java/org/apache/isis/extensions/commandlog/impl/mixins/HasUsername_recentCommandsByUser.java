@@ -11,7 +11,7 @@ import org.apache.isis.applib.annotation.MemberOrder;
 import org.apache.isis.applib.services.HasUsername;
 import org.apache.isis.extensions.commandlog.impl.IsisModuleExtCommandLogImpl;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 
 
 @Collection(
@@ -41,5 +41,6 @@ public class HasUsername_recentCommandsByUser {
         return hasUsername.getUsername() == null;
     }
 
-    @Inject CommandServiceJdoRepository commandServiceRepository;
+    @Inject
+    CommandJdoRepository commandServiceRepository;
 }

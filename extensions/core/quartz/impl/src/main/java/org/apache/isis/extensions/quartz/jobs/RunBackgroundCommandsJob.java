@@ -3,16 +3,12 @@ package org.apache.isis.extensions.quartz.jobs;
 
 import javax.inject.Inject;
 
-import com.google.common.base.Splitter;
-
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 
 import org.apache.isis.core.config.IsisConfiguration;
 import org.apache.isis.core.security.authentication.AuthenticationSession;
 import org.apache.isis.core.security.authentication.standard.SimpleSession;
-
-import org.apache.isis.extensions.commandlog.impl.background.BackgroundCommandExecutionFromBackgroundCommandServiceJdo;
 
 import lombok.val;
 import lombok.extern.log4j.Log4j2;

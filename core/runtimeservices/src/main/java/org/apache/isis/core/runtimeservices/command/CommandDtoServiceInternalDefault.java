@@ -64,8 +64,8 @@ import lombok.val;
 @Qualifier("Default")
 public class CommandDtoServiceInternalDefault implements CommandDtoServiceInternal {
 
-    @Inject private javax.inject.Provider<CommandContext> commandContextProvider;
-    @Inject private BookmarkService bookmarkService;
+    @Inject javax.inject.Provider<CommandContext> commandContextProvider;
+    @Inject BookmarkService bookmarkService;
 
     @Override
     public CommandDto asCommandDto(
@@ -131,13 +131,9 @@ public class CommandDtoServiceInternalDefault implements CommandDtoServiceIntern
             final ObjectAction objectAction,
             final ActionDto actionDto,
             final Can<ManagedObject> argAdapters) {
-        
-        final String actionId = CommandUtil.memberIdentifierFor(objectAction);
-        final ObjectSpecification onType = objectAction.getOnType();
-        final String objectType = onType.getSpecId().asString();
-        final String localId = objectAction.getIdentifier().toNameIdentityString();
-        actionDto.setLogicalMemberIdentifier(objectType + "#" + localId);
-        actionDto.setMemberIdentifier(actionId);
+
+        actionDto.setLogicalMemberIdentifier(CommandUtil.logicalMemberIdentifierFor(objectAction));
+        actionDto.setMemberIdentifier(CommandUtil.memberIdentifierFor(objectAction));
 
         val actionParameters = objectAction.getParameters();
         for (int paramNum = 0; paramNum < actionParameters.size(); paramNum++) {
@@ -161,12 +157,8 @@ public class CommandDtoServiceInternalDefault implements CommandDtoServiceIntern
             final PropertyDto propertyDto,
             final ManagedObject valueAdapter) {
 
-        val actionIdentifier = CommandUtil.memberIdentifierFor(property);
-        val onType = property.getOnType();
-        val objectType = onType.getSpecId().asString();
-        val localId = property.getIdentifier().toNameIdentityString();
-        propertyDto.setLogicalMemberIdentifier(objectType + "#" + localId);
-        propertyDto.setMemberIdentifier(actionIdentifier);
+        propertyDto.setLogicalMemberIdentifier(CommandUtil.logicalMemberIdentifierFor(property));
+        propertyDto.setMemberIdentifier(CommandUtil.memberIdentifierFor(property));
 
         val valueSpec = property.getSpecification();
         val valueType = valueSpec.getCorrespondingClass();

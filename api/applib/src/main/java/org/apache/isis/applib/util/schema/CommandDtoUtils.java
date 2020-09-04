@@ -63,6 +63,10 @@ public final class CommandDtoUtils {
         }
     }
 
+    public static CommandDto clone(final CommandDto commandDto) {
+        return fromXml(toXml(commandDto));
+    }
+
     public static CommandDto fromXml(final String xml) {
         return fromXml(new StringReader(xml));
     }

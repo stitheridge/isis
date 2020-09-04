@@ -1,3 +1,21 @@
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
 package org.apache.isis.extensions.commandlog.impl.jdo;
 
 import java.sql.Timestamp;
@@ -25,7 +43,6 @@ import org.apache.isis.applib.query.QueryDefault;
 import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandContext;
-import org.apache.isis.applib.services.command.CommandWithDto;
 import org.apache.isis.applib.services.repository.RepositoryService;
 import org.apache.isis.applib.util.schema.CommandDtoUtils;
 import org.apache.isis.persistence.jdo.applib.services.IsisJdoSupport_v3_2;
@@ -43,11 +60,11 @@ import lombok.extern.log4j.Log4j2;
  * {@link CommandJdo command} entities.
  */
 @Service
-@Named("isisExtensionsCommandLog.CommandServiceJdoRepository")
+@Named("isisExtensionsCommandLog.CommandJdoRepository")
 @Order(OrderPrecedence.MIDPOINT)
 @Qualifier("Jdo")
 @Log4j2
-public class CommandServiceJdoRepository {
+public class CommandJdoRepository {
 
     public List<CommandJdo> findByFromAndTo(
             final LocalDate from, final LocalDate to) {
@@ -80,12 +97,19 @@ public class CommandServiceJdoRepository {
     }
 
 
-    public Optional<CommandJdo> findByTransactionId(final UUID transactionId) {
+    public Optional<CommandJdo> findByUniqueId(final UUID transactionId) {
         persistCurrentCommandIfRequired();
         return repositoryService.firstMatch(
                 new QueryDefault<>(CommandJdo.class,
-                        "findByTransactionId", 
-                        "transactionId", transactionId));
+                        "findByUniqueId",
+                        "uniqueId", transactionId));
+    }
+
+    public List<CommandJdo> findByParent(final CommandJdo parent) {
+        return repositoryService.allMatches(
+                new QueryDefault<>(CommandJdo.class,
+                        "findByParent",
+                        "parent", parent));
     }
 
 
@@ -104,14 +128,11 @@ public class CommandServiceJdoRepository {
 
 
     private void persistCurrentCommandIfRequired() {
-        if(commandContextProvider == null || commandService == null) {
+        if(commandContextProvider == null) {
             return;
         } 
         final Command command = commandContextProvider.get().getCommand();
-        final CommandJdo commandJdo = commandService.asUserInitiatedCommandJdo(command);
-        if(commandJdo == null) {
-            return;
-        }
+        final CommandJdo commandJdo = new CommandJdo(command, this);
         repositoryService.persist(commandJdo);
     }
 
@@ -173,13 +194,6 @@ public class CommandServiceJdoRepository {
     }
 
 
-    public List<CommandJdo> findRecentBackgroundByTarget(Bookmark target) {
-        final String targetStr = target.toString();
-        return repositoryService.allMatches(
-                new QueryDefault<>(CommandJdo.class, "findRecentBackgroundByTarget", "targetStr", targetStr));
-    }
-
-
     /**
      * Intended to support the replay of commands on a slave instance of the application.
      *
@@ -202,20 +216,20 @@ public class CommandServiceJdoRepository {
      *
      * @return
      */
-    public List<CommandJdo> findForegroundSince(final UUID transactionId, final Integer batchSize) {
+    public List<CommandJdo> findSince(final UUID transactionId, final Integer batchSize) {
         if(transactionId == null) {
-            return findForegroundFirst();
+            return findFirst();
         }
         final CommandJdo from = findByTransactionIdElseNull(transactionId);
         if(from == null) {
             return null;
         }
-        return findForegroundSince(from.getTimestamp(), batchSize);
+        return findSince(from.getTimestamp(), batchSize);
     }
 
-    private List<CommandJdo> findForegroundFirst() {
+    private List<CommandJdo> findFirst() {
         Optional<CommandJdo> firstCommandIfAny = repositoryService.firstMatch(
-                new QueryDefault<>(CommandJdo.class, "findForegroundFirst"));
+                new QueryDefault<>(CommandJdo.class, "findFirst"));
         return firstCommandIfAny
                 .map(Collections::singletonList)
                 .orElse(Collections.emptyList());
@@ -232,10 +246,10 @@ public class CommandServiceJdoRepository {
         return q.executeUnique();
     }
 
-    private List<CommandJdo> findForegroundSince(final Timestamp timestamp, final Integer batchSize) {
+    private List<CommandJdo> findSince(final Timestamp timestamp, final Integer batchSize) {
         val q = new QueryDefault<>(
                 CommandJdo.class,
-                "findForegroundSince",
+                "findSince",
                 "timestamp", timestamp);
 
         // DN generates incorrect SQL for SQL Server if count set to 1; so we set to 2 and then trim
@@ -258,8 +272,9 @@ public class CommandServiceJdoRepository {
 
         return replayableHwm
                 .orElseGet(() -> {
-            // otherwise, the most recent completed command, run in the foreground
-            // on the slave, this corresponds to a command restored from a copy of the production database
+            // otherwise, the most recent completed command, run on the slave,
+            // this corresponds to a command restored from a copy of
+            // the production database
             Optional<CommandJdo> restoredFromDbHwm = repositoryService.firstMatch(
                     new QueryDefault<>(CommandJdo.class, "findForegroundHwm"));
 
@@ -275,14 +290,6 @@ public class CommandServiceJdoRepository {
                         "findBackgroundCommandsNotYetStarted"));
     }
 
-
-    @Programmatic
-    public List<CommandJdo> findBackgroundCommandsByParent(final CommandJdo parent) {
-        return repositoryService.allMatches(
-                new QueryDefault<>(CommandJdo.class,
-                        "findBackgroundCommandsByParent",
-                        "parent", parent));
-    }
 
 
     public List<CommandJdo> findReplayedOnSlave() {
@@ -312,22 +319,16 @@ public class CommandServiceJdoRepository {
 
         final CommandJdo commandJdo = new CommandJdo();
 
-        commandJdo.setTransactionId(UUID.fromString(dto.getTransactionId()));
-        commandJdo.internal().setTimestamp(JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(dto.getTimestamp()));
-        commandJdo.internal().setUser(dto.getUser());
-        commandJdo.internal().setExecuteIn(org.apache.isis.applib.annotation.CommandExecuteIn.REPLAYABLE);
-
-        commandJdo.setTargetClass(CommandDtoUtils.getUserData(dto, CommandWithDto.USERDATA_KEY_TARGET_CLASS));
-        commandJdo.setTargetAction(CommandDtoUtils.getUserData(dto, CommandWithDto.USERDATA_KEY_TARGET_ACTION));
-        commandJdo.internal().setArguments(CommandDtoUtils.getUserData(dto, CommandWithDto.USERDATA_KEY_ARGUMENTS));
+        commandJdo.setUniqueId(UUID.fromString(dto.getTransactionId()));
+        commandJdo.setTimestamp(JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(dto.getTimestamp()));
+        commandJdo.setUsername(dto.getUser());
 
         commandJdo.setReplayState(ReplayState.PENDING);
-        commandJdo.internal().setPersistHint(true);
 
         final OidDto firstTarget = dto.getTargets().getOid().get(0);
-        commandJdo.setTargetStr(Bookmark.from(firstTarget).toString());
-        commandJdo.internal().setMemento(CommandDtoUtils.toXml(dto));
-        commandJdo.setMemberIdentifier(dto.getMember().getMemberIdentifier());
+        commandJdo.setTarget(Bookmark.from(firstTarget));
+        commandJdo.setCommandDto(dto);
+        commandJdo.setLogicalMemberIdentifier(dto.getMember().getLogicalMemberIdentifier());
 
         persist(commandJdo);
 
@@ -335,37 +336,11 @@ public class CommandServiceJdoRepository {
     }
 
     public void persist(final CommandJdo commandJdo) {
-        withSafeTargetStr(commandJdo);
-        withSafeResultStr(commandJdo);
         repositoryService.persist(commandJdo);
     }
 
-    public void persistIfHinted(final CommandJdo commandJdo) {
-        withSafeTargetStr(commandJdo);
-        withSafeResultStr(commandJdo);
-        if(commandJdo.shouldPersist()) {
-            repositoryService.persist(commandJdo);
-        }
-    }
-
-    private static void withSafeTargetStr(final CommandJdo commandJdo) {
-        if (tooLong(commandJdo.getTargetStr())) {
-            commandJdo.setTargetStr(null);
-        }
-    }
-    private static void withSafeResultStr(final CommandJdo commandJdo) {
-        if (tooLong(commandJdo.getResultStr())) {
-            commandJdo.setResultStr(null);
-        }
-    }
-
-    private static boolean tooLong(final String str) {
-        return str != null && str.length() > 2000;
-    }
 
 
-
-    @Inject CommandServiceJdo commandService;
     @Inject Provider<CommandContext> commandContextProvider;
     @Inject RepositoryService repositoryService;
     @Inject IsisJdoSupport_v3_2 isisJdoSupport;

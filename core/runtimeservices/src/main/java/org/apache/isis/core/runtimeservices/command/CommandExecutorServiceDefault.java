@@ -40,7 +40,6 @@ import org.apache.isis.applib.services.bookmark.BookmarkService;
 import org.apache.isis.applib.services.clock.ClockService;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandExecutorService;
-import org.apache.isis.applib.services.command.CommandWithDto;
 import org.apache.isis.applib.services.iactn.Interaction;
 import org.apache.isis.applib.services.iactn.InteractionContext;
 import org.apache.isis.applib.services.sudo.SudoService;
@@ -105,9 +104,9 @@ public class CommandExecutorServiceDefault implements CommandExecutorService {
     @Override
     public void executeCommand(
             final CommandExecutorService.SudoPolicy sudoPolicy,
-            final CommandWithDto commandWithDto) {
+            final Command command) {
 
-        final Runnable commandRunnable = ()->executeCommand(commandWithDto);
+        final Runnable commandRunnable = ()->executeCommand(command);
         final Runnable topLevelRunnable;
 
         switch (sudoPolicy) {
@@ -115,7 +114,7 @@ public class CommandExecutorServiceDefault implements CommandExecutorService {
             topLevelRunnable = commandRunnable;
             break;
         case SWITCH:
-            val user = commandWithDto.getUser();
+            val user = command.getUsername();
             topLevelRunnable = ()->sudoService.sudo(user, commandRunnable);
             break;
         default:
@@ -126,27 +125,22 @@ public class CommandExecutorServiceDefault implements CommandExecutorService {
 
             transactionService.executeWithinTransaction(topLevelRunnable);
 
-            afterCommit(commandWithDto, /*exception*/null);
+            afterCommit(command, /*exception*/null);
 
         } catch (Exception e) {
 
-            val executeIn = commandWithDto.getExecuteIn();
-
-            log.warn("Exception when executing : {} {}", executeIn, commandWithDto.getMemberIdentifier(), e);
-            afterCommit(commandWithDto, e);
+            log.warn("Exception when executing : {}", command.getLogicalMemberIdentifier(), e);
+            afterCommit(command, e);
         }
 
     }
 
-    protected void executeCommand(final CommandWithDto commandWithDto) {
+    protected void executeCommand(final Command command) {
 
         // setup for us by IsisTransactionManager; will have the transactionId of the backgroundCommand
         val interaction = interactionContextProvider.get().getInteraction();
-        val executeIn = commandWithDto.getExecuteIn();
 
-        log.info("Executing: {} {} {} {}", executeIn, commandWithDto.getMemberIdentifier(), commandWithDto.getTimestamp(), commandWithDto.getUniqueId());
-
-        commandWithDto.internal().setExecutor(Command.Executor.BACKGROUND);
+        log.info("Executing: {} {} {}", command.getLogicalMemberIdentifier(), command.getTimestamp(), command.getUniqueId());
 
         // responsibility for setting the Command#startedAt is in the ActionInvocationFacet or
         // PropertySetterFacet, but this is run if the domain object was found.  If the domain object is
@@ -159,12 +153,12 @@ public class CommandExecutorServiceDefault implements CommandExecutorService {
                 ? currentExecution.getStartedAt()
                         : clockService.nowAsJavaSqlTimestamp();
 
-        commandWithDto.internal().setStartedAt(startedAt);
+        command.internal().setStartedAt(startedAt);
 
-        final CommandDto dto = commandWithDto.asDto();
+        val dto = command.getCommandDto();
 
-        Bookmark resultBookmark = executeCommand(dto);
-        commandWithDto.internal().setResult(resultBookmark);
+        val resultBookmark = executeCommand(dto);
+        command.internal().setResult(resultBookmark);
     }
 
     @Override
@@ -233,17 +227,17 @@ public class CommandExecutorServiceDefault implements CommandExecutorService {
         return null;
     }
 
-    protected void afterCommit(CommandWithDto commandWithDto, Exception exceptionIfAny) {
+    protected void afterCommit(final Command command, final Exception exceptionIfAny) {
 
         val interaction = interactionContextProvider.get().getInteraction();
 
         // it's possible that there is no priorExecution, specifically if there was an exception
         // when performing the action invocation/property edit.  We therefore need to guard that case.
         final Interaction.Execution<?, ?> priorExecution = interaction.getPriorExecution();
-        if (commandWithDto.getStartedAt() == null) {
+        if (command.getStartedAt() == null) {
             // if attempting to commit the xactn threw an error, we will (I think?) have lost this info, so need to
             // capture
-            commandWithDto.internal().setStartedAt(
+            command.internal().setStartedAt(
                     priorExecution != null
                     ? priorExecution.getStartedAt()
                             : clockService.nowAsJavaSqlTimestamp());
@@ -253,12 +247,10 @@ public class CommandExecutorServiceDefault implements CommandExecutorService {
                 priorExecution != null
                 ? priorExecution.getCompletedAt()
                         : clockService.nowAsJavaSqlTimestamp();  // close enough...
-                commandWithDto.internal().setCompletedAt(completedAt);
+                command.internal().setCompletedAt(completedAt);
 
                 if(exceptionIfAny != null) {
-                    commandWithDto.internal().setException(_Exceptions.
-                            streamStacktraceLines(exceptionIfAny, 500)
-                            .collect(Collectors.joining("\n")));
+                    command.internal().setException(exceptionIfAny);
                 }
 
     }

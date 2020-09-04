@@ -16,28 +16,29 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.isis.persistence.jdo.datanucleus5.datanucleus.typeconverters;
 
-import org.datanucleus.store.types.converters.TypeConverter;
+package org.apache.isis.viewer.wicket.ui.components.scalars.oiddto;
 
-import org.apache.isis.applib.value.Markup;
+import org.apache.isis.viewer.wicket.model.models.ScalarModel;
+import org.apache.isis.viewer.wicket.ui.components.scalars.ScalarPanelTextFieldParseableAbstract;
 
-public class IsisMarkupConverter implements TypeConverter<Markup, String>{
+/**
+ * Panel for rendering scalars of type {@link org.apache.isis.schema.common.v2.OidDto}.
+ */
+public class OidDtoPanel extends ScalarPanelTextFieldParseableAbstract {
 
     private static final long serialVersionUID = 1L;
 
-    @Override
-    public String toDatastoreType(final Markup memberValue) {
-        return memberValue != null
-                ? memberValue.asHtml()
-                        : null;
+
+    public OidDtoPanel(final String id, final ScalarModel scalarModel) {
+        super(id, scalarModel);
     }
 
     @Override
-    public Markup toMemberType(final String datastoreValue) {
-        return datastoreValue != null
-                ? new Markup(datastoreValue)
-                        : null;
+    protected String getScalarPanelType() {
+        return "oidDtoPanel";
     }
+
+
 
 }

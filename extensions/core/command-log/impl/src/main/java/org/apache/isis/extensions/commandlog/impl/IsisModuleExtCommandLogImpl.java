@@ -4,18 +4,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 import org.apache.isis.extensions.commandlog.impl.ui.CommandServiceMenu;
 import org.apache.isis.testing.fixtures.applib.fixturescripts.FixtureScript;
 import org.apache.isis.testing.fixtures.applib.modules.ModuleWithFixtures;
 import org.apache.isis.testing.fixtures.applib.teardown.TeardownFixtureAbstract;
-
-import org.apache.isis.extensions.commandlog.impl.background.BackgroundCommandExecutionFromBackgroundCommandServiceJdo;
-import org.apache.isis.extensions.commandlog.impl.background.BackgroundCommandServiceJdo;
-import org.apache.isis.extensions.commandlog.impl.background.BackgroundCommandServiceJdoRepository;
 
 @Configuration
 @Import({
@@ -24,7 +18,7 @@ import org.apache.isis.extensions.commandlog.impl.background.BackgroundCommandSe
         , BackgroundCommandServiceJdo.class
         , BackgroundCommandServiceJdoRepository.class
         , CommandServiceJdo.class
-        , CommandServiceJdoRepository.class
+        , CommandJdoRepository.class
         , CommandServiceMenu.class
 })
 @ComponentScan(

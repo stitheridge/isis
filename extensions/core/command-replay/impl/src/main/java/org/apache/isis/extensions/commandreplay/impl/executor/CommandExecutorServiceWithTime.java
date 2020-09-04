@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one or more
  *  contributor license agreements.  See the NOTICE file distributed with
  *  this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.apache.isis.applib.jaxb.JavaSqlXMLGregorianCalendarMarshalling;
 import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandExecutorService;
-import org.apache.isis.applib.services.command.CommandWithDto;
 import org.apache.isis.extensions.commandreplay.impl.clock.TickingClockService;
 import org.apache.isis.schema.cmd.v2.CommandDto;
 
@@ -57,10 +56,10 @@ public class CommandExecutorServiceWithTime implements CommandExecutorService {
     }
 
     @Override
-    public void executeCommand(final SudoPolicy sudoPolicy, final CommandWithDto commandWithDto) {
-        final Runnable executeCommand = () -> delegate.executeCommand(sudoPolicy, commandWithDto);
+    public void executeCommand(final SudoPolicy sudoPolicy, final Command command) {
+        final Runnable executeCommand = () -> delegate.executeCommand(sudoPolicy, command);
         if(tickingClockService.isInitialized()) {
-            final Timestamp timestamp = commandWithDto.getTimestamp();
+            final Timestamp timestamp = command.getTimestamp();
             tickingClockService.at(timestamp, executeCommand);
         } else {
             executeCommand.run();

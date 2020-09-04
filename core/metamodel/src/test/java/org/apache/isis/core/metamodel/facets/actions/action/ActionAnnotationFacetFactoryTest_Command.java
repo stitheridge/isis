@@ -29,9 +29,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.isis.applib.annotation.Action;
-import org.apache.isis.applib.annotation.CommandExecuteIn;
-import org.apache.isis.applib.annotation.CommandPersistence;
-import org.apache.isis.applib.annotation.CommandReification;
 import org.apache.isis.applib.annotation.SemanticsOf;
 import org.apache.isis.core.config.metamodel.facets.CommandActionsConfiguration;
 import org.apache.isis.core.metamodel.facetapi.Facet;

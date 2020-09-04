@@ -109,6 +109,12 @@
             <artifactId>isis-valuetypes-markdown-applib</artifactId>
         </dependency>
 
-    </dependencies>
+		<!-- Extensions -->
+		<dependency>
+			<groupId>org.apache.isis.extensions</groupId>
+			<artifactId>isis-extensions-command-log-impl</artifactId>
+		</dependency>
+
+	</dependencies>
 
 </project>

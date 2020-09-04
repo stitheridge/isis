@@ -21,8 +21,6 @@ package org.apache.isis.applib.services.command;
 import java.sql.Timestamp;
 import java.util.UUID;
 
-import org.apache.isis.applib.annotation.CommandExecuteIn;
-import org.apache.isis.applib.annotation.CommandPersistence;
 import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.util.ObjectContracts;
 import org.apache.isis.applib.util.ToString;

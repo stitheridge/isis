@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandExecutorService;
-import org.apache.isis.applib.services.command.CommandWithDto;
 import org.apache.isis.core.commons.internal.collections._Lists;
 
 import lombok.val;

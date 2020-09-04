@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 
 import org.apache.isis.applib.annotation.IsisInteractionScope;
 import org.apache.isis.applib.annotation.OrderPrecedence;
-import org.apache.isis.applib.services.command.Command.Executor;
 import org.apache.isis.applib.services.inject.ServiceInjector;
 
 import lombok.Getter;
@@ -69,12 +68,6 @@ public class CommandContext {
             serviceInjector.injectServicesInto(command);
         }
     }
-
-    public Optional<Executor> getCurrentExecutor() {
-        return Optional.ofNullable(getCommand())
-                .map(Command::getExecutor);
-    }
-
     // tag::refguide[]
 }
 // end::refguide[]

@@ -7,7 +7,6 @@ import javax.inject.Inject;
 
 import org.apache.isis.applib.annotation.Action;
 import org.apache.isis.applib.annotation.ActionLayout;
-import org.apache.isis.applib.annotation.CommandReification;
 import org.apache.isis.applib.annotation.DomainService;
 import org.apache.isis.applib.annotation.DomainServiceLayout;
 import org.apache.isis.applib.annotation.MemberOrder;
@@ -16,7 +15,7 @@ import org.apache.isis.applib.annotation.SemanticsOf;
 import org.apache.isis.applib.services.jaxb.JaxbService;
 import org.apache.isis.applib.value.Clob;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 import org.apache.isis.extensions.commandreplay.impl.IsisModuleExtCommandReplayImpl;
 import org.apache.isis.schema.cmd.v2.CommandDto;
 import org.apache.isis.schema.cmd.v2.CommandsDto;
@@ -43,7 +42,7 @@ public class CommandReplayOnSlaveService {
     @ActionLayout(cssClassFa = "fa-bath")
     @MemberOrder(sequence="60.1")
     public CommandJdo findReplayHwmOnSlave() {
-        return commandServiceJdoRepository.findReplayHwm();
+        return commandJdoRepository.findReplayHwm();
     }
 
 
@@ -70,14 +69,14 @@ public class CommandReplayOnSlaveService {
         }
 
         for (final CommandDto commandDto : commandDtoList) {
-            commandServiceJdoRepository.saveForReplay(commandDto);
+            commandJdoRepository.saveForReplay(commandDto);
         }
     }
 
 
 
     @Inject
-    CommandServiceJdoRepository commandServiceJdoRepository;
+    CommandJdoRepository commandJdoRepository;
     @Inject JaxbService jaxbService;
 
 }

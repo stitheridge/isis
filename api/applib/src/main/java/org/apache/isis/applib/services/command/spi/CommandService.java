@@ -49,7 +49,7 @@ public interface CommandService {
 
     /**
      * &quot;Complete&quot; the command, typically meaning to indicate that the command is completed, and to
-     * persist it if its {@link Command#getPersistence()} and {@link Command#isPersistHint() persistence hint}
+     * persist it if its {@link Command#getPersistence()} and {@link Command#isSystemStateChanged() persistence hint}
      * indicate that it should be.
      *
      * <p>

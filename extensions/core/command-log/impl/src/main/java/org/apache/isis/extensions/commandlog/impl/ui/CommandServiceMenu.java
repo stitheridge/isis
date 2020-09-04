@@ -26,7 +26,7 @@ import org.apache.isis.applib.annotation.SemanticsOf;
 import org.apache.isis.applib.services.clock.ClockService;
 import org.apache.isis.extensions.commandlog.impl.IsisModuleExtCommandLogImpl;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 
 @DomainService(
     nature = NatureOfService.VIEW,
@@ -94,14 +94,15 @@ public class CommandServiceMenu {
     public CommandJdo findCommandById(
             @ParameterLayout(named="Transaction Id")
             final UUID transactionId) {
-        return commandServiceRepository.findByTransactionId(transactionId).orElse(null);
+        return commandServiceRepository.findByUniqueId(transactionId).orElse(null);
     }
     public boolean hideFindCommandById() {
         return commandServiceRepository == null;
     }
 
 
-    @Inject CommandServiceJdoRepository commandServiceRepository;
+    @Inject
+    CommandJdoRepository commandServiceRepository;
     @Inject ClockService clockService;
 }
 

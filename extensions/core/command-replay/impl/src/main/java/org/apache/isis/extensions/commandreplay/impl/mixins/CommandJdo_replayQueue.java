@@ -9,7 +9,7 @@ import org.apache.isis.applib.annotation.CollectionLayout;
 import org.apache.isis.applib.annotation.MemberOrder;
 import org.apache.isis.applib.annotation.Mixin;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 import org.apache.isis.extensions.commandreplay.impl.IsisModuleExtCommandReplayImpl;
 import org.apache.isis.extensions.commandreplay.impl.fetch.MasterConfiguration;
 
@@ -32,7 +32,7 @@ public class CommandJdo_replayQueue {
 
     @MemberOrder(sequence = "100.100")
     public List<CommandJdo> coll() {
-        return commandServiceJdoRepository.findReplayedOnSlave();
+        return commandJdoRepository.findReplayedOnSlave();
     }
 
     public boolean hideColl() {
@@ -42,6 +42,6 @@ public class CommandJdo_replayQueue {
     @Inject
     MasterConfiguration masterConfiguration;
     @Inject
-    CommandServiceJdoRepository commandServiceJdoRepository;
+    CommandJdoRepository commandJdoRepository;
 
 }

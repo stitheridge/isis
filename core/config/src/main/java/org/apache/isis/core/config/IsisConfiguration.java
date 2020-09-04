@@ -58,7 +58,6 @@ import org.apache.isis.applib.annotation.DomainService;
 import org.apache.isis.applib.annotation.LabelPosition;
 import org.apache.isis.applib.annotation.PromptStyle;
 import org.apache.isis.applib.services.audit.AuditerService;
-import org.apache.isis.applib.services.command.CommandWithDto;
 import org.apache.isis.applib.services.i18n.TranslationService;
 import org.apache.isis.applib.services.iactn.Interaction;
 import org.apache.isis.applib.services.publish.PublishedObjects;
@@ -656,7 +655,7 @@ public class IsisConfiguration {
                  * <p>
                  *     In particular, the {@link CommandWithDto} implementation
                  *     of {@link org.apache.isis.applib.services.command.Command} represents the action invocation
-                 *     memento (obtained using {@link CommandWithDto#asDto()}) as a
+                 *     memento (obtained using {@link CommandWithDto#getCommandDto()}) as a
                  *     {@link org.apache.isis.schema.cmd.v2.CommandDto}.
                  * </p>
                  *
@@ -843,7 +842,7 @@ public class IsisConfiguration {
                  * <p>
                  *     In particular, the {@link CommandWithDto} implementation
                  *     of {@link org.apache.isis.applib.services.command.Command} represents the action invocation
-                 *     memento (obtained using {@link CommandWithDto#asDto()}) as a
+                 *     memento (obtained using {@link CommandWithDto#getCommandDto()}) as a
                  *     {@link org.apache.isis.schema.cmd.v2.CommandDto}.
                  * </p>
                  *

@@ -21,7 +21,7 @@ import org.apache.isis.applib.services.jaxb.JaxbService;
 import org.apache.isis.applib.services.message.MessageService;
 import org.apache.isis.applib.value.Clob;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 import org.apache.isis.extensions.commandreplay.impl.IsisModuleExtCommandReplayImpl;
 import org.apache.isis.schema.cmd.v2.CommandDto;
 import org.apache.isis.schema.cmd.v2.CommandsDto;
@@ -158,7 +158,7 @@ public class CommandReplayOnMasterService {
             @ParameterLayout(named="Filename prefix")
             final String fileNamePrefix) {
 
-        return commandServiceRepository.findByTransactionId(transactionId)
+        return commandServiceRepository.findByUniqueId(transactionId)
                 .map(commandJdo -> {
 
                     final CommandDto commandDto =
@@ -180,7 +180,8 @@ public class CommandReplayOnMasterService {
     }
 
 
-    @Inject CommandServiceJdoRepository commandServiceRepository;
+    @Inject
+    CommandJdoRepository commandServiceRepository;
     @Inject JaxbService jaxbService;
     @Inject MessageService messageService;
     @Inject ContentMappingServiceForCommandsDto contentMappingServiceForCommandsDto;

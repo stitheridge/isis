@@ -14,7 +14,7 @@ import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.bookmark.BookmarkService;
 import org.apache.isis.extensions.commandlog.impl.IsisModuleExtCommandLogImpl;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 
 /**
  * This mixin contributes a <tt>recentCommands</tt> action to any domain object
@@ -53,7 +53,7 @@ public class Object_recentCommands {
     }
 
     @Inject
-    CommandServiceJdoRepository commandServiceRepository;
+    CommandJdoRepository commandServiceRepository;
     @Inject BookmarkService bookmarkService;
 
 }

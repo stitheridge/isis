@@ -30,7 +30,6 @@ import org.apache.isis.applib.RecoverableException;
 import org.apache.isis.applib.annotation.SemanticsOf;
 import org.apache.isis.applib.annotation.Where;
 import org.apache.isis.applib.services.command.Command;
-import org.apache.isis.applib.services.command.CommandContext;
 import org.apache.isis.core.commons.collections.Can;
 import org.apache.isis.core.commons.collections.CanVector;
 import org.apache.isis.core.commons.internal.assertions._Assert;
@@ -45,7 +44,6 @@ import org.apache.isis.core.metamodel.facetapi.FeatureType;
 import org.apache.isis.core.metamodel.facets.FacetedMethod;
 import org.apache.isis.core.metamodel.facets.FacetedMethodParameter;
 import org.apache.isis.core.metamodel.facets.actions.action.invocation.ActionInvocationFacet;
-import org.apache.isis.core.metamodel.facets.actions.action.invocation.CommandUtil;
 import org.apache.isis.core.metamodel.facets.actions.defaults.ActionDefaultsFacet;
 import org.apache.isis.core.metamodel.facets.actions.prototype.PrototypeFacet;
 import org.apache.isis.core.metamodel.facets.actions.semantics.ActionSemanticsFacet;
@@ -65,6 +63,7 @@ import org.apache.isis.core.metamodel.spec.ManagedObject;
 import org.apache.isis.core.metamodel.spec.ObjectSpecification;
 import org.apache.isis.core.metamodel.spec.feature.ObjectAction;
 import org.apache.isis.core.metamodel.spec.feature.ObjectActionParameter;
+import org.apache.isis.schema.cmd.v2.CommandDto;
 
 import lombok.NonNull;
 import lombok.val;
@@ -381,13 +380,8 @@ implements ObjectAction {
     }
 
     /**
-     * Sets up the {@link Command}, then delegates off to
-     * {@link #executeInternal(ManagedObject, ManagedObject, List, InteractionInitiatedBy) executeInternal}
+     * Sets up the {@link Command}, then delegates to {@link #executeInternal(InteractionHead, Can, InteractionInitiatedBy)}
      * to invoke the {@link ActionInvocationFacet invocation facet}.
-     *
-     * @param mixedInAdapter - will be null for regular actions, and for mixin actions.  
-     * When a mixin action invokes its underlying mixedIn action, then will be populated 
-     * (so that the ActionDomainEvent can correctly provide the underlying mixin)
      */
     @Override
     public ManagedObject execute(
@@ -578,52 +572,33 @@ implements ObjectAction {
     }
 
     /**
-     * Internal API, called by the various implementations of {@link ObjectAction} ({@link ObjectActionDefault default},
-     * {@link ObjectActionMixedIn mixed-in} and {@link ObjectActionContributee contributee}).
+     * Internal API, called by the various implementations of
+     * {@link ObjectAction} ({@link ObjectActionDefault default} and
+     * {@link ObjectActionMixedIn mixed-in}.
      */
     public void setupCommand(
             final ManagedObject targetAdapter,
             final Can<ManagedObject> argumentAdapters) {
 
-        final CommandContext commandContext = getCommandContext();
-        final Command command = commandContext.getCommand();
-
-        _Assert.assertNotNull(command, "No command available with current thread, "
-                + "are we missing an interaction context?");
-        
-        if (command.getExecutor() != Command.Executor.USER) {
-            return;
-        }
-
-        setupCommandTarget(targetAdapter, argumentAdapters);
-        setupCommandMemberIdentifier();
-        setupCommandMementoAndExecutionContext(targetAdapter, argumentAdapters);
+        setupCommandTarget(targetAdapter);
+        setupCommandLogicalMemberIdentifier();
+        val dto = createCommandDto(targetAdapter, argumentAdapters);
+        setupCommandDtoAndExecutionContext(dto);
     }
 
-    private void setupCommandTarget(
+    private CommandDto createCommandDto(
             final ManagedObject targetAdapter,
             final Can<ManagedObject> argumentAdapters) {
 
-        final String arguments = CommandUtil.argDescriptionFor(this, argumentAdapters.toList());
-        super.setupCommandTarget(targetAdapter, arguments);
-    }
-
-    private void setupCommandMementoAndExecutionContext(
-            final ManagedObject targetAdapter,
-            final Can<ManagedObject> argumentAdapters) {
-
-        val commandDtoServiceInternal = getCommandDtoService();
         final List<ManagedObject> commandTargetAdapters =
                 commandTargetAdaptersHolder.get() != null
                 ? commandTargetAdaptersHolder.get()
                         : Collections.singletonList(targetAdapter);
 
-                val commandDto = commandDtoServiceInternal.asCommandDto(
-                        commandTargetAdapters, this, argumentAdapters);
-
-                setupCommandDtoAndExecutionContext(commandDto);
-
+        return getCommandDtoServiceInternal().asCommandDto(
+                commandTargetAdapters, this, argumentAdapters);
     }
+
 
     // -- toString
 

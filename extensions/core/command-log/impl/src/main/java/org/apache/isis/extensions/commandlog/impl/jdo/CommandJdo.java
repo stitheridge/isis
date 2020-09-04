@@ -1,67 +1,89 @@
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
 package org.apache.isis.extensions.commandlog.impl.jdo;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.jdo.annotations.IdentityType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.apache.isis.applib.annotation.CommandExecuteIn;
-import org.apache.isis.applib.annotation.CommandPersistence;
 import org.apache.isis.applib.annotation.DomainObject;
 import org.apache.isis.applib.annotation.DomainObjectLayout;
 import org.apache.isis.applib.annotation.Editing;
-import org.apache.isis.applib.annotation.Optionality;
 import org.apache.isis.applib.annotation.Programmatic;
 import org.apache.isis.applib.annotation.Property;
 import org.apache.isis.applib.annotation.PropertyLayout;
 import org.apache.isis.applib.annotation.Where;
-import org.apache.isis.applib.services.DomainChangeAbstract;
-import org.apache.isis.applib.services.HasUsername;
+import org.apache.isis.applib.jaxb.JavaSqlXMLGregorianCalendarMarshalling;
+import org.apache.isis.applib.services.DomainChangeRecord;
 import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.command.Command;
-import org.apache.isis.applib.services.command.CommandWithDto;
 import org.apache.isis.applib.services.jaxb.JaxbService;
 import org.apache.isis.applib.types.MemberIdentifierType;
-import org.apache.isis.applib.types.TargetActionType;
-import org.apache.isis.applib.types.TargetClassType;
+import org.apache.isis.applib.util.ObjectContracts;
 import org.apache.isis.applib.util.TitleBuffer;
+import org.apache.isis.core.commons.internal.exceptions._Exceptions;
 import org.apache.isis.extensions.commandlog.impl.IsisModuleExtCommandLogImpl;
-import org.apache.isis.extensions.commandlog.impl.jdo.ReplayState;
+import org.apache.isis.extensions.commandlog.impl.api.UserDataKeys;
 import org.apache.isis.schema.cmd.v2.CommandDto;
+import org.apache.isis.schema.cmd.v2.MapDto;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.val;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * A persistent representation of a {@link Command}.
+ *
+ * <p>
+ *     Use cases requiring persistence including auditing, and for replay of
+ *     commands for regression testing purposes.
+ * </p>
+ *
+ * Note that this class doesn't subclass from {@link Command} ({@link Command}
+ * is not an interface).
+ */
 @javax.jdo.annotations.PersistenceCapable(
         identityType=IdentityType.APPLICATION,
-        schema = "isisextcommandlog",
+        schema = "isisExtensionsCommandLog",
         table = "Command")
 @javax.jdo.annotations.Queries( {
     @javax.jdo.annotations.Query(
-            name="findByTransactionId",
+            name="findByUniqueId",
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE transactionId == :transactionId "),
+                    + "WHERE uniqueId == :uniqueId "),
     @javax.jdo.annotations.Query(
-            name="findBackgroundCommandsByParent",
+            name="findByParent",
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE parent == :parent "
-                    + "&& executeIn == 'BACKGROUND'"),
+                    + "WHERE parent == :parent "),
     @javax.jdo.annotations.Query(
             name="findCurrent",
             value="SELECT "
@@ -76,12 +98,11 @@ import lombok.extern.log4j.Log4j2;
                     + "&& executeIn == 'FOREGROUND' "
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
-            name="findRecentBackgroundByTarget",
+            name="findRecentByTarget",
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE targetStr == :targetStr "
-                    + "&& executeIn == 'BACKGROUND' "
-                    + "ORDER BY this.timestamp DESC, transactionId DESC "
+                    + "ORDER BY this.timestamp DESC, uniqueId DESC "
                     + "RANGE 0,30"),
     @javax.jdo.annotations.Query(
             name="findByTargetAndTimestampBetween",
@@ -143,18 +164,10 @@ import lombok.extern.log4j.Log4j2;
                     + "ORDER BY this.timestamp DESC "
                     + "RANGE 0,30"),
     @javax.jdo.annotations.Query(
-            name="findRecentByTarget",
+            name="findFirst",
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE targetStr == :targetStr "
-                    + "ORDER BY this.timestamp DESC, transactionId DESC "
-                    + "RANGE 0,30"),
-    @javax.jdo.annotations.Query(
-            name="findForegroundFirst",
-            value="SELECT "
-                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE executeIn == 'FOREGROUND' "
-                    + "   && timestamp   != null "
+                    + "WHERE timestamp   != null "
                     + "   && startedAt   != null "
                     + "   && completedAt != null "
                     + "ORDER BY this.timestamp ASC "
@@ -162,11 +175,10 @@ import lombok.extern.log4j.Log4j2;
         // this should be RANGE 0,1 but results in DataNucleus submitting "FETCH NEXT ROW ONLY"
         // which SQL Server doesn't understand.  However, as workaround, SQL Server *does* understand FETCH NEXT 2 ROWS ONLY
     @javax.jdo.annotations.Query(
-            name="findForegroundSince",
+            name="findSince",
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE executeIn == 'FOREGROUND' "
-                    + "   && timestamp > :timestamp "
+                    + "WHERE timestamp > :timestamp "
                     + "   && startedAt != null "
                     + "   && completedAt != null "
                     + "ORDER BY this.timestamp ASC"),
@@ -226,11 +238,8 @@ import lombok.extern.log4j.Log4j2;
 )
 @DomainObjectLayout(named = "Command")
 @Log4j2
-public class CommandJdo extends DomainChangeAbstract
-        implements Command, CommandWithDto, HasUsername, Comparable<CommandJdo> {
-
-    @SuppressWarnings("unused")
-    private static final Logger LOG = LoggerFactory.getLogger(CommandJdo.class);
+public class CommandJdo
+        implements DomainChangeRecord, Comparable<CommandJdo> {
 
 
     public static abstract class PropertyDomainEvent<T> extends IsisModuleExtCommandLogImpl.PropertyDomainEvent<CommandJdo, T> { }
@@ -238,95 +247,133 @@ public class CommandJdo extends DomainChangeAbstract
     public static abstract class ActionDomainEvent extends IsisModuleExtCommandLogImpl.ActionDomainEvent<CommandJdo> { }
 
     public CommandJdo() {
-        super(DomainChangeAbstract.ChangeType.COMMAND);
-        this.uniqueId = UUID.randomUUID();
+        this(UUID.randomUUID());
     }
 
+    private CommandJdo(final UUID uniqueId) {
+        super();
+        this.uniqueId = uniqueId;
+    }
+
+    /**
+     * Intended for use on primary system.
+     *
+     * @param command
+     * @param commandJdoRepository
+     */
+    public CommandJdo(
+            final Command command
+            , final CommandJdoRepository commandJdoRepository) {
+        this();
+
+        setUniqueId(command.getUniqueId());
+        setUsername(command.getUsername());
+        setTimestamp(command.getTimestamp());
+
+        setCommandDto(command.getCommandDto());
+        setTarget(command.getTarget());
+        setLogicalMemberIdentifier(command.getLogicalMemberIdentifier());
+
+        val parent = command.getParent();
+        if(parent != null) {
+            setParent(commandJdoRepository.findByUniqueId(parent.getUniqueId()).orElse(null));
+        }
+
+        setStartedAt(command.getStartedAt());
+        setCompletedAt(command.getCompletedAt());
+
+        setResult(command.getResult());
+
+        setException(command.getException());
+
+        setReplayState(ReplayState.UNDEFINED);
+    }
+
+
+    /**
+     * Intended for use on secondary (replay) system.
+     *
+     * @param commandDto - obtained from the primary system as a representation of a command invocation
+     * @param replayState - controls whether this is to be replayed
+     * @param targetIndex - if the command represents a bulk action, then it is flattened out when replayed; this indicates which target to execute against.
+     */
+    public CommandJdo(final CommandDto commandDto, final ReplayState replayState, final int targetIndex) {
+        this();
+
+        setUniqueId(UUID.fromString(commandDto.getTransactionId()));
+        setUsername(commandDto.getUser());
+        setTimestamp(JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(commandDto.getTimestamp()));
+
+        setCommandDto(commandDto);
+        setTarget(Bookmark.from(commandDto.getTargets().getOid().get(targetIndex)));
+        setLogicalMemberIdentifier(commandDto.getMember().getLogicalMemberIdentifier());
+
+        // the hierarchy of commands calling other commands is only available on the primary system, and is
+        setParent(null);
+
+        setStartedAt(JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(commandDto.getTimings().getStartedAt()));
+        setCompletedAt(JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(commandDto.getTimings().getCompletedAt()));
+
+        set(commandDto, UserDataKeys.RESULT, value -> setResult(Bookmark.parse(value).orElse(null)));
+        set(commandDto, UserDataKeys.EXCEPTION, this::setException);
+
+        setReplayState(replayState);
+    }
+
+    private void set(CommandDto commandDto, String key, Consumer<String> consumer) {
+        commandDto.getUserData().getEntry()
+                .stream()
+                .filter(x -> Objects.equals(x.getKey(), UserDataKeys.RESULT))
+                .map(MapDto.Entry::getValue)
+                .findFirst()
+                .ifPresent(consumer::accept);
+    }
 
     public String title() {
         // nb: not thread-safe
         // formats defined in https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
-        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        val format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
-        final TitleBuffer buf = new TitleBuffer();
+        val buf = new TitleBuffer();
         buf.append(format.format(getTimestamp()));
-        buf.append(" ").append(getMemberIdentifier());
+        buf.append(" ").append(getLogicalMemberIdentifier());
         return buf.toString();
     }
 
 
     public static class UniqueIdDomainEvent extends PropertyDomainEvent<UUID> { }
     @javax.jdo.annotations.Persistent
-    @javax.jdo.annotations.Column(allowsNull="false")
-    private UUID uniqueId;
-    /**
-     * {@inheritDoc}
-     */
+    @javax.jdo.annotations.Column(allowsNull="false", length = 36)
     @Property(domainEvent = UniqueIdDomainEvent.class)
-    @Override
-    public UUID getUniqueId() {
-        return uniqueId;
-    }
+    @Getter @Setter
+    private UUID uniqueId;
 
 
-    public static class UserDomainEvent extends PropertyDomainEvent<String> { }
+    public static class UsernameDomainEvent extends PropertyDomainEvent<String> { }
     @javax.jdo.annotations.Column(allowsNull="false", length = 50)
+    @Property(domainEvent = UsernameDomainEvent.class)
+    @Getter @Setter
     private String username;
-    /**
-     * {@inheritDoc}
-     */
-    @Property(domainEvent = UserDomainEvent.class)
-    @Override
-    public String getUsername() {
-        return username;
-    }
 
 
     public static class TimestampDomainEvent extends PropertyDomainEvent<Timestamp> { }
     @javax.jdo.annotations.Persistent
     @javax.jdo.annotations.Column(allowsNull="false")
-    private Timestamp timestamp;
-    /**
-     * {@inheritDoc}
-     */
     @Property(domainEvent = TimestampDomainEvent.class)
+    @Getter @Setter
+    private Timestamp timestamp;
+
+
+
     @Override
-    public Timestamp getTimestamp() {
-        return timestamp;
-    }
-
-
-    public static class ExecutorDomainEvent extends PropertyDomainEvent<Executor> { }
-    @javax.jdo.annotations.NotPersistent
-    private Executor executor;
-    /**
-     * {@inheritDoc}
-     */
-    @Property(domainEvent = ExecutorDomainEvent.class)
-    @Override
-    public Executor getExecutor() {
-        return executor;
-    }
-
-
-    public static class ExecuteInDomainEvent extends PropertyDomainEvent<CommandExecuteIn> { }
-    @javax.jdo.annotations.Column(allowsNull="false", length = CommandExecuteIn.Type.Meta.MAX_LEN)
-    private CommandExecuteIn executeIn;
-    /**
-     * {@inheritDoc}
-     */
-    @Property(domainEvent = ExecuteInDomainEvent.class)
-    @Override
-    public CommandExecuteIn getExecuteIn() {
-        return executeIn;
+    public ChangeType getType() {
+        return ChangeType.COMMAND;
     }
 
 
     public static class ReplayStateDomainEvent extends PropertyDomainEvent<ReplayState> { }
     /**
      * For a replayed command, what the outcome was.
-     *
-     * NOT API.
      */
     @javax.jdo.annotations.Column(allowsNull="true", length=10)
     @Property(domainEvent = ReplayStateDomainEvent.class)
@@ -337,8 +384,6 @@ public class CommandJdo extends DomainChangeAbstract
     public static class ReplayStateFailureReasonDomainEvent extends PropertyDomainEvent<ReplayState> { }
     /**
      * For a {@link ReplayState#FAILED failed} replayed command, what the reason was for the failure.
-     *
-     * <b>NOT API</b>.
      */
     @javax.jdo.annotations.Column(allowsNull="true", length=255)
     @Property(domainEvent = ReplayStateFailureReasonDomainEvent.class)
@@ -352,179 +397,57 @@ public class CommandJdo extends DomainChangeAbstract
 
     public static class ParentDomainEvent extends PropertyDomainEvent<Command> { }
     @javax.jdo.annotations.Persistent
-    @javax.jdo.annotations.Column(name="parentTransactionId", allowsNull="true")
-    private Command parent;
-    /**
-     * {@inheritDoc}
-     */
+    @javax.jdo.annotations.Column(name="parentId", allowsNull="true")
     @Property(domainEvent = ParentDomainEvent.class)
     @PropertyLayout(hidden = Where.ALL_TABLES)
-    @Override
-    public Command getParent() {
-        return parent;
-    }
+    @Getter @Setter
+    private CommandJdo parent;
 
 
-    public static class TransactionIdDomainEvent extends PropertyDomainEvent<UUID> { }
-    @javax.jdo.annotations.PrimaryKey
-    @javax.jdo.annotations.Column(allowsNull="false", length = 36)
-    @Setter
-    private UUID transactionId;
-    /**
-     * {@inheritDoc}
-     *
-     * <p>
-     * Implementation notes: copied over from the Isis transaction when the command is persisted.
-     */
-    @Property(domainEvent = TransactionIdDomainEvent.class)
-    @Override
-    public UUID getTransactionId() {
-        return transactionId;
-    }
-
-
-    public static class TargetClassDomainEvent extends PropertyDomainEvent<String> { }
-    @javax.jdo.annotations.Column(allowsNull="false", length = TargetClassType.Meta.MAX_LEN)
-    private String targetClass;
-    /**
-     * {@inheritDoc}
-     */
-    @Property(domainEvent = TargetClassDomainEvent.class)
-    @PropertyLayout(named="Class")
-    @Override
-    public String getTargetClass() {
-        return targetClass;
-    }
-    public void setTargetClass(final String targetClass) {
-        this.targetClass = abbreviated(targetClass, TargetClassType.Meta.MAX_LEN);
-    }
-
-
-    public static class TargetActionDomainEvent extends PropertyDomainEvent<String> { }
-    @javax.jdo.annotations.Column(allowsNull="false", length = TargetActionType.Meta.MAX_LEN)
-    private String targetAction;
-    /**
-     * {@inheritDoc}
-     */
-    @Property(domainEvent = TargetActionDomainEvent.class, optionality = Optionality.MANDATORY)
-    @PropertyLayout(hidden = Where.NOWHERE, named = "Action")
-    @Override
-    public String getTargetAction() {
-        return targetAction;
-    }
-    public void setTargetAction(final String targetAction) {
-        this.targetAction = abbreviated(targetAction, TargetActionType.Meta.MAX_LEN);
-    }
-
-
-    public static class TargetStrDomainEvent extends PropertyDomainEvent<String> { }
+    public static class TargetDomainEvent extends PropertyDomainEvent<String> { }
+    @javax.jdo.annotations.Persistent
     @javax.jdo.annotations.Column(allowsNull="true", length = 2000, name="target")
-    private String targetStr;
-    /**
-     * {@inheritDoc}
-     */
-    @Property(domainEvent = TargetStrDomainEvent.class)
+    @Property(domainEvent = TargetDomainEvent.class)
     @PropertyLayout(hidden = Where.REFERENCES_PARENT, named = "Object")
-    @Override
-    public String getTargetStr() {
-        return targetStr;
-    }
-    @Override
-    public void setTargetStr(String targetStr) {
-        this.targetStr = targetStr;
-    }
+    @Getter @Setter
+    private Bookmark target;
 
-    public static class ArgumentsDomainEvent extends PropertyDomainEvent<String> { }
-    @javax.jdo.annotations.Column(allowsNull="true", jdbcType="CLOB", sqlType="LONGVARCHAR")
-    private String arguments;
-    /**
-     * {@inheritDoc}
-     */
-    @Property(domainEvent = ArgumentsDomainEvent.class)
-    @PropertyLayout(multiLine = 7, hidden = Where.ALL_TABLES)
     @Override
-    public String getArguments() {
-        return arguments;
+    public String getTargetMember() {
+        return getCommandDto().getMember().getLogicalMemberIdentifier();
     }
 
-
-    public static class MemberIdentifierDomainEvent extends PropertyDomainEvent<String> { }
-    @javax.jdo.annotations.Column(allowsNull="false", length = MemberIdentifierType.Meta.MAX_LEN)
-    private String memberIdentifier;
-    /**
-     * {@inheritDoc}
-     */
-    @Property(domainEvent = MemberIdentifierDomainEvent.class)
+    public static class LogicalMemberIdentifierDomainEvent extends PropertyDomainEvent<String> { }
+    @Property(domainEvent = LogicalMemberIdentifierDomainEvent.class)
     @PropertyLayout(hidden = Where.ALL_TABLES)
-    @Override
-    public String getMemberIdentifier() {
-        return memberIdentifier;
-    }
-    public void setMemberIdentifier(final String memberIdentifier) {
-        this.memberIdentifier = abbreviated(memberIdentifier, MemberIdentifierType.Meta.MAX_LEN);
-    }
+    @javax.jdo.annotations.Column(allowsNull="false", length = MemberIdentifierType.Meta.MAX_LEN)
+    @Getter @Setter
+    private String logicalMemberIdentifier;
 
 
-    public static class MementoDomainEvent extends PropertyDomainEvent<String> { }
+    public static class CommandDtoDomainEvent extends PropertyDomainEvent<CommandDto> { }
+    @javax.jdo.annotations.Persistent
     @javax.jdo.annotations.Column(allowsNull="true", jdbcType="CLOB")
-    private String memento;
-    /**
-     * {@inheritDoc}
-     */
-    @Property(domainEvent = MementoDomainEvent.class)
-    @PropertyLayout(multiLine = 9, hidden = Where.ALL_TABLES)
-    @Override
-    public String getMemento() {
-        return memento;
-    }
-
-
-    // locally cached
-    private transient CommandDto commandDto;
-
-    @Override
-    public CommandDto asDto() {
-        if(commandDto == null) {
-            this.commandDto = buildCommandDto();
-        }
-        return this.commandDto;
-    }
-
-    private CommandDto buildCommandDto() {
-        if(getMemento() == null) {
-            return null;
-        }
-
-        return jaxbService.fromXml(CommandDto.class, getMemento());
-    }
+    @Property(domainEvent = CommandDtoDomainEvent.class)
+    @PropertyLayout(multiLine = 9)
+    @Getter @Setter
+    private CommandDto commandDto;
 
 
     public static class StartedAtDomainEvent extends PropertyDomainEvent<Timestamp> { }
     @javax.jdo.annotations.Persistent
     @javax.jdo.annotations.Column(allowsNull="true")
-    private Timestamp startedAt;
-    /**
-     * {@inheritDoc}
-     */
     @Property(domainEvent = StartedAtDomainEvent.class)
-    @Override
-    public Timestamp getStartedAt() {
-        return startedAt;
-    }
+    @Getter @Setter
+    private Timestamp startedAt;
 
 
     public static class CompletedAtDomainEvent extends PropertyDomainEvent<Timestamp> { }
     @javax.jdo.annotations.Persistent
     @javax.jdo.annotations.Column(allowsNull="true")
-    private Timestamp completedAt;
-    /**
-     * {@inheritDoc}
-     */
     @Property(domainEvent = CompletedAtDomainEvent.class)
-    @Override
-    public Timestamp getCompletedAt() {
-        return completedAt;
-    }
+    @Getter @Setter
+    private Timestamp completedAt;
 
 
     public static class DurationDomainEvent extends PropertyDomainEvent<BigDecimal> { }
@@ -534,6 +457,7 @@ public class CommandJdo extends DomainChangeAbstract
      * <p>
      * Populated only if it has {@link #getCompletedAt() completed}.
      */
+    @javax.jdo.annotations.NotPersistent
     @javax.validation.constraints.Digits(integer=5, fraction=3)
     @Property(domainEvent = DurationDomainEvent.class)
     public BigDecimal getDuration() {
@@ -560,8 +484,8 @@ public class CommandJdo extends DomainChangeAbstract
         }
         if(getException() != null) {
             return "EXCEPTION";
-        } 
-        if(getResultStr() != null) {
+        }
+        if(getResult() != null) {
             return "OK";
         } else {
             return "OK (VOID)";
@@ -569,45 +493,37 @@ public class CommandJdo extends DomainChangeAbstract
     }
 
 
-    @Programmatic
-    @Override
-    public Bookmark getResult() {
-        return bookmarkFor(getResultStr());
-    }
-    @Programmatic
-    public void setResult(final Bookmark result) {
-        setResultStr(asString(result));
-    }
-
-
-    public static class ResultStrDomainEvent extends PropertyDomainEvent<String> { }
+    public static class ResultDomainEvent extends PropertyDomainEvent<String> { }
+    @javax.jdo.annotations.Persistent
     @javax.jdo.annotations.Column(allowsNull="true", length = 2000, name="result")
-    @Property(domainEvent = ResultStrDomainEvent.class)
+    @Property(domainEvent = ResultDomainEvent.class)
     @PropertyLayout(hidden = Where.ALL_TABLES, named = "Result Bookmark")
     @Getter @Setter
-    private String resultStr;
+    private Bookmark result;
 
 
     public static class ExceptionDomainEvent extends PropertyDomainEvent<String> { }
     /**
      * Stack trace of any exception that might have occurred if this interaction/transaction aborted.
-     * 
+     *
      * <p>
      * Not part of the applib API, because the default implementation is not persistent
      * and so there's no object that can be accessed to be annotated.
      */
     @javax.jdo.annotations.Column(allowsNull="true", jdbcType="CLOB")
-    private String exception;
-    /**
-     * {@inheritDoc}
-     */
     @Property(domainEvent = ExceptionDomainEvent.class)
     @PropertyLayout(hidden = Where.ALL_TABLES, multiLine = 5, named = "Exception (if any)")
-    @Override
-    public String getException() {
-        return exception;
+    @Getter
+    private String exception;
+    public void setException(String exception) {
+        this.exception = exception;
     }
-
+    public void setException(final Throwable exception) {
+        val stackTraceStr =
+                _Exceptions.streamStacktraceLines(exception, 1000)
+                .collect(Collectors.joining("\n"));
+        setException(stackTraceStr);
+    }
 
     public static class IsCausedExceptionDomainEvent extends PropertyDomainEvent<Boolean> { }
     @javax.jdo.annotations.NotPersistent
@@ -618,171 +534,17 @@ public class CommandJdo extends DomainChangeAbstract
     }
 
 
-
-    private final LinkedList<org.apache.isis.applib.events.domain.ActionDomainEvent<?>> actionDomainEvents = new LinkedList<>();
-    @Programmatic
-    public org.apache.isis.applib.events.domain.ActionDomainEvent<?> peekActionDomainEvent() {
-        return actionDomainEvents.isEmpty()? null: actionDomainEvents.getLast();
-    }
-    @Programmatic
-    public void pushActionDomainEvent(final org.apache.isis.applib.events.domain.ActionDomainEvent<?> event) {
-        if(peekActionDomainEvent() == event) {
-            return;
-        }
-        this.actionDomainEvents.add(event);
-    }
-    @Programmatic
-    public org.apache.isis.applib.events.domain.ActionDomainEvent<?> popActionDomainEvent() {
-        return !actionDomainEvents.isEmpty()
-                ? actionDomainEvents.removeLast() : null;
-    }
-    @Programmatic
-    public List<org.apache.isis.applib.events.domain.ActionDomainEvent<?>> flushActionDomainEvents() {
-        final List<org.apache.isis.applib.events.domain.ActionDomainEvent<?>> events =
-                Collections.unmodifiableList(new ArrayList<>(actionDomainEvents));
-        actionDomainEvents.clear();
-        return events;
-    }
-
-
-    private final Map<String, AtomicInteger> sequenceByName = new HashMap<>();
-    @Programmatic
-    public int next(final String sequenceAbbr) {
-        AtomicInteger next = sequenceByName.get(sequenceAbbr);
-        if(next == null) {
-            next = new AtomicInteger(0);
-            sequenceByName.put(sequenceAbbr, next);
-        } else {
-            next.incrementAndGet();
-        }
-        return next.get();
-    }
-
-
-
-    @javax.jdo.annotations.NotPersistent
-    @Programmatic
-    private CommandPersistence persistence;
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CommandPersistence getPersistence() {
-        return persistence;
-    }
-
-
-    @javax.jdo.annotations.NotPersistent
-    @Programmatic
-    private boolean persistHint;
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isPersistHint() {
-        return persistHint;
-    }
-
-
-    boolean shouldPersist() {
-        switch (getPersistence()) {
-            case PERSISTED:
-                return true;
-            case IF_HINTED:
-                return isPersistHint();
-            default:
-                return false;
-        }
-    }
-
-
-    private final Command.Internal INTERNAL = new Command.Internal() {
-        @Override
-        public void setMemberIdentifier(String actionIdentifier) {
-            CommandJdo.this.memberIdentifier = actionIdentifier;
-        }
-        @Override
-        public void setTargetClass(String targetClass) {
-            CommandJdo.this.targetClass = targetClass;
-        }
-        @Override
-        public void setTargetAction(String targetAction) {
-            CommandJdo.this.targetAction = targetAction;
-        }
-        @Override
-        public void setArguments(String arguments) {
-            CommandJdo.this.arguments = arguments;
-        }
-        @Override
-        public void setMemento(String memento) {
-            CommandJdo.this.memento = memento;
-        }
-        @Override
-        public void setTarget(Bookmark target) {
-            CommandJdo.this.setTarget(target);
-        }
-        @Override
-        public void setTimestamp(Timestamp timestamp) {
-            CommandJdo.this.timestamp = timestamp;
-        }
-        @Override
-        public void setStartedAt(Timestamp startedAt) {
-            CommandJdo.this.startedAt = startedAt;
-        }
-        @Override
-        public void setCompletedAt(final Timestamp completed) {
-            CommandJdo.this.completedAt = completed;
-        }
-        @Override
-        public void setUser(String user) {
-            CommandJdo.this.username = user;
-        }
-        @Override
-        public void setParent(Command parent) {
-            CommandJdo.this.parent = parent;
-        }
-        @Override
-        public void setResult(final Bookmark result) {
-            CommandJdo.this.setResult(result);
-        }
-        @Override
-        public void setException(final String exceptionStackTrace) {
-            CommandJdo.this.exception = exceptionStackTrace;
-        }
-        @Override
-        public void setPersistence(CommandPersistence persistence) {
-            CommandJdo.this.persistence = persistence;
-        }
-        @Override
-        public void setPersistHint(boolean persistHint) {
-            CommandJdo.this.persistHint = persistHint;
-        }
-        @Override
-        public void setExecutor(Executor executor) {
-            CommandJdo.this.executor = executor;
-        }
-        @Override
-        public void setExecuteIn(CommandExecuteIn executeIn) {
-            CommandJdo.this.executeIn = executeIn;
-        }
-    };
-
-    @Override
-    public Command.Internal internal() {
-        return INTERNAL;
-    }
-
-
     @Override
     public String toString() {
-        return "CommandJdo{" +
-                "targetStr='" + targetStr + '\'' +
-                ", memberIdentifier='" + memberIdentifier + '\'' +
-                ", username='" + username + '\'' +
-                ", startedAt=" + startedAt +
-                ", completedAt=" + completedAt +
-                ", transactionId=" + transactionId +
-                '}';
+        return ObjectContracts
+                .toString("uniqueId", CommandJdo::getUniqueId)
+                .thenToString("username", CommandJdo::getUsername)
+                .thenToString("timestamp", CommandJdo::getTimestamp)
+                .thenToString("target", CommandJdo::getTarget)
+                .thenToString("logicalMemberIdentifier", CommandJdo::getLogicalMemberIdentifier)
+                .thenToStringOmitIfAbsent("startedAt", CommandJdo::getStartedAt)
+                .thenToStringOmitIfAbsent("completedAt", CommandJdo::getCompletedAt)
+                .toString(this);
     }
 
     @Override
@@ -791,31 +553,37 @@ public class CommandJdo extends DomainChangeAbstract
     }
 
 
-    private static String abbreviated(String str, int maxLength) {
-        return str != null
-                ? (str.length() < maxLength ? str : str.substring(0, maxLength - 3) + "...")
-                : null;
-    }
-
-    private static Bookmark bookmarkFor(String str) {
-        return Bookmark.parse(str).orElse(null);
-    }
-
-    private static String asString(Bookmark bookmark) {
-        return bookmark != null ? bookmark.toString() : null;
-    }
-
+    /**
+     * @return in seconds, to 3 decimal places.
+     */
     private static BigDecimal durationBetween(Timestamp startedAt, Timestamp completedAt) {
         if (completedAt == null) {
             return null;
         } else {
             long millis = completedAt.getTime() - startedAt.getTime();
-            return (new BigDecimal(millis)).divide(new BigDecimal(1000)).setScale(3, RoundingMode.HALF_EVEN);
+            return toSeconds(millis);
         }
     }
 
+    private static final BigDecimal DIVISOR = new BigDecimal(1000);
 
-    @javax.inject.Inject
-    JaxbService jaxbService;
+    private static BigDecimal toSeconds(long millis) {
+        return new BigDecimal(millis)
+                    .divide(DIVISOR, RoundingMode.HALF_EVEN)
+                    .setScale(3, RoundingMode.HALF_EVEN);
+    }
+
+
+    @Override
+    public String getPreValue() {
+        return null;
+    }
+
+    @Override
+    public String getPostValue() {
+        return null;
+    }
+
+    @Inject JaxbService jaxbService;
 
 }

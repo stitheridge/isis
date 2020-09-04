@@ -1,7 +1,6 @@
 package org.apache.isis.extensions.commandreplay.impl.mixins;
 
 import org.apache.isis.applib.annotation.Action;
-import org.apache.isis.applib.annotation.CommandPersistence;
 import org.apache.isis.applib.annotation.MemberOrder;
 import org.apache.isis.applib.annotation.SemanticsOf;
 import org.apache.isis.extensions.commandlog.impl.IsisModuleExtCommandLogImpl;

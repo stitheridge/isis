@@ -5,13 +5,12 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.isis.applib.annotation.Action;
-import org.apache.isis.applib.annotation.CommandPersistence;
 import org.apache.isis.applib.annotation.MemberOrder;
 import org.apache.isis.applib.annotation.SemanticsOf;
 import org.apache.isis.applib.services.command.CommandExecutorService;
 import org.apache.isis.applib.services.message.MessageService;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 import org.apache.isis.extensions.commandreplay.impl.IsisModuleExtCommandReplayImpl;
 import org.apache.isis.extensions.commandreplay.impl.fetch.MasterConfiguration;
 import org.apache.isis.extensions.commandreplay.impl.StatusException;
@@ -38,7 +37,7 @@ public class CommandJdo_replayNext {
     public CommandJdo act() throws StatusException {
 
         // double check this is still the HWM
-        final CommandJdo replayHwm = commandServiceJdoRepository.findReplayHwm();
+        final CommandJdo replayHwm = commandJdoRepository.findReplayHwm();
         if(commandJdo != replayHwm) {
             messageService.informUser("HWM has changed");
             return replayHwm;
@@ -61,7 +60,7 @@ public class CommandJdo_replayNext {
         final CommandDto commandDto = commandFetcher.fetchCommand(this.commandJdo);
         return commandDto == null
                 ? null
-                : commandServiceJdoRepository.saveForReplay(commandDto);
+                : commandJdoRepository.saveForReplay(commandDto);
     }
 
     private void execute(final CommandJdo hwmCommand) {
@@ -70,14 +69,14 @@ public class CommandJdo_replayNext {
         commandExecutorService.executeCommand(CommandExecutorService.SudoPolicy.SWITCH, hwmCommand);
 
         // find background commands, and run them
-        final List<CommandJdo> backgroundCommands = commandServiceJdoRepository.findBackgroundCommandsByParent(hwmCommand);
+        final List<CommandJdo> backgroundCommands = commandJdoRepository.findBackgroundCommandsByParent(hwmCommand);
         for (final CommandJdo backgroundCommand : backgroundCommands) {
             commandExecutorService.executeCommand(CommandExecutorService.SudoPolicy.SWITCH, backgroundCommand);
         }
     }
 
     public String disableAct() {
-        final CommandJdo replayHwm = commandServiceJdoRepository.findReplayHwm();
+        final CommandJdo replayHwm = commandJdoRepository.findReplayHwm();
 
         if(commandJdo != replayHwm) {
             return "This action can only be performed against the 'HWM' command on the slave";
@@ -103,7 +102,7 @@ public class CommandJdo_replayNext {
 
 
     @Inject
-    CommandServiceJdoRepository commandServiceJdoRepository;
+    CommandJdoRepository commandJdoRepository;
     @Inject CommandFetcher commandFetcher;
     @Inject CommandExecutorService commandExecutorService;
     @Inject

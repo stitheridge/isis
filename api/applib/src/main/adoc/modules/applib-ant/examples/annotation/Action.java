@@ -27,7 +27,6 @@ import java.lang.annotation.Target;
 
 import org.apache.isis.applib.events.domain.ActionDomainEvent;
 import org.apache.isis.applib.services.command.CommandDtoProcessor;
-import org.apache.isis.applib.services.command.CommandWithDto;
 import org.apache.isis.applib.services.command.spi.CommandService;
 import org.apache.isis.applib.services.conmap.command.ContentMappingServiceForCommandDto;
 import org.apache.isis.applib.services.conmap.command.ContentMappingServiceForCommandsDto;

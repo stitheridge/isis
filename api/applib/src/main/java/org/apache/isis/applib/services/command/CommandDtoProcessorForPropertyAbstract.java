@@ -26,8 +26,8 @@ import org.apache.isis.schema.cmd.v2.PropertyDto;
  */
 public abstract class CommandDtoProcessorForPropertyAbstract
 implements CommandDtoProcessor {
-    protected CommandDto asDto(final CommandWithDto commandWithDto) {
-        return commandWithDto.asDto();
+    protected CommandDto asDto(final Command commandWithDto) {
+        return commandWithDto.getCommandDto();
     }
     protected PropertyDto getPropertyDto(final CommandDto commandDto) {
         return (PropertyDto) commandDto.getMember();

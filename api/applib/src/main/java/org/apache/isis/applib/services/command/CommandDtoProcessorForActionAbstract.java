@@ -27,8 +27,8 @@ import org.apache.isis.schema.cmd.v2.ParamsDto;
  * Convenience adapter for command processors for action invocations.
  */
 public abstract class CommandDtoProcessorForActionAbstract implements CommandDtoProcessor {
-    protected CommandDto asDto(final CommandWithDto commandWithDto) {
-        return commandWithDto.asDto();
+    protected CommandDto asDto(final Command command) {
+        return command.getCommandDto();
     }
     protected ActionDto getActionDto(final CommandDto commandDto) {
         return (ActionDto) commandDto.getMember();

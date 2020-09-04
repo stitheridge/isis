@@ -19,201 +19,131 @@
 package org.apache.isis.applib.services.command;
 
 import java.sql.Timestamp;
+import java.util.UUID;
 
-import org.apache.isis.applib.Identifier;
-import org.apache.isis.applib.annotation.Action;
-import org.apache.isis.applib.annotation.CommandExecuteIn;
-import org.apache.isis.applib.annotation.CommandPersistence;
 import org.apache.isis.applib.events.domain.ActionDomainEvent;
 import org.apache.isis.applib.services.HasUniqueId;
-import org.apache.isis.applib.services.background.BackgroundCommandService;
+import org.apache.isis.applib.services.HasUsername;
 import org.apache.isis.applib.services.bookmark.Bookmark;
-import org.apache.isis.applib.services.bookmark.BookmarkService;
 import org.apache.isis.applib.services.iactn.Interaction;
 import org.apache.isis.applib.services.wrapper.WrapperFactory;
 import org.apache.isis.applib.services.wrapper.control.AsyncControl;
 import org.apache.isis.schema.cmd.v2.CommandDto;
 
+import static org.apache.isis.applib.jaxb.JavaSqlXMLGregorianCalendarMarshalling.toTimestamp;
+
+import lombok.Getter;
+
 /**
  * Represents the <i>intention to</i> invoke either an action or modify a property.  There can be only one such
- * intention per (web) request, so a command is in effect request-scoped.  Note that {@link CommandContext} domain
- * service - from which the current {@link Command} can be obtained - is indeed annotated with
- * {@link javax.enterprise.context.RequestScoped @RequestScoped}.
+ * intention per (web) request, so a command is in effect interaction-scoped.
  *
  * <p>
- * Each Command can be reified into a {@link Command#getMemento() memento} by way of the (internal)
- * <tt>CommandDtoServiceInternal</tt> domain service; typically corresponding to the XML equivalent of a
- * {@link CommandDto} and conforming to the Apache Isis <a href="http://isis.apache.org/schema/cmd/">cmd</a> schema.
+ * Each Command holds a {@link CommandDto} (see Apache Isis <a href="http://isis.apache.org/schema/cmd/">cmd</a> schema)
+ * which reifies all the details in a serializable form.
  * </p>
  *
  * <p>
- *     The {@link Command} interface also captures details of the corresponding action invocation (or property edit),
+ *     It also captures details of the corresponding action invocation (or property edit),
  *     specifically when that action/edit {@link Command#getStartedAt() started} or
  *     {@link Command#getCompletedAt() completed}, and its result, either a {@link Command#getResult() return value}
  *     or an {@link Command#getException() exception}.  Also captures a stack of {@link ActionDomainEvent}s.
  * </p>
  *
  * <p>
- *     Note that when invoking an action, other actions may be invoked courtesy of the {@link WrapperFactory}.  These
- *     "sub-actions" do <i>not</i> modify the contents of the command object; in other words think of the command
+ *     Note that when invoking an action, other actions may be invoked courtesy
+ *     of the {@link WrapperFactory}.  These "sub-actions" do <i>not</i> modify
+ *     the contents of the current command object; in other words think of the command
  *     object as representing the outer-most originating action.
  * </p>
  *
  * <p>
- *     <b>NOTE</b>: in Isis v1.x, one of the responsibilities of {@link Command} was to generate unique sequence numbers for
- *     a given transactionId, where there were three possible sequences that might be generated.
- *     <ul>
- *         <li>
- *         <p>the sequence of changed domain objects being published by the
- *         {@link org.apache.isis.applib.services.publish.PublisherService#publish(Interaction.Execution)}
- *         </p>
- *         <p>
- *         In v2 ... TODO[2158] - what replaces this?
- *         </p>
- *         </li>
- *
- *         <li>
- *         <p>
- *         The sequence of wrapped action invocations (each being published)
- *         </p>
- *         <p>
- *         In v2 this is now done by {@link Interaction#next(String) Interaction} itself.
- *         </p>
- *         </li>
- *
- *         <li>
- *         <p>
- *         and finally, one or more background commands that might be scheduled via the <code>BackgroundService</code>.
- *         </p>
- *         <p>
- *         In v2 ... TODO[2158] - what replaces this?
- *         </p>
- *         </li>
- *     </ul>
- *
+ *     That said, if the sub-action is invoked asynchronously (using
+ *     {@link WrapperFactory#asyncWrap(Object, AsyncControl)} or
+ *     {@link WrapperFactory#asyncWrapMixin(Class, Object, AsyncControl)}), then
+ *     a separate {@link Command} object
+ *     is created, and the originating {@link Command} is set to be its
+ *     {@link Command#getParent() parent}.
  * </p>
- *
  */
 // tag::refguide[]
-public interface Command extends HasUniqueId {
+public class Command implements HasUniqueId, HasUsername {
+
+    public Command() {
+        this(UUID.randomUUID());
+    }
+    public Command(final Command parent, final CommandDto commandDto) {
+        this(UUID.fromString(commandDto.getTransactionId()));
+        internal().setCommandDto(commandDto);
+        internal().setParent(parent);
+        internal().setUsername(commandDto.getUser());
+        internal().setTimestamp(toTimestamp(commandDto.getTimestamp()));
+    }
+
+    private Command(final UUID uuid) {
+        this.uniqueId = uuid;
+    }
+
+
+    @Getter
+    private UUID uniqueId;
 
     // end::refguide[]
     /**
      * The user that created the command.
      */
     // tag::refguide[]
-    String getUser();                           // <.>
+    @Getter
+    private String username;                    // <.>
     // end::refguide[]
 
     /**
      * The date/time at which this command was created.
      */
     // tag::refguide[]
-    Timestamp getTimestamp();                   // <.>
+    @Getter
+    private Timestamp timestamp;                // <.>
     // end::refguide[]
 
     /**
-     * {@link Bookmark} of the target object (entity or service) on which this action was performed.
+     * Serializable representation of the action invocation/property edit.
+     */
+    // tag::refguide[]
+    @Getter
+    private CommandDto commandDto;              // <.>
+    // end::refguide[]
+
+    /**
+     * Also available in {@link #getCommandDto()}, is the {@link Bookmark} of
+     * the target object (entity or service) on which this action/edit was performed.
+     */
+    // tag::refguide[]
+    @Getter
+    private Bookmark target;                    // <.>
+    // end::refguide[]
+
+    /**
+     * Also available in {@link #getCommandDto()}, holds a string
+     * representation of the invoked action, or the edited property.
+     */
+    // tag::refguide[]
+    @Getter
+    private String logicalMemberIdentifier;     // <.>
+    // end::refguide[]
+
+    /**
+     * For commands created through the {@link WrapperFactory} (using
+     * {@link WrapperFactory#asyncWrap(Object, AsyncControl)} or
+     * {@link WrapperFactory#asyncWrapMixin(Class, Object, AsyncControl)}),
+     * captures the parent command.
      *
      * <p>
-     * Will only be populated if a {@link BookmarkService} has been configured.
+     *     Will return <code>null</code> if there is no parent.
      * </p>
      */
     // tag::refguide[]
-    Bookmark getTarget();                       // <.>
-    // end::refguide[]
-
-    /**
-     * Holds a string representation of the invoked action, or the edited property, equivalent to
-     * {@link Identifier#toClassAndNameIdentityString()}.
-     */
-    // tag::refguide[]
-    String getMemberIdentifier();               // <.>
-    // end::refguide[]
-
-    /**
-     * A human-friendly description of the class of the target object.
-     */
-    // tag::refguide[]
-    String getTargetClass();                    // <.>
-    // end::refguide[]
-
-    /**
-     * The human-friendly name of the action invoked/property edited on the target object.
-     */
-    // tag::refguide[]
-    String getTargetAction();                   // <.>
-    // end::refguide[]
-
-    /**
-     * A human-friendly description of the arguments with which the action was invoked.
-     */
-    // tag::refguide[]
-    String getArguments();                      // <.>
-    // end::refguide[]
-
-    /**
-     *
-     * A formal (XML or similar) specification of the action to invoke/being invoked.
-     */
-    // tag::refguide[]
-    String getMemento();                        // <.>
-    // end::refguide[]
-
-    /**
-     *
-     * The mechanism by which this command is to be executed, either synchronously &quot;in the
-     * {@link CommandExecuteIn#FOREGROUND foreground}&quot; or is to be executed asynchronously &quot;in the
-     * {@link CommandExecuteIn#BACKGROUND background}&quot; through the {@link BackgroundCommandService}.
-     */
-    // tag::refguide[]
-    CommandExecuteIn getExecuteIn();            // <.>
-    // end::refguide[]
-
-    // tag::refguide2[]
-    enum Executor {
-        // end::refguide2[]
-        /**
-         * Command being executed by the end-user.
-         */
-        // tag::refguide2[]
-        USER,
-        // end::refguide2[]
-        /**
-         * Command being executed by a background execution service.
-         */
-        // tag::refguide2[]
-        BACKGROUND,
-        // end::refguide2[]
-        /**
-         * Command being executed for some other reason, eg as result of redirect-after-post, or the homePage action.
-         */
-        // tag::refguide2[]
-        OTHER
-    }
-    // end::refguide2[]
-
-    /**
-     * The (current) executor of this command.
-     *
-     * <p>
-     * Note that (even for implementations of {@link BackgroundCommandService} that persist {@link Command}s), this
-     * property is never (likely to be) persisted, because it is always updated to indicate how the command is
-     * currently being executed.
-     *
-     * <p>
-     * If the {@link #getExecutor() executor} matches the required {@link #getExecuteIn() execution policy}, then the
-     * command actually is executed.  The combinations are:
-     * <ul>
-     * <li>executor = USER, executeIn = FOREGROUND, then execute</li>
-     * <li>executor = USER, executeIn = BACKGROUND, then persist and return persisted command as a placeholder for the result</li>
-     * <li>executor = BACKGROUND, executeIn = FOREGROUND, then ignore</li>
-     * <li>executor = BACKGROUND, executeIn = BACKGROUND, then execute, update the command with result</li>
-     * </ul>
-     *
-     */
-    // tag::refguide[]
-    Executor getExecutor();                     // <.>
+    @Getter
+    private Command parent;                     // <.>
     // end::refguide[]
 
     /**
@@ -230,7 +160,8 @@ public interface Command extends HasUniqueId {
      * {@link Interaction.Execution#getStartedAt()}.
      */
     // tag::refguide[]
-    Timestamp getStartedAt();                   // <.>
+    @Getter
+    private Timestamp startedAt;                // <.>
     // end::refguide[]
 
     /**
@@ -247,229 +178,170 @@ public interface Command extends HasUniqueId {
      * {@link Interaction.Execution#getCompletedAt()}.
      */
     // tag::refguide[]
-    Timestamp getCompletedAt();                 // <.>
+    @Getter
+    private Timestamp completedAt;              // <.>
     // end::refguide[]
 
     /**
-     * For actions created through the {@link WrapperFactory} and {@link BackgroundCommandService},
-     * captures the parent action.
+     * For a command that has actually been executed, holds a {@link Bookmark}
+     * to the object returned by the corresponding action/property modification.
+     *
+     * <p>
+     *     This property is used in replay scenarios to verify the outcome of
+     *     the replayed command, eg for regression testing.
+     * </p>
+     *
+     * See also  {@link Interaction#getCurrentExecution()} and
+     * {@link org.apache.isis.applib.services.iactn.Interaction.Execution#getReturned()}.
      */
     // tag::refguide[]
-    Command getParent();                        // <.>
+    @Getter
+    private Bookmark result;                    // <.>
     // end::refguide[]
 
     /**
-     * For an command that has actually been executed, holds the exception stack
+     * For a command that has actually been executed, holds the exception stack
      * trace if the action invocation/property modification threw an exception.
      *
      * <p>
-     *     Previously this field was deprecated (on the basis that the exception is also held in
-     *     {@link Interaction.Execution#getThrew()}). However, this property is now used in master/slave
-     *     replay scenarios which may query a persisted Command.
+     *     This property is used in replay scenarios to verify the outcome of
+     *     the replayed command, eg for regression testing.
      * </p>
      *
-     * See also {@link Interaction#getCurrentExecution()} and  {@link org.apache.isis.applib.services.iactn.Interaction.Execution#getThrew()}.
+     * See also {@link Interaction#getCurrentExecution()} and
+     * {@link org.apache.isis.applib.services.iactn.Interaction.Execution#getThrew()}.
      */
     // tag::refguide[]
-    String getException();                      // <.>
+    @Getter
+    private Throwable exception;                    // <.>
     // end::refguide[]
 
     /**
-     * For an command that has actually been executed, holds a {@link Bookmark} to the object returned by the corresponding action/property modification.
+     * Whether this command resulted in a change of state to the system.
      *
      * <p>
-     *     Previously this field was deprecated (on the basis that the returned value is also held in
-     *     {@link Interaction.Execution#getReturned()}). However, this property is now used in master/slave
-     *     replay scenarios which may query a persisted Command.
+     *     This can be used as a hint to decide whether to persist the command
+     *     to a datastore, for example for auditing (though
+     *     {@link org.apache.isis.applib.services.publish.PublisherService} is
+     *     an alternative for that use case) or so that it can be retrieved
+     *     and replayed on another system, eg for regression testing.
      * </p>
      *
-     * See also  {@link Interaction#getCurrentExecution()} and  {@link org.apache.isis.applib.services.iactn.Interaction.Execution#getReturned()}.
      */
     // tag::refguide[]
-    Bookmark getResult();                       // <.>
+    @Getter
+    private boolean systemStateChanged;                // <.>
     // end::refguide[]
 
-    /**
-     * Whether this command should ultimately be persisted (if the configured {@link BackgroundCommandService} supports
-     * it) or not.
-     *
-     * <p>
-     * If the action to be executed has been annotated with the {@link Action#command()} attribute
-     * then (unless its {@link Action#commandPersistence()} persistence} attribute has been set to a different value
-     * than its default of {@link org.apache.isis.applib.annotation.CommandPersistence#PERSISTED persisted}), the
-     * {@link Command} object will be persisted.
-     *
-     * <p>
-     * However, it is possible to prevent the {@link Command} object from ever being persisted by setting the
-     * {@link org.apache.isis.applib.annotation.Action#commandPersistence() persistence} attribute to
-     * {@link org.apache.isis.applib.annotation.CommandPersistence#NOT_PERSISTED}, or it can be set to
-     * {@link org.apache.isis.applib.annotation.CommandPersistence#IF_HINTED}, meaning it is dependent
-     * on whether {@link #isPersistHint() a hint has been set} by some other means.
-     *
-     * <p>
-     * For example, a {@link BackgroundCommandService} implementation that creates persisted background commands ought
-     * associate them (via its {@link Command#getParent() parent}) to an original persisted
-     * {@link Command}.  The hinting mechanism allows the service to suggest that the parent command be persisted so
-     * that the app can then provide a mechanism to find all child background commands for that original parent command.
-     */
-    // tag::refguide[]
-    CommandPersistence getPersistence();        // <.>
-    // end::refguide[]
 
-    /**
-     * Whether that this {@link Command} should be persisted, if possible.
-     */
-    // tag::refguide[]
-    boolean isPersistHint();                    // <.>
-    // end::refguide[]
+    private final Command.Internal INTERNAL = new Internal();
 
-    /**
-     * <b>NOT API</b>: intended to be called only by the framework.
-     */
-    public static interface Internal {
-
+    public class Internal {
         /**
          * <b>NOT API</b>: intended to be called only by the framework.
          *
          * <p>
          * Implementation notes: set when the Isis PersistenceSession is opened.
          */
-        void setUser(String user);
-
+        public void setUsername(String username) {
+            Command.this.username = username;
+        }
         /**
          * <b>NOT API</b>: intended to be called only by the framework.
          *
          * <p>
          * Implementation notes: set when the Isis PersistenceSession is opened.
          */
-        void setTimestamp(Timestamp timestamp);
-
+        public void setTimestamp(Timestamp timestamp) {
+            Command.this.timestamp = timestamp;
+        }
+        /**
+         * <b>NOT API</b>: intended to be called only by the framework.
+         *
+         * <p>
+         *     Only populated for async commands created through the
+         *     {@link WrapperFactory}.
+         * </p>
+         */
+        public void setParent(Command parent) {
+            Command.this.parent = parent;
+        }
+        /**
+         * <b>NOT API</b>: intended to be called only by the framework.
+         *
+         * <p>
+         * Implementation notes: set when the action is invoked (in the <tt>ActionInvocationFacet</tt>).
+         * @param commandDto
+         */
+        public void setCommandDto(CommandDto commandDto) {
+            Command.this.commandDto = commandDto;
+        }
         /**
          * <b>NOT API</b>: intended to be called only by the framework.
          *
          * <p>
          * Implementation notes: set when the action is invoked (in the ActionInvocationFacet).
          */
-        void setTarget(Bookmark target);
-
+        public void setTarget(Bookmark target) {
+            Command.this.target = target;
+        }
         /**
          * <b>NOT API</b>: intended to be called only by the framework.
          *
          * <p>
-         * Implementation notes: set when the action is invoked (in <tt>ActionInvocationFacet</tt>) or in
-         * property edited (in <tt>PropertySetterFacet</tt>).
+         * Implementation notes: set when the action is invoked (in
+         * <tt>ActionInvocationFacet</tt>) or property is edited (in
+         * <tt>PropertySetterFacet</tt>).
          */
-        void setMemberIdentifier(String memberIdentifier);
-
+        public void setLogicalMemberIdentifier(String logicalMemberIdentifier) {
+            Command.this.logicalMemberIdentifier = logicalMemberIdentifier;
+        }
+        /**
+         * <b>NOT API</b>: intended to be called only by the framework.
+         */
+        public void setStartedAt(Timestamp startedAt) {
+            Command.this.startedAt = startedAt;
+        }
+        /**
+         * <b>NOT API</b>: intended to be called only by the framework.
+         */
+        public void setCompletedAt(final Timestamp completed) {
+            Command.this.completedAt = completed;
+        }
+        /**
+         * <b>NOT API</b>: intended to be called only by the framework.
+         */
+        public void setResult(final Bookmark result) {
+            Command.this.result = result;
+        }
+        /**
+         * <b>NOT API</b>: intended to be called only by the framework.
+         */
+        public void setException(final Throwable exception) {
+            Command.this.exception = exception;
+        }
         /**
          * <b>NOT API</b>: intended to be called only by the framework.
          *
          * <p>
-         * Implementation notes: set when the action is invoked (in the <tt>ActionInvocationFacet</tt>) or property edited
-         * (in the <tt>PropertySetterOrClearFacet</tt>).
-         */
-        void setTargetAction(String targetAction);
-
-
-        /**
-         * <b>NOT API</b>: intended to be called only by the framework.
-         *
-         * <p>
-         * Implementation notes: set when the action is invoked (in the <tt>ActionInvocationFacet</tt>).
-         */
-        void setArguments(final String arguments);
-
-        /**
-         * <b>NOT API</b>: intended to be called only by the framework.
-         */
-        void setExecutor(final Executor executor);
-
-        /**
-         * <b>NOT API</b>: intended to be called only by the framework.
-         */
-        void setExecuteIn(CommandExecuteIn executeIn);
-
-        /**
-         * <b>NOT API</b>: intended to be called only by the framework.
-         */
-        void setResult(Bookmark resultBookmark);
-
-        /**
-         * <b>NOT API</b>: intended to be called only by the framework.
-         */
-        void setException(String stackTrace);
-
-        /**
-         * <b>NOT API</b>: intended to be called only by the framework.
-         */
-        void setParent(final Command parent);
-
-        /**
-         * <b>NOT API</b>: intended to be called only by the framework.
-         *
-         * <p>
-         *     Previously this field was deprecated (on the basis that the completedAt is also held in
-         *     {@link Interaction.Execution#getCompletedAt()}). However, this property is now used in master/slave
-         *     replay scenarios which may query a persisted Command.
+         * Hint that this {@link Command} has resulted in a change of state to the system.
+         * Implementations can use this to persist the command, for example.
          * </p>
-         *
-         * See also {@link Interaction#getCurrentExecution()} and
-         * {@link Interaction.Execution#setCompletedAt(Timestamp)}.
          */
-        void setCompletedAt(Timestamp completedAt);
-
-        /**
-         * <b>NOT API</b>: intended to be called only by the framework.
-         *
-         *
-         * <p>
-         *     Previously this field was deprecated (on the basis that the completedAt is also held in
-         *     {@link Interaction.Execution#getCompletedAt()}). However, this property is now used in master/slave
-         *     replay scenarios which may query a persisted Command.
-         * </p>
-         *
-         * See also {@link Interaction#getCurrentExecution()} and
-         * {@link #setStartedAt(org.apache.isis.applib.services.clock.ClockService, org.apache.isis.applib.services.metrics.MetricsService)}.
-         */
-        void setStartedAt(Timestamp startedAt);
-
-        /**
-         * <b>NOT API</b>: intended to be called only by the framework.
-         *
-         * <p>
-         * Implementation notes: set when the action is invoked (in the <tt>ActionInvocationFacet</tt>).
-         */
-        void setMemento(final String memento);
-
-        /**
-         * <b>NOT API</b>: intended to be called only by the framework.
-         *
-         * <p>
-         * Implementation notes: set when the action is invoked (in the <tt>ActionInvocationFacet</t>).
-         */
-        void setTargetClass(String targetClass);
-
-        /**
-         * <b>NOT API</b>: intended to be called only by the framework.
-         */
-        void setPersistence(final CommandPersistence persistence);
-
-        /**
-         * Hint that this {@link Command} should be persisted, if possible.
-         *
-         * <p>
-         * <b>NOT API</b>: intended to be called only by the framework.
-         *
-         * @see #getPersistence()
-         */
-        void setPersistHint(boolean persistHint);
-    }
+        public void setSystemStateChanged(boolean systemStateChanged) {
+            Command.this.systemStateChanged = systemStateChanged;
+        }
+    };
 
     /**
      * <b>NOT API</b>: intended to be called only by the framework.
      */
-    Internal internal();
+    public Command.Internal internal() {
+        return INTERNAL;
+    }
+
 
 // tag::refguide[]
+
 }
 // end::refguide[]

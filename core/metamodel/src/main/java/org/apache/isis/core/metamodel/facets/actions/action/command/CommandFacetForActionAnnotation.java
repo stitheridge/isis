@@ -21,9 +21,6 @@ package org.apache.isis.core.metamodel.facets.actions.action.command;
 import java.util.Optional;
 
 import org.apache.isis.applib.annotation.Action;
-import org.apache.isis.applib.annotation.CommandExecuteIn;
-import org.apache.isis.applib.annotation.CommandPersistence;
-import org.apache.isis.applib.annotation.CommandReification;
 import org.apache.isis.applib.services.command.CommandDtoProcessor;
 import org.apache.isis.applib.services.inject.ServiceInjector;
 import org.apache.isis.core.config.IsisConfiguration;
@@ -116,7 +113,7 @@ public class CommandFacetForActionAnnotation extends CommandFacetAbstract {
             final CommandDtoProcessor processor,
             final FacetHolder holder,
             final ServiceInjector servicesInjector) {
-        super(persistence, executeIn, enablement, processor, holder, servicesInjector);
+        super(persistence, processor, holder, servicesInjector);
     }
 
 

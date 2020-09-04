@@ -16,27 +16,29 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.isis.persistence.jdo.datanucleus5.datanucleus.typeconverters;
+package org.apache.isis.persistence.jdo.datanucleus5.datanucleus.typeconverters.schema.v2;
 
 import org.datanucleus.store.types.converters.TypeConverter;
 
-import org.apache.isis.applib.value.Password;
+import org.apache.isis.applib.util.schema.InteractionDtoUtils;
+import org.apache.isis.applib.value.Markup;
+import org.apache.isis.schema.ixn.v2.InteractionDto;
 
-public class IsisPasswordConverter implements TypeConverter<Password, String>{
+public class IsisInteractionDtoConverter implements TypeConverter<InteractionDto, String>{
 
     private static final long serialVersionUID = 1L;
 
     @Override
-    public String toDatastoreType(final Password memberValue) {
+    public String toDatastoreType(final InteractionDto memberValue) {
         return memberValue != null
-                ? memberValue.getPassword()
+                ? InteractionDtoUtils.toXml(memberValue)
                         : null;
     }
 
     @Override
-    public Password toMemberType(final String datastoreValue) {
+    public InteractionDto toMemberType(final String datastoreValue) {
         return datastoreValue != null
-                ? new Password(datastoreValue)
+                ? InteractionDtoUtils.fromXml(datastoreValue)
                         : null;
     }
 

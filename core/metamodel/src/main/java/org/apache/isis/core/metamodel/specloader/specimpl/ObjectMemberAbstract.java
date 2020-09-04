@@ -26,7 +26,7 @@ import org.apache.isis.applib.annotation.Where;
 import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandContext;
-import org.apache.isis.applib.util.schema.CommandDtoUtils;
+import org.apache.isis.core.commons.internal.assertions._Assert;
 import org.apache.isis.core.metamodel.commons.StringExtensions;
 import org.apache.isis.core.metamodel.consent.Consent;
 import org.apache.isis.core.metamodel.consent.InteractionInitiatedBy;
@@ -36,7 +36,6 @@ import org.apache.isis.core.metamodel.facetapi.FacetHolder;
 import org.apache.isis.core.metamodel.facetapi.FeatureType;
 import org.apache.isis.core.metamodel.facets.FacetedMethod;
 import org.apache.isis.core.metamodel.facets.actions.action.invocation.CommandUtil;
-import org.apache.isis.core.metamodel.facets.actions.command.CommandFacet;
 import org.apache.isis.core.metamodel.facets.all.describedas.DescribedAsFacet;
 import org.apache.isis.core.metamodel.facets.all.help.HelpFacet;
 import org.apache.isis.core.metamodel.facets.all.hide.HiddenFacet;
@@ -309,81 +308,51 @@ implements ObjectMember, MetaModelContext.Delegating, FacetHolder.Delegating {
         return getServiceRegistry().lookupServiceElseFail(CommandContext.class);
     }
 
-    protected CommandDtoServiceInternal getCommandDtoService() {
+    protected CommandDtoServiceInternal getCommandDtoServiceInternal() {
         return getServiceRegistry().lookupServiceElseFail(CommandDtoServiceInternal.class);
     }
 
     // -- command (setup)
 
-
-    protected void setupCommandTarget(final ManagedObject targetAdapter, final String arguments) {
+    protected void setupCommandTarget(final ManagedObject targetAdapter) {
         final CommandContext commandContext = getCommandContext();
         final Command command = commandContext.getCommand();
 
-        if (command.getExecutor() != Command.Executor.USER) {
-            return;
-        }
+        _Assert.assertNotNull(command, "No command available with current thread, "
+                + "are we missing an interaction context?");
 
         if(command.getTarget() != null) {
             // is set up by the outer-most action; inner actions (invoked via the WrapperFactory) must not overwrite
             return;
         }
 
-        command.internal().setTargetClass(CommandUtil.targetClassNameFor(targetAdapter));
-        command.internal().setTargetAction(CommandUtil.targetMemberNameFor(this));
-        command.internal().setArguments(arguments);
-
         final Bookmark targetBookmark = CommandUtil.bookmarkFor(targetAdapter);
         command.internal().setTarget(targetBookmark);
     }
 
-    protected void setupCommandMemberIdentifier() {
+    protected void setupCommandLogicalMemberIdentifier() {
 
-        final CommandContext commandContext = getCommandContext();
-        final Command command = commandContext.getCommand();
+        val command = getCommandContext().getCommand();
 
-        if (command.getExecutor() != Command.Executor.USER) {
-            return;
-        }
-
-        if (command.getMemberIdentifier() != null) {
+        if (command.getLogicalMemberIdentifier() != null) {
             // any contributed/mixin actions will fire after the main action
             // the guard here prevents them from trashing the command's memberIdentifier
             return;
         }
 
-        command.internal().setMemberIdentifier(CommandUtil.memberIdentifierFor(this));
+        command.internal().setLogicalMemberIdentifier(CommandUtil.logicalMemberIdentifierFor(this));
     }
 
     protected void setupCommandDtoAndExecutionContext(final CommandDto dto) {
-        final CommandContext commandContext = getCommandContext();
-        final Command command = commandContext.getCommand();
+        val command = getCommandContext().getCommand();
 
-        if (command.getExecutor() != Command.Executor.USER) {
-            return;
-        }
-
-        if (command.getMemento() != null) {
+        if (command.getCommandDto() != null) {
             // guard here to prevent subsequent contributed/mixin actions from
             // trampling over the command's memento and execution context
             return;
         }
 
-        // memento
-
-        final String mementoXml = CommandDtoUtils.toXml(dto);
-        command.internal().setMemento(mementoXml);
-
-        // copy over the command execution 'context' (if available)
-        final CommandFacet commandFacet = getFacetHolder().getFacet(CommandFacet.class);
-        if(commandFacet != null && !commandFacet.isDisabled()) {
-            //command.internal().setExecuteIn(commandFacet.executeIn());
-            command.internal().setPersistence(commandFacet.persistence());
-        } else {
-            // if no facet, assume do want to execute right now, but only persist (eventually) if hinted.
-            //command.internal().setExecuteIn(org.apache.isis.applib.annotation.CommandExecuteIn.FOREGROUND);
-            command.internal().setPersistence(org.apache.isis.applib.annotation.CommandPersistence.IF_HINTED);
-        }
+        command.internal().setCommandDto(dto);
     }
 
     @Override

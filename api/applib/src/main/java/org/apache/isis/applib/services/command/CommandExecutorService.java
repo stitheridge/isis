@@ -48,13 +48,13 @@ public interface CommandExecutorService {
      * Executes the specified command.
      *
      * @param sudoPolicy
-     * @param commandWithDto
+     * @param command
      * @return - any exception raised by the command.
      */
     // tag::refguide[]
     void executeCommand(
             SudoPolicy sudoPolicy,          // <.>
-            CommandWithDto commandWithDto   // <.>
+            Command command                 // <.>
     );
 
     Bookmark executeCommand(

@@ -28,8 +28,7 @@
 			</bs3:row>
 			<bs3:row>
 				<bs3:col span="12">
-					<cpt:collection id="foregroundCommands"/>
-					<cpt:collection id="backgroundCommands"/>
+					<cpt:collection id="commands"/>
 				</bs3:col>
 			</bs3:row>
 			<bs3:row>

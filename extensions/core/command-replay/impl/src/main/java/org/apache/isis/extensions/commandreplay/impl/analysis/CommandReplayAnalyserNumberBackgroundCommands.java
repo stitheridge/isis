@@ -11,7 +11,7 @@ import org.apache.isis.applib.util.schema.CommandDtoUtils;
 import org.apache.isis.schema.cmd.v2.CommandDto;
 
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
-import org.apache.isis.extensions.commandlog.impl.jdo.CommandServiceJdoRepository;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 
 @DomainService()
 public class CommandReplayAnalyserNumberBackgroundCommands
@@ -37,7 +37,7 @@ public class CommandReplayAnalyserNumberBackgroundCommands
             final CommandJdo commandJdo = (CommandJdo) command;
 
             final List<CommandJdo> backgroundCommands =
-                    commandServiceJdoRepository.findBackgroundCommandsByParent(commandJdo);
+                    commandJdoRepository.findBackgroundCommandsByParent(commandJdo);
 
             CommandDtoUtils.setUserData(commandDto,
                     USERDATA_KEY_NUMBER_BACKGROUND_COMMANDS, ""+backgroundCommands.size());
@@ -73,7 +73,7 @@ public class CommandReplayAnalyserNumberBackgroundCommands
 
         final CommandJdo commandJdo = (CommandJdo) command;
         final List<CommandJdo> backgroundCommands =
-                commandServiceJdoRepository.findBackgroundCommandsByParent(commandJdo);
+                commandJdoRepository.findBackgroundCommandsByParent(commandJdo);
 
         final int slaveNumBackgroundCommands = backgroundCommands.size();
         if (masterNumBackgroundCommands == slaveNumBackgroundCommands) {
@@ -84,6 +84,7 @@ public class CommandReplayAnalyserNumberBackgroundCommands
                 masterNumBackgroundCommands, slaveNumBackgroundCommands);
     }
 
-    @Inject CommandServiceJdoRepository commandServiceJdoRepository;
+    @Inject
+    CommandJdoRepository commandJdoRepository;
 
 }

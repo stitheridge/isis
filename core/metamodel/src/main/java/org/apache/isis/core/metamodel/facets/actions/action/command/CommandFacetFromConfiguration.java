@@ -19,8 +19,6 @@
 
 package org.apache.isis.core.metamodel.facets.actions.action.command;
 
-import org.apache.isis.applib.annotation.CommandExecuteIn;
-import org.apache.isis.applib.annotation.CommandPersistence;
 import org.apache.isis.applib.services.inject.ServiceInjector;
 import org.apache.isis.core.metamodel.facetapi.FacetHolder;
 import org.apache.isis.core.metamodel.facets.actions.command.CommandFacet;
@@ -40,7 +38,7 @@ public class CommandFacetFromConfiguration extends CommandFacetAbstract {
             final CommandExecuteIn executeIn,
             final FacetHolder holder,
             final ServiceInjector servicesInjector) {
-        super(persistence, executeIn, Enablement.ENABLED, null, holder, servicesInjector);
+        super(persistence, null, holder, servicesInjector);
     }
 
 }

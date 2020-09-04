@@ -8,7 +8,6 @@ import org.apache.isis.applib.annotation.DomainService;
 import org.apache.isis.applib.annotation.Programmatic;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
 import org.apache.isis.extensions.commandlog.impl.jdo.ReplayState;
-import org.apache.isis.extensions.commandreplay.impl.analysis.CommandReplayAnalyser;
 import org.apache.isis.schema.cmd.v2.CommandDto;
 
 import lombok.extern.log4j.Log4j2;
@@ -34,7 +33,7 @@ public class CommandReplayAnalysisService {
     }
 
     private String analyseReplay(final CommandJdo commandJdo) {
-        final CommandDto dto = commandJdo.asDto();
+        final CommandDto dto = commandJdo.getCommandDto();
 
         for (final CommandReplayAnalyser analyser : analysers) {
             try {
