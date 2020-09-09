@@ -39,6 +39,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import demoapp.dom._infra.asciidocdesc.HasAsciiDocDescription;
+import demoapp.dom.annotDomain._commands.ExposePersistedCommands;
 
 //tag::class[]
 @PersistenceCapable(identityType = IdentityType.DATASTORE, schema = "demo")
@@ -48,7 +49,8 @@ import demoapp.dom._infra.asciidocdesc.HasAsciiDocDescription;
         , objectType = "demo.ActionCommandJdo"
         , editing = Editing.DISABLED
 )
-public class ActionCommandJdo implements HasAsciiDocDescription {
+public class ActionCommandJdo
+        implements HasAsciiDocDescription, ExposePersistedCommands {
     // ...
 //end::class[]
 
@@ -56,7 +58,7 @@ public class ActionCommandJdo implements HasAsciiDocDescription {
         this.property = initialValue;
         this.propertyMetaAnnotated = initialValue;
         this.propertyMetaAnnotatedOverridden = initialValue;
-        this.propertyUpdateInBackground = initialValue;
+        this.propertyUpdateAsync = initialValue;
     }
 
     public String title() {
@@ -80,15 +82,14 @@ public class ActionCommandJdo implements HasAsciiDocDescription {
     private String propertyMetaAnnotatedOverridden;
 
     @Property()
-    @MemberOrder(name = "background", sequence = "1")
+    @MemberOrder(name = "async", sequence = "1")
     @Getter @Setter
-    private String propertyUpdateInBackground;
+    private String propertyUpdateAsync;
 //end::property[]
 
 //tag::annotation[]
     @Action(
-        command = CommandReification.ENABLED         // <.>
-        , semantics = SemanticsOf.IDEMPOTENT
+        semantics = SemanticsOf.IDEMPOTENT
         , associateWith = "property"
         , associateWithSequence = "1"
     )
@@ -128,8 +129,7 @@ public class ActionCommandJdo implements HasAsciiDocDescription {
 //tag::meta-annotation-overridden[]
     @ActionCommandDisabledMetaAnnotation        // <.>
     @Action(
-        command = CommandReification.ENABLED    // <.>
-        , semantics = SemanticsOf.IDEMPOTENT
+        semantics = SemanticsOf.IDEMPOTENT
         , associateWith = "propertyMetaAnnotatedOverridden"
         , associateWithSequence = "1"
     )
@@ -147,31 +147,27 @@ public class ActionCommandJdo implements HasAsciiDocDescription {
     }
 //end::meta-annotation-overridden[]
 
-//tag::background[]
+//tag::async[]
     @Action(
-        command = CommandReification.ENABLED                // <.>
-        , commandExecuteIn = CommandExecuteIn.BACKGROUND    // <.>
-        , semantics = SemanticsOf.IDEMPOTENT
-        , associateWith = "propertyUpdateInBackground"
+        semantics = SemanticsOf.IDEMPOTENT
+        , associateWith = "propertyUpdateAsync"
         , associateWithSequence = "1"
     )
     @ActionLayout(
-        describedAs =
-            "@Action(command = ENABLED, commandExecuteIn = BACKGROUND)"
+        describedAs = "@Action()"
     )
-    public ActionCommandJdo updatePropertyInBackground(final String value) {
+    public ActionCommandJdo updatePropertyAsync(final String value) {
         AsyncControl<Void> control = AsyncControl.control();
         ActionCommandJdo actionCommandJdo = this.wrapperFactory.asyncWrap(this, control);
         actionCommandJdo.updatePropertyUsingAnnotation(value);
-        // setPropertyUpdateInBackground(value);
         return this;
     }
-    public String default0UpdatePropertyInBackground() {
-        return getPropertyUpdateInBackground();
+    public String default0UpdatePropertyAsync() {
+        return getPropertyUpdateAsync();
     }
 
     @Inject WrapperFactory wrapperFactory;
-//end::background[]
+//end::async[]
 
 
 //tag::class[]

@@ -35,29 +35,19 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RunBackgroundCommandsWithReplicationAndReplayJob.class);
-
     AuthenticationSession authSession;
-    MasterConfiguration slaveConfig;
+    MasterConfiguration masterConfiguration;
 
     public void execute(final JobExecutionContext quartzContext) {
 
         // figure out if this instance is configured to run as master or slave
         authSession = new SimpleSessionFromQuartz(quartzContext);
         final IsisConfiguration isisConfiguration = lookupIsisConfiguration(authSession);
-        slaveConfig = new MasterConfiguration(isisConfiguration);
+        masterConfiguration = new MasterConfiguration(isisConfiguration);
 
-        if(!slaveConfig.isConfigured()) {
-            runBackgroundCommandsOnMaster();
-        } else {
+        if(masterConfiguration.isConfigured()) {
             runBackgroundCommandsOnSlave(quartzContext);
         }
-    }
-
-    private void runBackgroundCommandsOnMaster() {
-        // same as the original RunBackgroundCommandsJob
-        val executionService = new BackgroundCommandExecutionFromBackgroundCommandServiceJdo();
-        executionService.execute(authSession, null);
     }
 
     private void runBackgroundCommandsOnSlave(final JobExecutionContext quartzContext) {
@@ -68,19 +58,15 @@ public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
 
             case TICKING_CLOCK_STATUS_UNKNOWN:
             case TICKING_CLOCK_NOT_YET_INITIALIZED:
-                final boolean initialized = lookupTickingClockServiceStatus(authSession);
-                if(initialized) {
-                    setSlaveStatus(quartzContext, SlaveStatus.OK);
-                    // go round the loop
-                    runBackgroundCommandsOnMaster();
-                } else {
-                    setSlaveStatus(quartzContext, SlaveStatus.TICKING_CLOCK_NOT_YET_INITIALIZED);
-                }
+                setSlaveStatus(quartzContext,
+                        lookupTickingClockServiceStatus(authSession)
+                            ? SlaveStatus.OK
+                            : SlaveStatus.TICKING_CLOCK_NOT_YET_INITIALIZED);
                 return;
 
             case OK:
                 Holder<SlaveStatus> holder = new Holder<>();
-                new ReplayableCommandExecution(slaveConfig).execute(authSession, holder);
+                new ReplayableCommandExecution(masterConfiguration).execute(authSession, holder);
                 final SlaveStatus newStatus = holder.getObject();
                 if(newStatus != null) {
                     setSlaveStatus(quartzContext, newStatus);
@@ -91,7 +77,7 @@ public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
             case REST_CALL_FAILING:
             case FAILED_TO_UNMARSHALL_RESPONSE:
             case UNKNOWN_STATE:
-                LOG.warn("skipped - configured as slave, however: {}" ,slaveStatus);
+                log.warn("skipped - configured as slave, however: {}" ,slaveStatus);
                 return;
             default:
                 throw new IllegalStateException("Unrecognised status: " + slaveStatus);
@@ -180,7 +166,6 @@ public class RunBackgroundCommandsWithReplicationAndReplayJob implements Job {
     private static void setSlaveStatus(final JobExecutionContext context, final SlaveStatus mode) {
         setString(context, KEY_SLAVE_STATUS, mode.name());
     }
-
 
 }
 

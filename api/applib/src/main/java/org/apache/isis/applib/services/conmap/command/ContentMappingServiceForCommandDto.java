@@ -20,6 +20,7 @@ package org.apache.isis.applib.services.conmap.command;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -39,6 +40,7 @@ import org.apache.isis.applib.services.conmap.ContentMappingService;
 import org.apache.isis.applib.services.conmap.command.spi.CommandDtoProcessorService;
 import org.apache.isis.applib.services.metamodel.MetaModelService;
 import org.apache.isis.applib.util.schema.CommandDtoUtils;
+import org.apache.isis.core.commons.internal.exceptions._Exceptions;
 import org.apache.isis.schema.cmd.v2.CommandDto;
 import org.apache.isis.schema.common.v2.PeriodDto;
 
@@ -125,11 +127,13 @@ public class ContentMappingServiceForCommandDto implements ContentMappingService
 
             final Bookmark result = command.getResult();
             CommandDtoUtils.setUserData(commandDto,
-                    CommandWithDto.USERDATA_KEY_RETURN_VALUE, result != null ? result.toString() : null);
+                    UserDataKeys.RESULT, result != null ? result.toString() : null);
             // knowing whether there was an exception is on the master is used to determine whether to
             // continue when replayed on the slave if an exception occurs there also
+            Throwable exception = command.getException();
             CommandDtoUtils.setUserData(commandDto,
-                    CommandWithDto.USERDATA_KEY_EXCEPTION, command.getException());
+                    UserDataKeys.EXCEPTION,
+                        _Exceptions.asStacktrace(exception));
 
             PeriodDto timings = CommandDtoUtils.timingsFor(commandDto);
             timings.setStartedAt(JavaSqlXMLGregorianCalendarMarshalling.toXMLGregorianCalendar(command.getStartedAt()));

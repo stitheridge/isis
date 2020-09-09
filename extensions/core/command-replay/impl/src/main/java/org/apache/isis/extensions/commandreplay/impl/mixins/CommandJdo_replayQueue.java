@@ -32,7 +32,7 @@ public class CommandJdo_replayQueue {
 
     @MemberOrder(sequence = "100.100")
     public List<CommandJdo> coll() {
-        return commandJdoRepository.findReplayedOnSlave();
+        return commandJdoRepository.findReplayedOnSecondary();
     }
 
     public boolean hideColl() {

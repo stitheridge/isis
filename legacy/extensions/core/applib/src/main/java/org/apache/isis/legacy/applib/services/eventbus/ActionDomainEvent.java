@@ -28,6 +28,9 @@ import org.apache.isis.applib.services.command.CommandContext;
 import org.apache.isis.applib.util.ObjectContracts;
 import org.apache.isis.applib.util.ToString;
 
+/**
+ * @deprecated
+ */
 @Deprecated
 public abstract class ActionDomainEvent<S> extends AbstractDomainEvent<S> {
 

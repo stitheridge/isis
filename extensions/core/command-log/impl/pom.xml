@@ -27,6 +27,23 @@
         <git-plugin.propertiesDir>org/apache/isis/extensions/commandlog/impl</git-plugin.propertiesDir>
     </properties>
 
+    <build>
+        <resources>
+            <resource>
+                <filtering>false</filtering>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <filtering>false</filtering>
+                <directory>src/main/java</directory>
+                <includes>
+                    <!-- we include all .java too, so that we can reference it from the descriptions -->
+                    <include>**</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
     <dependencies>
 
         <dependency>

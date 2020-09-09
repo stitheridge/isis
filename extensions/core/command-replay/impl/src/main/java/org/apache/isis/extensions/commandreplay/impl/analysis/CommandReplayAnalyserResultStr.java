@@ -1,13 +1,16 @@
 package org.apache.isis.extensions.commandreplay.impl.analysis;
 
+import java.util.Optional;
+
 import com.google.common.base.Objects;
 
 import org.apache.isis.applib.annotation.DomainService;
-import org.apache.isis.applib.services.command.Command;
+import org.apache.isis.applib.services.bookmark.Bookmark;
+import org.apache.isis.applib.services.conmap.command.UserDataKeys;
 import org.apache.isis.applib.util.schema.CommandDtoUtils;
-import org.apache.isis.schema.cmd.v2.CommandDto;
 
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
+import org.apache.isis.schema.cmd.v2.CommandDto;
 
 @DomainService()
 public class CommandReplayAnalyserResultStr extends CommandReplayAnalyserAbstract {
@@ -20,26 +23,23 @@ public class CommandReplayAnalyserResultStr extends CommandReplayAnalyserAbstrac
         super(ANALYSIS_KEY);
     }
 
-    protected String doAnalyzeReplay(final Command command, final CommandDto dto) {
+    protected String doAnalyzeReplay(final CommandJdo commandJdo) {
 
-        if (!(command instanceof CommandJdo)) {
-            return null;
-        }
-
-        final CommandJdo commandJdo = (CommandJdo) command;
+        final CommandDto dto = commandJdo.getCommandDto();
 
         // see if the outcome was the same...
         // ... either the same result when replayed
-        final String masterResultStr =
-                CommandDtoUtils.getUserData(dto, CommandWithDto.USERDATA_KEY_RETURN_VALUE);
-        if (masterResultStr == null) {
-            return null;
-        }
+        final String primaryResultStr =
+                CommandDtoUtils.getUserData(dto, UserDataKeys.RESULT);
 
-        final String slaveResultStr = commandJdo.getResultStr();
-        return Objects.equal(masterResultStr, slaveResultStr)
+        final Bookmark secondaryResult = commandJdo.getResult();
+        final String secondaryResultStr =
+                secondaryResult != null ? secondaryResult.toString() : null;
+        return Objects.equal(primaryResultStr, secondaryResultStr)
                 ? null
-                : String.format("Results differ.  Master was '%s'", masterResultStr);
+                : String.format(
+                        "Results differ.  Primary was '%s', secondary is '%s'",
+                        primaryResultStr, secondaryResultStr);
     }
 
 }

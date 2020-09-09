@@ -139,12 +139,7 @@ public class Configuration_headless {
                         commandContext.setCommand(newCommand);
                         return newCommand;
                     });
-            final Command.Executor executor = command.getExecutor();
-            if(executor != Command.Executor.OTHER) {
-                return;
-            }
-            command.internal().setExecutor(Command.Executor.USER);
-            
+
             val interactionContext = interactionContextProvider.get();
             @SuppressWarnings("unused")
             final Interaction interaction = Optional.ofNullable(interactionContext.getInteraction())

@@ -18,6 +18,8 @@
  */
 package org.apache.isis.extensions.commandlog.impl.jdo;
 
+import javax.inject.Inject;
+
 import org.apache.isis.applib.annotation.Action;
 import org.apache.isis.applib.annotation.ActionLayout;
 import org.apache.isis.applib.annotation.MemberOrder;
@@ -28,14 +30,14 @@ import org.apache.isis.applib.services.message.MessageService;
 import org.apache.isis.extensions.commandlog.impl.IsisModuleExtCommandLogImpl;
 
 @Action(
-    semantics = SemanticsOf.SAFE
-    , domainEvent = CommandJdo_openResultObject.ActionDomainEvent.class
-    , associateWith = "result"
+    semantics = SemanticsOf.SAFE,
+    domainEvent = CommandJdo_openResultObject.ActionDomainEvent.class,
+    associateWith = "result"
 )
 @ActionLayout(named = "Open")
 public class CommandJdo_openResultObject {
 
-    public static abstract class ActionDomainEvent
+    public static class ActionDomainEvent
             extends IsisModuleExtCommandLogImpl.ActionDomainEvent<CommandJdo_openResultObject> { }
 
     private final CommandJdo commandJdo;
@@ -64,12 +66,8 @@ public class CommandJdo_openResultObject {
         }
     }
 
-    @javax.inject.Inject
-    BookmarkService bookmarkService;
-
-    @javax.inject.Inject
-    MessageService messageService;
-
+    @Inject BookmarkService bookmarkService;
+    @Inject MessageService messageService;
 
 
 }

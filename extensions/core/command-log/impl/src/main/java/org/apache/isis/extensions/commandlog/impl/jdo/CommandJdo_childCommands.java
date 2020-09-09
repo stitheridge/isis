@@ -26,8 +26,12 @@ import org.apache.isis.applib.annotation.MemberOrder;
 import org.apache.isis.extensions.commandlog.impl.IsisModuleExtCommandLogImpl;
 
 
-@Collection(domainEvent = CommandJdo_childCommands.CollectionDomainEvent.class)
-@CollectionLayout(defaultView = "table")
+@Collection(
+    domainEvent = CommandJdo_childCommands.CollectionDomainEvent.class
+)
+@CollectionLayout(
+    defaultView = "table"
+)
 public class CommandJdo_childCommands {
 
     public static class CollectionDomainEvent

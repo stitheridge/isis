@@ -34,13 +34,12 @@ public class HasUsername_recentCommandsByUser {
     public List<CommandJdo> coll() {
         final String username = hasUsername.getUsername();
         return username != null
-                ? commandServiceRepository.findRecentByUser(username)
+                ? commandServiceRepository.findRecentByUsername(username)
                 : Collections.emptyList();
     }
     public boolean hideColl() {
         return hasUsername.getUsername() == null;
     }
 
-    @Inject
-    CommandJdoRepository commandServiceRepository;
+    @Inject CommandJdoRepository commandServiceRepository;
 }

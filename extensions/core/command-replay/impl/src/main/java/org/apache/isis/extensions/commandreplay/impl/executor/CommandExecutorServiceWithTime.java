@@ -18,6 +18,7 @@ package org.apache.isis.extensions.commandreplay.impl.executor;
 
 import java.sql.Timestamp;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 import javax.inject.Named;
 
@@ -56,27 +57,38 @@ public class CommandExecutorServiceWithTime implements CommandExecutorService {
     }
 
     @Override
-    public void executeCommand(final SudoPolicy sudoPolicy, final Command command) {
-        final Runnable executeCommand = () -> delegate.executeCommand(sudoPolicy, command);
-        if(tickingClockService.isInitialized()) {
-            final Timestamp timestamp = command.getTimestamp();
-            tickingClockService.at(timestamp, executeCommand);
-        } else {
-            executeCommand.run();
-        }
+    public Bookmark executeCommand(Command command) {
+        final Supplier<Bookmark> executeCommand = () -> delegate.executeCommand(command);
+        return tickingClockService.isInitialized()
+                ? tickingClockService.at(command.getTimestamp(), executeCommand)
+                : executeCommand.get();
     }
 
-    @SneakyThrows
+    @Override
+    public Bookmark executeCommand(final SudoPolicy sudoPolicy, final Command command) {
+        final Supplier<Bookmark> executeCommand = () -> delegate.executeCommand(sudoPolicy, command);
+        return tickingClockService.isInitialized()
+                ? tickingClockService.at(command.getTimestamp(), executeCommand)
+                : executeCommand.get();
+    }
+
     @Override
     public Bookmark executeCommand(final CommandDto commandDto) {
-        final Callable<Bookmark> executeCommand = () -> delegate.executeCommand(commandDto);
-        if(tickingClockService.isInitialized()) {
-            final Timestamp timestamp =
-                    JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(commandDto.getTimestamp());
-            return tickingClockService.at(timestamp, executeCommand);
-        } else {
-            return executeCommand.call();
-        }
+        final Supplier<Bookmark> executeCommand = () -> delegate.executeCommand(commandDto);
+        return tickingClockService.isInitialized()
+                ? tickingClockService.at(
+                        JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(commandDto.getTimestamp()), executeCommand)
+                : executeCommand.get();
+    }
+
+    @Override
+    public Bookmark executeCommand(
+            final SudoPolicy sudoPolicy, final CommandDto commandDto) {
+        final Supplier<Bookmark> executeCommand = () -> delegate.executeCommand(sudoPolicy, commandDto);
+        return tickingClockService.isInitialized()
+                ? tickingClockService.at(
+                    JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(commandDto.getTimestamp()), executeCommand)
+                : executeCommand.get();
     }
 
 }

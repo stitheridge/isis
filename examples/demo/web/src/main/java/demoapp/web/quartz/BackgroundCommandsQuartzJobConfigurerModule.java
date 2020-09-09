@@ -2,29 +2,18 @@ package demoapp.web.quartz;
 
 import javax.inject.Inject;
 
-import org.quartz.Job;
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
-import org.quartz.JobKey;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
-import org.quartz.spi.TriggerFiredBundle;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
-import org.springframework.stereotype.Service;
 
-import org.apache.isis.extensions.quartz.jobs.RunBackgroundCommandsJob;
+import org.apache.isis.extensions.quartz.jobs.DemoJob;
 
 import lombok.val;
 import lombok.extern.log4j.Log4j2;
@@ -36,7 +25,7 @@ public class BackgroundCommandsQuartzJobConfigurerModule {
     @Bean
     public JobDetailFactoryBean jobDetail() {
         val jobDetailFactory = new JobDetailFactoryBean();
-        jobDetailFactory.setJobClass(RunBackgroundCommandsJob.class);
+        jobDetailFactory.setJobClass(DemoJob.class);
         jobDetailFactory.setDescription("Run background commands");
         jobDetailFactory.setDurability(true);
         return jobDetailFactory;

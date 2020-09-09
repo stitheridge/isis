@@ -19,10 +19,11 @@ import org.apache.isis.schema.cmd.v2.CommandDto;
 import org.apache.isis.extensions.commandreplay.impl.fetch.CommandFetcher;
 import org.apache.isis.extensions.commandreplay.impl.analysis.CommandReplayAnalysisService;
 
+import lombok.val;
+
 @Action(
         semantics = SemanticsOf.NON_IDEMPOTENT,
-        domainEvent = CommandJdo_replayNext.ActionDomainEvent.class,
-        commandPersistence = CommandPersistence.NOT_PERSISTED
+        domainEvent = CommandJdo_replayNext.ActionDomainEvent.class
 )
 public class CommandJdo_replayNext {
 
@@ -66,12 +67,12 @@ public class CommandJdo_replayNext {
     private void execute(final CommandJdo hwmCommand) {
 
         // execute the hwm command
-        commandExecutorService.executeCommand(CommandExecutorService.SudoPolicy.SWITCH, hwmCommand);
+        commandExecutorService.executeCommand(CommandExecutorService.SudoPolicy.SWITCH, hwmCommand.getCommandDto());
 
-        // find background commands, and run them
-        final List<CommandJdo> backgroundCommands = commandJdoRepository.findBackgroundCommandsByParent(hwmCommand);
-        for (final CommandJdo backgroundCommand : backgroundCommands) {
-            commandExecutorService.executeCommand(CommandExecutorService.SudoPolicy.SWITCH, backgroundCommand);
+        // find child commands, and run them
+        val childCommands = commandJdoRepository.findByParent(hwmCommand);
+        for (final CommandJdo childCommand : childCommands) {
+            commandExecutorService.executeCommand(CommandExecutorService.SudoPolicy.SWITCH, childCommand.getCommandDto());
         }
     }
 
@@ -81,16 +82,11 @@ public class CommandJdo_replayNext {
         if(commandJdo != replayHwm) {
             return "This action can only be performed against the 'HWM' command on the slave";
         }
-        if(commandJdo.getExecuteIn().isReplayable() && commandJdo.getReplayState() != null && commandJdo.getReplayState().isFailed()) {
+        if(commandJdo.getReplayState() != null && commandJdo.getReplayState().isFailed()) {
             return "Replayable command is in error.  Exclude the command to continue.";
         }
         if(!commandJdo.isComplete()) {
             return "Replayable command is not complete";
-        }
-
-        if(commandJdo.getExecuteIn().isBackground()) {
-            // this shouldn't happen; findReplayHwm should never return a background command
-            return "Background commands cannot be replayed";
         }
 
         return null;

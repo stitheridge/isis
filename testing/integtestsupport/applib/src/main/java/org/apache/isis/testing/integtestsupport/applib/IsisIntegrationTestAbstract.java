@@ -54,15 +54,7 @@ import lombok.val;
 public abstract class IsisIntegrationTestAbstract {
 
     /**
-     * If included as a service, then ensures that any {@link Command}s created (eg as a result of
-     * {@link Action#command()} set to {@link CommandReification#ENABLED}) will be appear to be created as
-     * user initiatied.
-     *
-     * <p>
-     *     Most integration tests won't be concerned with such details, but tests that verify the interaction with the
-     *     {@link org.apache.isis.applib.services.command.spi.CommandService} implementations may require this
-     *     behaviour.
-     * </p>
+     * Hook to interact with {@link Command}s (currently unused).
      */
     @Service
     @Order(OrderPrecedence.MIDPOINT)
@@ -73,22 +65,8 @@ public abstract class IsisIntegrationTestAbstract {
 
         @EventListener
         public void on(final TransactionAfterBeginEvent event) {
-            setupCommand();
         }
-        
-        private void setupCommand() {
-            val commandContext = commandContextProvider.get();
-            val command = commandContext.getCommand();
-            if(command == null) {
-                return;
-            }
-            final Command.Executor executor = command.getExecutor();
-            if(executor != Command.Executor.OTHER) {
-                return;
-            }
-            command.internal().setExecutor(Command.Executor.USER);
-        }
-        
+
     }
 
     /**

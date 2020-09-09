@@ -33,7 +33,5 @@ import org.apache.isis.core.metamodel.facetapi.Facet;
  */
 public interface CommandFacet extends Facet {
 
-    public CommandPersistence persistence();
-
     public CommandDtoProcessor getProcessor();
 }

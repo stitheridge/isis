@@ -14,30 +14,31 @@ import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 
 @Collection(
-    domainEvent = T_backgroundCommands.CollectionDomainEvent.class
+    domainEvent = T_recent.CollectionDomainEvent.class
 )
 @CollectionLayout(
     defaultView = "table"
 )
-public abstract class T_backgroundCommands<T> {
+public abstract class T_recent<T> {
 
-    public static class CollectionDomainEvent extends IsisModuleExtCommandLogImpl.CollectionDomainEvent<T_backgroundCommands, CommandJdo> { }
+    public static class CollectionDomainEvent
+            extends IsisModuleExtCommandLogImpl.CollectionDomainEvent<T_recent, CommandJdo> { }
 
     private final T domainObject;
-    public T_backgroundCommands(final T domainObject) {
+    public T_recent(final T domainObject) {
         this.domainObject = domainObject;
     }
 
     public List<CommandJdo> coll() {
-        return findRecentBackground();
+        return findRecent();
     }
 
-    private List<CommandJdo> findRecentBackground() {
+    private List<CommandJdo> findRecent() {
         final Bookmark bookmark = bookmarkService.bookmarkFor(domainObject);
         return queryResultsCache.execute(
-                () -> commandJdoRepository.findRecentBackgroundByTarget(bookmark)
-                , T_backgroundCommands.class
-                , "findRecentBackground"
+                () -> commandJdoRepository.findRecentByTarget(bookmark)
+                , T_recent.class
+                , "findRecentByTarget"
                 , domainObject);
     }
 

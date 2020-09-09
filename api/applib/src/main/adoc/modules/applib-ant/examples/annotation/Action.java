@@ -90,37 +90,6 @@ public @interface Action {
 
     // end::refguide[]
     /**
-     * Whether the action invocation should be reified into a {@link org.apache.isis.applib.services.command.Command} object.
-     */
-    // tag::refguide[]
-    CommandReification command()                                    // <.>
-            default CommandReification.NOT_SPECIFIED;
-
-    // end::refguide[]
-    /**
-     * How the {@link org.apache.isis.applib.services.command.Command Command} object provided by the
-     * {@link org.apache.isis.applib.services.command.CommandContext CommandContext} domain service should be persisted.
-     */
-    // tag::refguide[]
-    CommandPersistence commandPersistence()                         // <.>
-            default CommandPersistence.PERSISTED;
-
-    // end::refguide[]
-    /**
-     * How the command/action should be executed.
-     *
-     * <p>
-     * If the corresponding {@link org.apache.isis.applib.services.command.Command Command} object is persisted,
-     * then its {@link org.apache.isis.applib.services.command.Command#getExecuteIn() invocationType} property
-     * will be set to this value.
-     * </p>
-     */
-    // tag::refguide[]
-    CommandExecuteIn commandExecuteIn()                             // <.>
-            default CommandExecuteIn.FOREGROUND;
-
-    // end::refguide[]
-    /**
      * The {@link CommandDtoProcessor} to process this command's DTO.
      *
      * <p>

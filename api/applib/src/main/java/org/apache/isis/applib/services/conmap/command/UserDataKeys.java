@@ -16,7 +16,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.isis.extensions.commandlog.impl.api;
+package org.apache.isis.applib.services.conmap.command;
 
 import org.apache.isis.schema.cmd.v2.CommandDto;
 

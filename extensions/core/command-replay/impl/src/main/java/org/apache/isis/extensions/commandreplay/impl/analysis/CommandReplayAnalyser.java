@@ -1,12 +1,10 @@
 package org.apache.isis.extensions.commandreplay.impl.analysis;
 
-import org.apache.isis.applib.annotation.Programmatic;
-import org.apache.isis.applib.services.command.Command;
-import org.apache.isis.schema.cmd.v2.CommandDto;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
 
 public interface CommandReplayAnalyser {
 
-    @Programmatic
-    String analyzeReplay(final Command command, final CommandDto dto);
+    String analyzeReplay(
+            final CommandJdo commandJdo);
 
 }

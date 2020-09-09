@@ -39,6 +39,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import javax.activation.DataSource;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.Constraint;
@@ -58,6 +59,7 @@ import org.apache.isis.applib.annotation.DomainService;
 import org.apache.isis.applib.annotation.LabelPosition;
 import org.apache.isis.applib.annotation.PromptStyle;
 import org.apache.isis.applib.services.audit.AuditerService;
+import org.apache.isis.applib.services.command.CommandService;
 import org.apache.isis.applib.services.i18n.TranslationService;
 import org.apache.isis.applib.services.iactn.Interaction;
 import org.apache.isis.applib.services.publish.PublishedObjects;
@@ -648,16 +650,9 @@ public class IsisConfiguration {
                 /**
                  * The default for whether action invocations should be reified as a
                  * {@link org.apache.isis.applib.services.command.Command} using the
-                 * {@link org.apache.isis.applib.services.command.spi.CommandService}, possibly so that the actual
-                 * execution of the action can be deferred until later (background execution) or replayed against a
-                 * copy of the system.
-                 *
-                 * <p>
-                 *     In particular, the {@link CommandWithDto} implementation
-                 *     of {@link org.apache.isis.applib.services.command.Command} represents the action invocation
-                 *     memento (obtained using {@link CommandWithDto#getCommandDto()}) as a
-                 *     {@link org.apache.isis.schema.cmd.v2.CommandDto}.
-                 * </p>
+                 * {@link CommandService},
+                 * either for auditing or for replayed against a secondary
+                 * system, eg for regression testing.
                  *
                  * <p>
                  *  This setting can be overridden on a case-by-case basis using
@@ -835,20 +830,13 @@ public class IsisConfiguration {
                 /**
                  * The default for whether property edits should be reified as a
                  * {@link org.apache.isis.applib.services.command.Command} using the
-                 * {@link org.apache.isis.applib.services.command.spi.CommandService}, possibly so that the actual
-                 * execution of the property edit can be deferred until later (background execution) or replayed
-                 * against a copy of the system.
-                 *
-                 * <p>
-                 *     In particular, the {@link CommandWithDto} implementation
-                 *     of {@link org.apache.isis.applib.services.command.Command} represents the action invocation
-                 *     memento (obtained using {@link CommandWithDto#getCommandDto()}) as a
-                 *     {@link org.apache.isis.schema.cmd.v2.CommandDto}.
-                 * </p>
+                 * {@link CommandService},
+                 * for example for auditing, or to be replayed against a
+                 * secondary system, for regression testing.
                  *
                  * <p>
                  *  This setting can be overridden on a case-by-case basis using
-                 *  {@link org.apache.isis.applib.annotation.Action#command()}.
+                 *  {@link org.apache.isis.applib.annotation.Property#command()}.
                  * </p>
                  */
                 private CommandPropertiesConfiguration command = CommandPropertiesConfiguration.NONE;
@@ -1486,7 +1474,7 @@ public class IsisConfiguration {
                 /**
                  * If an email fails to send, whether to propagate the exception (meaning that potentially the end-user
                  * might see the exception), or whether instead to just indicate failure through the return value of
-                 * the method ({@link org.apache.isis.applib.services.email.EmailService#send(List, List, List, String, String, DataSource...))
+                 * the method ({@link org.apache.isis.applib.services.email.EmailService#send(List, List, List, String, String, DataSource...)}
                  * that's being called.
                  */
                 private boolean throwExceptionOnFail = true;

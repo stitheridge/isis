@@ -278,25 +278,6 @@ For persisted commands, the `commandExecuteIn` attribute determines whether the 
 
 WARNING: TODO: v2 - background execution has temporarily been removed, will be reinstated for v2.0.
 
-//Background execution means that the command is not executed immediately, but is available for a configured xref:refguide:applib-svc:_BackgroundCommandService.adoc[`BackgroundCommandService`] to execute, eg by way of an in-memory scheduler such as Quartz.
-//See xref:userguide:btb:about.adoc#BackgroundCommandExecution[here] for further information on this topic.
-
-//For example:
-//
-//[source,java]
-//----
-//public class Order {
-//    @Action(
-//        command=CommandReification.ENABLED,
-//        commandExecuteIn=CommandExecuteIn.BACKGROUND
-//    )
-//    public Invoice generateInvoice(...) { /* ... */ }
-//}
-//----
-//
-//will result in the `Command` being persisted but its execution deferred to a background execution mechanism.
-//The returned object from this action invocation is the persisted `Command` itself.
-
 
 
 

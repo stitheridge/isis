@@ -2,12 +2,11 @@ package org.apache.isis.extensions.commandreplay.impl.clock;
 
 import java.sql.Timestamp;
 import java.util.Optional;
-import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-import org.apache.isis.applib.ApplicationException;
 import org.apache.isis.applib.annotation.DomainService;
 import org.apache.isis.applib.annotation.Programmatic;
 import org.apache.isis.applib.clock.Clock;
@@ -34,6 +33,8 @@ import lombok.extern.log4j.Log4j2;
 @DomainService()
 @Log4j2
 public class TickingClockService {
+
+    @Inject IsisConfiguration isisConfiguration;
 
     @PostConstruct
     public void init() {
@@ -93,7 +94,7 @@ public class TickingClockService {
      * </p>
      */
     @Programmatic
-    public <T> T at(Timestamp timestamp, Callable<T> callable) {
+    public <T> T at(Timestamp timestamp, Supplier<T> supplier) {
         ensureInitialized();
 
         val tickingFixtureClock = (TickingFixtureClock) TickingFixtureClock.getInstance();
@@ -103,9 +104,7 @@ public class TickingClockService {
 
         try {
             tickingFixtureClock.setTime(timestamp);
-            return callable.call();
-        } catch (Exception e) {
-            throw new ApplicationException(e);
+            return supplier.get();
         } finally {
             final long wallTime1 = System.currentTimeMillis();
             tickingFixtureClock.setTime(previous + wallTime1 - wallTime0);
@@ -118,7 +117,5 @@ public class TickingClockService {
                     "Not initialized.  Make sure that the application is configured to run as a replay slave");
         }
     }
-
-    @Inject IsisConfiguration isisConfiguration;
 
 }

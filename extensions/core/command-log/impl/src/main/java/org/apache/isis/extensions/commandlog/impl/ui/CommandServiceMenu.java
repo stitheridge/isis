@@ -33,8 +33,8 @@ import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
     objectType = "isisExtensionsCommandLog.CommandServiceMenu"
 )
 @DomainServiceLayout(
-    named = "Activity"
-    , menuBar = DomainServiceLayout.MenuBar.SECONDARY
+    named = "Activity",
+    menuBar = DomainServiceLayout.MenuBar.SECONDARY
 )
 @Service
 @Named("isisExtensionsCommandLog.CommandServiceMenu")

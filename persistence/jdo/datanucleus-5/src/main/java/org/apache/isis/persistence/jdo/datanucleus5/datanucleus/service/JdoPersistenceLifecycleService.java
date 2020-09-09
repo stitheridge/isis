@@ -52,9 +52,9 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class JdoPersistenceLifecycleService {
 
-    @Inject private MetaModelContext metaModelContext;
-    @Inject private PersistenceSessionFactory persistenceSessionFactory;
-    @Inject private IsisBeanTypeRegistryHolder isisBeanTypeRegistryHolder;
+    @Inject MetaModelContext metaModelContext;
+    @Inject PersistenceSessionFactory persistenceSessionFactory;
+    @Inject IsisBeanTypeRegistryHolder isisBeanTypeRegistryHolder;
 
     @PostConstruct
     public void postConstr() {
@@ -89,6 +89,7 @@ public class JdoPersistenceLifecycleService {
     public void onSessionLifecycleEvent(IsisInteractionLifecycleEvent event) {
 
         val eventType = event.getEventType();
+        val isisInteraction = event.getIsisInteraction();
 
         if(log.isDebugEnabled()) {
             log.debug("received session event {}", eventType);
@@ -96,13 +97,13 @@ public class JdoPersistenceLifecycleService {
 
         switch (eventType) {
         case HAS_STARTED:
-            openSession(event.getIsisInteraction());
+            openSession(isisInteraction);
             break;
         case IS_ENDING:
-            closeSession(event.getIsisInteraction());
+            closeSession(isisInteraction);
             break;
         case FLUSH_REQUEST:
-            flushSession(event.getIsisInteraction());
+            flushSession(isisInteraction);
             break;
 
         default:

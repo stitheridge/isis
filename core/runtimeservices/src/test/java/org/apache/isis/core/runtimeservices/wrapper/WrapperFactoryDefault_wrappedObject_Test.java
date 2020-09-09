@@ -40,7 +40,6 @@ import org.junit.rules.ExpectedException;
 import org.apache.isis.applib.Identifier;
 import org.apache.isis.applib.services.bookmark.BookmarkService;
 import org.apache.isis.applib.services.command.Command;
-import org.apache.isis.applib.services.command.Command.Executor;
 import org.apache.isis.applib.services.command.CommandContext;
 import org.apache.isis.applib.services.command.CommandExecutorService;
 import org.apache.isis.applib.services.factory.FactoryService;
@@ -194,9 +193,6 @@ public class WrapperFactoryDefault_wrappedObject_Test {
                 allowing(mockCommandContext).getCommand();
                 will(returnValue(mockCommand));
                 
-                allowing(mockCommandContext).getCurrentExecutor();
-                will(returnValue(Optional.of(Executor.USER)));
-
                 allowing(mockSpecificationLoader).loadSpecification(String.class);
                 will(returnValue(mockStringSpec));
 

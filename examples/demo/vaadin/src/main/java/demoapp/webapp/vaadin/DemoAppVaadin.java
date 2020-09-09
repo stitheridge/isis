@@ -49,7 +49,7 @@ import demoapp.web._infra.utils.ThereCanBeOnlyOne;
     // WICKET INTEGRATION ... to allow side by side comparison
     IsisModuleViewerWicketViewer.class, // wicket viewer
     IsisModuleValSseUiWkt.class, // server sent events
-    IsisModuleValAsciidocUiWkt.class, // ascii-doc rendering support (for Wicket)
+    IsisModuleValAsciidocUiVaa.class, // ascii-doc rendering support (for Wicket)
   
 })
 public class DemoAppVaadin extends SpringBootServletInitializer {

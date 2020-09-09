@@ -1,4 +1,4 @@
-package demoapp.dom.annotDomain.DomainObject.publishing.spiimpl;
+package demoapp.dom.annotDomain._changes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ import lombok.val;
 
 //tag::class[]
 @Service
-public class PublisherServiceSpiForDomainObject implements PublisherService {
+public class PublisherServiceToCaptureChangesInMemory implements PublisherService {
 
     private final List<ChangesDto> publishedObjects = new ArrayList<>();
 

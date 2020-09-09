@@ -29,16 +29,13 @@ public class CommandFacetFromConfiguration extends CommandFacetAbstract {
     public static CommandFacet create(
             final FacetHolder holder,
             final ServiceInjector servicesInjector) {
-        return new CommandFacetFromConfiguration(CommandPersistence.PERSISTED, CommandExecuteIn.FOREGROUND, holder,
-                servicesInjector);
+        return new CommandFacetFromConfiguration(holder, servicesInjector);
     }
 
     private CommandFacetFromConfiguration(
-            final CommandPersistence persistence,
-            final CommandExecuteIn executeIn,
             final FacetHolder holder,
             final ServiceInjector servicesInjector) {
-        super(persistence, null, holder, servicesInjector);
+        super(null, holder, servicesInjector);
     }
 
 }

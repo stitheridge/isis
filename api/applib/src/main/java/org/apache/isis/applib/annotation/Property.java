@@ -27,7 +27,6 @@ import java.lang.annotation.Target;
 
 import org.apache.isis.applib.events.domain.PropertyDomainEvent;
 import org.apache.isis.applib.services.command.CommandDtoProcessor;
-import org.apache.isis.applib.services.command.spi.CommandService;
 import org.apache.isis.applib.services.conmap.command.ContentMappingServiceForCommandDto;
 import org.apache.isis.applib.services.conmap.command.ContentMappingServiceForCommandsDto;
 import org.apache.isis.applib.spec.Specification;
@@ -51,16 +50,19 @@ public @interface Property {
 
     // end::refguide[]
     /**
+     * Whether the property edit should be reified into a
+     * {@link org.apache.isis.applib.services.command.Command} object.
+     */
+    // tag::refguide[]
+    CommandReification command()                                // <.>
+            default CommandReification.NOT_SPECIFIED;
+
+    // end::refguide[]
+    /**
      * The {@link CommandDtoProcessor} to process this command's DTO.
      *
      * <p>
-     *     Specifying a processor requires that the implementation of {@link CommandService} provides a
-     *     custom implementation of {@link org.apache.isis.applib.services.command.Command} that additional extends
-     *     from {@link CommandWithDto}.
-     * </p>
-     *
-     * <p>
-     *     Tprocessor itself is used by {@link ContentMappingServiceForCommandDto} and
+     *     The processor itself is used by {@link ContentMappingServiceForCommandDto} and
      *     {@link ContentMappingServiceForCommandsDto} to dynamically transform the DTOs.
      * </p>
      */

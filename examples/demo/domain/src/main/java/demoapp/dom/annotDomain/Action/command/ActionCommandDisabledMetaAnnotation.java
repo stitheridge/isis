@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import org.apache.isis.applib.annotation.Action;
 
 //tag::class[]
-@Action(command = CommandReification.DISABLED)  // <.>
+@Action()                                       // <.>
 @Inherited
 @Target({
         ElementType.TYPE, ElementType.METHOD    // <.>

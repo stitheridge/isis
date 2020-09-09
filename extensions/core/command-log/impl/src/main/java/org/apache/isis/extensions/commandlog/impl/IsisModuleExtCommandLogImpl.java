@@ -14,18 +14,29 @@ import org.apache.isis.testing.fixtures.applib.teardown.TeardownFixtureAbstract;
 @Configuration
 @Import({
         // @DomainService's
-        BackgroundCommandExecutionFromBackgroundCommandServiceJdo.class
-        , BackgroundCommandServiceJdo.class
-        , BackgroundCommandServiceJdoRepository.class
-        , CommandServiceJdo.class
-        , CommandJdoRepository.class
+        CommandJdoRepository.class
         , CommandServiceMenu.class
+
+        // @Service's
+        , CommandJdo.TableColumnOrderDefault.class
 })
 @ComponentScan(
         basePackageClasses= {
                 IsisModuleExtCommandLogImpl.class
         })
 public class IsisModuleExtCommandLogImpl implements ModuleWithFixtures {
+
+    public abstract static class TitleUiEvent<S>
+            extends org.apache.isis.applib.events.ui.TitleUiEvent<S> { }
+
+    public abstract static class IconUiEvent<S>
+            extends org.apache.isis.applib.events.ui.IconUiEvent<S> { }
+
+    public abstract static class CssClassUiEvent<S>
+            extends org.apache.isis.applib.events.ui.CssClassUiEvent<S> { }
+
+    public abstract static class LayoutUiEvent<S>
+            extends org.apache.isis.applib.events.ui.LayoutUiEvent<S> { }
 
     public abstract static class ActionDomainEvent<S>
             extends org.apache.isis.applib.events.domain.ActionDomainEvent<S> { }

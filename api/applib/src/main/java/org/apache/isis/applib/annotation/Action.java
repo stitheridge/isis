@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 
 import org.apache.isis.applib.events.domain.ActionDomainEvent;
 import org.apache.isis.applib.services.command.CommandDtoProcessor;
-import org.apache.isis.applib.services.command.spi.CommandService;
+import org.apache.isis.applib.services.command.CommandService;
 import org.apache.isis.applib.services.conmap.command.ContentMappingServiceForCommandDto;
 import org.apache.isis.applib.services.conmap.command.ContentMappingServiceForCommandsDto;
 import org.apache.isis.applib.value.Blob;
@@ -87,6 +87,14 @@ public @interface Action {
     // tag::refguide[]
     String associateWithSequence()                                  // <.>
             default "1";
+
+    // end::refguide[]
+    /**
+     * Whether the action invocation should be reified into a {@link org.apache.isis.applib.services.command.Command} object.
+     */
+    // tag::refguide[]
+    CommandReification command()                                    // <.>
+            default CommandReification.NOT_SPECIFIED;
 
     // end::refguide[]
     /**

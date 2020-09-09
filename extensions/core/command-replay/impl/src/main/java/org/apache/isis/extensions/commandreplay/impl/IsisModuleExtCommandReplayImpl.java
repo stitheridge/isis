@@ -9,8 +9,8 @@ import org.apache.isis.extensions.commandreplay.impl.executor.CommandExecutorSer
 import org.apache.isis.extensions.commandreplay.impl.fetch.MasterConfiguration;
 import org.apache.isis.extensions.commandreplay.impl.clock.TickingClockService;
 import org.apache.isis.extensions.commandreplay.impl.analysis.CommandReplayAnalysisService;
-import org.apache.isis.extensions.commandreplay.impl.ui.CommandReplayOnMasterService;
-import org.apache.isis.extensions.commandreplay.impl.ui.CommandReplayOnSlaveService;
+import org.apache.isis.extensions.commandreplay.impl.ui.CommandReplayOnPrimaryService;
+import org.apache.isis.extensions.commandreplay.impl.ui.CommandReplayOnSecondaryService;
 
 @Configuration
 @Import({
@@ -20,8 +20,8 @@ import org.apache.isis.extensions.commandreplay.impl.ui.CommandReplayOnSlaveServ
         // @DomainService's
         CommandExecutorServiceWithTime.class,
         CommandReplayAnalysisService.class,
-        CommandReplayOnMasterService.class,
-        CommandReplayOnSlaveService.class,
+        CommandReplayOnPrimaryService.class,
+        CommandReplayOnSecondaryService.class,
         TickingClockService.class,
 
         // @Service's

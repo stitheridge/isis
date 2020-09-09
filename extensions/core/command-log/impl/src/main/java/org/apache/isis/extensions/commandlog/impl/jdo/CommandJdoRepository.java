@@ -26,9 +26,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+import javax.jdo.JDOQLTypedQuery;
 
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -67,7 +69,8 @@ import lombok.extern.log4j.Log4j2;
 public class CommandJdoRepository {
 
     public List<CommandJdo> findByFromAndTo(
-            final LocalDate from, final LocalDate to) {
+            @Nullable final LocalDate from,
+            @Nullable final LocalDate to) {
         final Timestamp fromTs = toTimestampStartOfDayWithOffset(from, 0);
         final Timestamp toTs = toTimestampStartOfDayWithOffset(to, 1);
         
@@ -97,12 +100,12 @@ public class CommandJdoRepository {
     }
 
 
-    public Optional<CommandJdo> findByUniqueId(final UUID transactionId) {
+    public Optional<CommandJdo> findByUniqueId(final UUID uniqueId) {
         persistCurrentCommandIfRequired();
         return repositoryService.firstMatch(
                 new QueryDefault<>(CommandJdo.class,
-                        "findByUniqueId",
-                        "uniqueId", transactionId));
+                        "findByUniqueIdStr",
+                        "uniqueIdStr", uniqueId.toString()));
     }
 
     public List<CommandJdo> findByParent(final CommandJdo parent) {
@@ -132,7 +135,11 @@ public class CommandJdoRepository {
             return;
         } 
         final Command command = commandContextProvider.get().getCommand();
-        final CommandJdo commandJdo = new CommandJdo(command, this);
+        val systemStateChanged = command.isSystemStateChanged();
+        if(!systemStateChanged) {
+            return;
+        }
+        final CommandJdo commandJdo = new CommandJdo(command);
         repositoryService.persist(commandJdo);
     }
 
@@ -181,46 +188,62 @@ public class CommandJdoRepository {
     }
 
 
-    public List<CommandJdo> findRecentByUser(final String user) {
+    public List<CommandJdo> findRecentByUsername(final String username) {
         return repositoryService.allMatches(
-                new QueryDefault<>(CommandJdo.class, "findRecentByUser", "user", user));
+                new QueryDefault<>(
+                        CommandJdo.class,
+                        "findRecentByUsername",
+                        "username", username));
     }
 
 
     public List<CommandJdo> findRecentByTarget(final Bookmark target) {
         final String targetStr = target.toString();
         return repositoryService.allMatches(
-                new QueryDefault<>(CommandJdo.class, "findRecentByTarget", "targetStr", targetStr));
+                new QueryDefault<>(
+                        CommandJdo.class,
+                        "findRecentByTarget",
+                        "targetStr", targetStr));
     }
 
 
     /**
-     * Intended to support the replay of commands on a slave instance of the application.
+     * Intended to support the replay of commands on a seconadry instance of
+     * the application.
      *
-     * This finder returns all (completed) {@link CommandJdo}s started after the command with the specified
-     * transaction Id.  The number of commands returned can be limited so that they can be applied in batches.
+     * This finder returns all (completed) {@link CommandJdo}s started after
+     * the command with the specified uniqueId.  The number of commands
+     * returned can be limited so that they can be applied in batches.
      *
-     * If the provided transactionId is null, then only a single {@link CommandJdo command} is returned.  This is
-     * intended to support the case when the slave does not yet have any {@link CommandJdo command}s replicated.
-     * In practice this is unlikely; typically we expect that the slave will be set up to run against a copy of the
-     * master instance's DB (restored from a backup), in which case there will already be a {@link CommandJdo command}
-     * representing the current high water mark on the slave.
+     * If the provided uniqueId is null, then only a single
+     * {@link CommandJdo command} is returned.  This is intended to support
+     * the case when the secondary does not yet have any
+     * {@link CommandJdo command}s replicated.  In practice this is unlikely;
+     * typically we expect that the secondary will be set up to run against a
+     * copy of the primary instance's DB (restored from a backup), in which
+     * case there will already be a {@link CommandJdo command} representing the
+     * current high water mark on the slave.
      *
-     * If the transaction id is not null but the corresponding {@link CommandJdo command} is not found, then
-     * <tt>null</tt> is returned. In the replay scenario the caller will probably interpret this as an error because
-     * it means that the high water mark on the slave is inaccurate, referring to a non-existent
-     * {@link CommandJdo command} on the master.
+     * If the unique id is not null but the corresponding
+     * {@link CommandJdo command} is not found, then <tt>null</tt> is returned.
+     * In the replay scenario the caller will probably interpret this as an
+     * error because it means that the high water mark on the secondary is
+     * inaccurate, referring to a non-existent {@link CommandJdo command} on
+     * the primary.
      *
-     * @param transactionId - the identifier of the {@link CommandJdo command} being the replay hwm (using {@link #findReplayHwm()} on the slave), or null if no HWM was found there.
-     * @param batchSize - to restrict the number returned (so that replay commands can be batched).
+     * @param uniqueId - the identifier of the {@link CommandJdo command} being
+     *                   the replay hwm (using {@link #findReplayHwm()} on the
+     *                   secondary), or null if no HWM was found there.
+     * @param batchSize - to restrict the number returned (so that replay
+     *                   commands can be batched).
      *
      * @return
      */
-    public List<CommandJdo> findSince(final UUID transactionId, final Integer batchSize) {
-        if(transactionId == null) {
+    public List<CommandJdo> findSince(final UUID uniqueId, final Integer batchSize) {
+        if(uniqueId == null) {
             return findFirst();
         }
-        final CommandJdo from = findByTransactionIdElseNull(transactionId);
+        final CommandJdo from = findByUniqueIdElseNull(uniqueId);
         if(from == null) {
             return null;
         }
@@ -236,17 +259,19 @@ public class CommandJdoRepository {
     }
 
 
-    private CommandJdo findByTransactionIdElseNull(final UUID transactionId) {
-        var q = isisJdoSupport.newTypesafeQuery(CommandJdo.class);
+    private CommandJdo findByUniqueIdElseNull(final UUID uniqueId) {
+        val tsq = isisJdoSupport.newTypesafeQuery(CommandJdo.class);
         val cand = QCommandJdo.candidate();
-        q = q.filter(
-                cand.transactionId.eq(q.parameter("transactionId", UUID.class))
+        val q = tsq.filter(
+                cand.uniqueIdStr.eq(tsq.parameter("uniqueIdStr", String.class))
         );
-        q.setParameter("transactionId", transactionId);
+        q.setParameter("uniqueIdStr", uniqueId.toString());
         return q.executeUnique();
     }
 
-    private List<CommandJdo> findSince(final Timestamp timestamp, final Integer batchSize) {
+    private List<CommandJdo> findSince(
+            final Timestamp timestamp,
+            final Integer batchSize) {
         val q = new QueryDefault<>(
                 CommandJdo.class,
                 "findSince",
@@ -263,36 +288,49 @@ public class CommandJdoRepository {
     }
 
 
+    /**
+     * The most recent replayable command previously replicated from primary to
+     * secondary.
+     *
+     * <p>
+     * This should always exist except for the very first times
+     * (after restored the prod DB to secondary).
+     * </p>
+     *
+     * <p>
+     * Otherwise, the most recent completed command, as queried on the
+     * secondary, corresponding to the last command run on primary before the
+     * production database was restored to the secondary
+     * </p>
+     */
     public CommandJdo findReplayHwm() {
 
-        // most recent replayable command, replicated from master to slave
-        // this may or may not
-        Optional<CommandJdo> replayableHwm = repositoryService.firstMatch(
-                new QueryDefault<>(CommandJdo.class, "findReplayableHwm"));
-
-        return replayableHwm
+        // most recent replayable command, replicated from primary to secondary
+        return repositoryService.firstMatch(
+                new QueryDefault<>(
+                        CommandJdo.class, "findReplayableHwm"))
                 .orElseGet(() -> {
-            // otherwise, the most recent completed command, run on the slave,
+            // otherwise, the most recent completed command, run on the secondary,
             // this corresponds to a command restored from a copy of
             // the production database
-            Optional<CommandJdo> restoredFromDbHwm = repositoryService.firstMatch(
-                    new QueryDefault<>(CommandJdo.class, "findForegroundHwm"));
 
-            return restoredFromDbHwm.orElse(null);
+            return repositoryService.firstMatch(
+                    new QueryDefault<>(CommandJdo.class, "findHwm"))
+                    .orElse(null);
         });
 
     }
 
 
-    public List<CommandJdo> findBackgroundCommandsNotYetStarted() {
+    public List<CommandJdo> findNotYetStarted() {
         return repositoryService.allMatches(
                 new QueryDefault<>(CommandJdo.class,
-                        "findBackgroundCommandsNotYetStarted"));
+                        "findNotYetStarted"));
     }
 
 
 
-    public List<CommandJdo> findReplayedOnSlave() {
+    public List<CommandJdo> findReplayedOnSecondary() {
         return repositoryService.allMatches(
                 new QueryDefault<>(CommandJdo.class, "findReplayableMostRecentStarted"));
     }
@@ -319,7 +357,7 @@ public class CommandJdoRepository {
 
         final CommandJdo commandJdo = new CommandJdo();
 
-        commandJdo.setUniqueId(UUID.fromString(dto.getTransactionId()));
+        commandJdo.setUniqueIdStr(dto.getTransactionId());
         commandJdo.setTimestamp(JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(dto.getTimestamp()));
         commandJdo.setUsername(dto.getUser());
 
@@ -338,7 +376,6 @@ public class CommandJdoRepository {
     public void persist(final CommandJdo commandJdo) {
         repositoryService.persist(commandJdo);
     }
-
 
 
     @Inject Provider<CommandContext> commandContextProvider;

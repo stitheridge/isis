@@ -24,38 +24,36 @@ import lombok.extern.log4j.Log4j2;
 
 @DomainService(
         nature = NatureOfService.VIEW,
-        objectType = "isiscommand.CommandReplayOnSlaveService"
+        objectType = "isisExtensionsCommandReplay.CommandReplayOnSecondaryService"
 )
 @DomainServiceLayout(
         named = "Activity",
         menuBar = DomainServiceLayout.MenuBar.SECONDARY
 )
 @Log4j2
-public class CommandReplayOnSlaveService {
+public class CommandReplayOnSecondaryService {
 
     public static abstract class ActionDomainEvent
-            extends IsisModuleExtCommandReplayImpl.ActionDomainEvent<CommandReplayOnMasterService> { }
+            extends IsisModuleExtCommandReplayImpl.ActionDomainEvent<CommandReplayOnSecondaryService> { }
 
-
-    public static class FindReplayHwmOnSlaveDomainEvent extends ActionDomainEvent { }
-    @Action(domainEvent = FindReplayHwmOnSlaveDomainEvent.class, semantics = SemanticsOf.SAFE)
+    public static class FindReplayHwmOnSecondaryDomainEvent extends ActionDomainEvent { }
+    @Action(domainEvent = FindReplayHwmOnSecondaryDomainEvent.class, semantics = SemanticsOf.SAFE)
     @ActionLayout(cssClassFa = "fa-bath")
     @MemberOrder(sequence="60.1")
-    public CommandJdo findReplayHwmOnSlave() {
+    public CommandJdo findReplayHwmOnSecondary() {
         return commandJdoRepository.findReplayHwm();
     }
 
 
 
-    public static class UploadCommandsToSlaveDomainEvent extends ActionDomainEvent { }
+    public static class UploadCommandsToSecondaryDomainEvent extends ActionDomainEvent { }
     @Action(
-        command = CommandReification.DISABLED,
-        domainEvent = UploadCommandsToSlaveDomainEvent.class,
+        domainEvent = UploadCommandsToSecondaryDomainEvent.class,
         semantics = SemanticsOf.NON_IDEMPOTENT
     )
     @ActionLayout(cssClassFa = "fa-upload")
     @MemberOrder(sequence="60.2")
-    public void uploadCommandsToSlave(final Clob commandsDtoAsXml) {
+    public void uploadCommandsToSecondary(final Clob commandsDtoAsXml) {
         final CharSequence chars = commandsDtoAsXml.getChars();
         List<CommandDto> commandDtoList;
 
@@ -74,9 +72,7 @@ public class CommandReplayOnSlaveService {
     }
 
 
-
-    @Inject
-    CommandJdoRepository commandJdoRepository;
+    @Inject CommandJdoRepository commandJdoRepository;
     @Inject JaxbService jaxbService;
 
 }

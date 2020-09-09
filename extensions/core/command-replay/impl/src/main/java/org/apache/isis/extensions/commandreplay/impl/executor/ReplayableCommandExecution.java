@@ -4,9 +4,10 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.command.CommandExecutorService;
 import org.apache.isis.applib.services.xactn.TransactionService;
-import org.apache.isis.core.runtimeservices.background.CommandExecutionAbstract;
+import org.apache.isis.core.runtime.iactn.template.AbstractIsisInteractionTemplate;
 import org.apache.isis.extensions.commandlog.impl.jdo.ReplayState;
 import org.apache.isis.extensions.commandreplay.impl.SlaveStatus;
 import org.apache.isis.extensions.commandreplay.impl.StatusException;
@@ -23,15 +24,16 @@ import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdoRepository;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class ReplayableCommandExecution
-        extends CommandExecutionAbstract {
+public class ReplayableCommandExecution extends AbstractIsisInteractionTemplate {
 
-    private final MasterConfiguration slaveConfig;
+    private final MasterConfiguration masterConfiguration;
 
-    public ReplayableCommandExecution(final MasterConfiguration slaveConfig) {
-        super(CommandExecutorService.SudoPolicy.SWITCH);
-        this.slaveConfig = slaveConfig;
+    public ReplayableCommandExecution(final MasterConfiguration masterConfiguration) {
+        this.masterConfiguration = masterConfiguration;
     }
+
+    @Inject
+    CommandExecutorService commandExecutorService;
 
     @Override
     protected void doExecute(final Object context) {
@@ -66,41 +68,28 @@ public class ReplayableCommandExecution
 
             }
 
-            log.debug("current hwm transactionId = {} {} {} {}",
+            log.debug("current hwm transactionId = {} {} {}",
                     hwmCommand.getUniqueId(), hwmCommand.getTimestamp(),
-                    hwmCommand.getExecuteIn(), hwmCommand.getMemberIdentifier());
+                    hwmCommand.getLogicalMemberIdentifier());
 
 
             boolean fetchNext;
-            switch (hwmCommand.getExecuteIn()) {
-            case FOREGROUND:
-                fetchNext = true;
-                break;
-            case REPLAYABLE:
-                if(hwmCommand.getReplayState() == null || hwmCommand.getReplayState() == ReplayState.PENDING) {
+            if(hwmCommand.getReplayState() == null || hwmCommand.getReplayState() == ReplayState.PENDING) {
 
-                    // the HWM has not been replayed.
-                    // this might be because it has been marked for retry by the administrator.
-                    // so, we will just use it directly
+                // the HWM has not been replayed.
+                // this might be because it has been marked for retry by the administrator.
+                // so, we will just use it directly
 
-                    fetchNext = false;
-                } else {
-                    //
-                    // check that the current HWM was replayed successfully, otherwise break out
-                    //
-                    if(hwmCommand.getReplayState().isFailed()) {
-                        log.info("Command xactnId={} hit replay error", hwmCommand.getUniqueId());
-                        return;
-                    }
-                    fetchNext = true;
+                fetchNext = false;
+            } else {
+                //
+                // check that the current HWM was replayed successfully, otherwise break out
+                //
+                if(hwmCommand.getReplayState().isFailed()) {
+                    log.info("Command xactnId={} hit replay error", hwmCommand.getUniqueId());
+                    return;
                 }
-                break;
-            case BACKGROUND:
-            default:
-                log.error(
-                        "HWM command xactnId={} should be either FOREGROUND or REPLAYABLE but is instead {}; aborting",
-                        hwmCommand.getUniqueId(), hwmCommand.getExecuteIn());
-                return;
+                fetchNext = true;
             }
 
             if(fetchNext) {
@@ -117,25 +106,23 @@ public class ReplayableCommandExecution
                         () -> commandJdoRepository.saveForReplay(commandDto));
             }
 
-            log.info("next HWM transactionId = {} {} {} {}", hwmCommand.getUniqueId());
-
+            log.info("next HWM transactionId = {}", hwmCommand.getUniqueId());
 
 
             //
             // run command
             //
-            this.execute(hwmCommand, transactionService);
-
+            executeCommandInTran(hwmCommand);
 
             //
-            // find background commands, and run them
+            // find child commands, and run them
             //
             final CommandJdo parent = hwmCommand;
-            final List<CommandJdo> backgroundCommands =
+            final List<CommandJdo> childCommands =
                     transactionService.executeWithinTransaction(
-                            () -> commandJdoRepository.findBackgroundCommandsByParent(parent));
-            for (final CommandJdo backgroundCommand : backgroundCommands) {
-                execute(backgroundCommand, transactionService);
+                        () -> commandJdoRepository.findByParent(parent));
+            for (final CommandJdo childCommand : childCommands) {
+                executeCommandInTran(childCommand);
             }
 
 
@@ -145,6 +132,11 @@ public class ReplayableCommandExecution
             //
             transactionService.executeWithinTransaction(() -> analysisService.analyse(parent));
         }
+    }
+
+    private void executeCommandInTran(final CommandJdo command) {
+        transactionService.executeWithinTransaction(
+                () -> commandExecutorService.executeCommand(CommandExecutorService.SudoPolicy.SWITCH, command.getCommandDto()));
     }
 
     private boolean isRunning() {

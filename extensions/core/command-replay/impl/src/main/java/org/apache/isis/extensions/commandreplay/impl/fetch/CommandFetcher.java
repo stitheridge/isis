@@ -12,6 +12,7 @@ import org.apache.isis.applib.annotation.DomainService;
 import org.apache.isis.applib.annotation.Programmatic;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.jaxb.JaxbService;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
 import org.apache.isis.extensions.commandreplay.impl.SlaveStatus;
 import org.apache.isis.extensions.commandreplay.impl.StatusException;
 import org.apache.isis.extensions.jaxrsclient.applib.client.JaxRsClient;
@@ -38,9 +39,8 @@ public class CommandFetcher {
      * @return
      * @throws StatusException
      */
-    @Programmatic
     public CommandDto fetchCommand(
-            final Command previousHwm)
+            final CommandJdo previousHwm)
             throws StatusException {
 
         log.debug("finding command on master ...");
@@ -60,8 +60,9 @@ public class CommandFetcher {
     /**
      * @return - the commands, or <tt>null</tt> if none were found
      * @throws StatusException
+     * @param previousHwm
      */
-    private CommandsDto fetchCommands(final Command previousHwm) throws StatusException {
+    private CommandsDto fetchCommands(final CommandJdo previousHwm) throws StatusException {
         final UUID transactionId = previousHwm != null ? previousHwm.getUniqueId() : null;
 
         log.debug("finding commands on master ...");

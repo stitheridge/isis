@@ -22,6 +22,8 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -77,6 +79,7 @@ import org.apache.isis.schema.common.v2.OidsDto;
 import org.apache.isis.schema.common.v2.ValueWithTypeDto;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.log4j.Log4j2;
 
@@ -91,51 +94,44 @@ public class CommandExecutorServiceDefault implements CommandExecutorService {
     private static final Pattern ID_PARSER =
             Pattern.compile("(?<className>[^#]+)#?(?<localId>[^(]+)(?<args>[(][^)]*[)])?");
 
-    @Inject private BookmarkService bookmarkService;
-    @Inject private SudoService sudoService;
-    @Inject private ClockService clockService;
-    @Inject private TransactionService transactionService;
-    @Inject private IsisInteractionTracker isisInteractionTracker;
-    @Inject private javax.inject.Provider<InteractionContext> interactionContextProvider;
+    @Inject BookmarkService bookmarkService;
+    @Inject SudoService sudoService;
+    @Inject ClockService clockService;
+    @Inject TransactionService transactionService;
+    @Inject IsisInteractionTracker isisInteractionTracker;
+    @Inject javax.inject.Provider<InteractionContext> interactionContextProvider;
     
-    @Inject @Getter private IsisInteractionFactory isisInteractionFactory;
-    @Inject @Getter private SpecificationLoader specificationLoader;
-    
+    @Inject @Getter IsisInteractionFactory isisInteractionFactory;
+    @Inject @Getter SpecificationLoader specificationLoader;
+
     @Override
-    public void executeCommand(
+    public Bookmark executeCommand(final Command command) {
+        return executeCommand(SudoPolicy.NO_SWITCH, command);
+    }
+
+    @Override
+    public Bookmark executeCommand(
             final CommandExecutorService.SudoPolicy sudoPolicy,
             final Command command) {
 
-        final Runnable commandRunnable = ()->executeCommand(command);
-        final Runnable topLevelRunnable;
-
-        switch (sudoPolicy) {
-        case NO_SWITCH:
-            topLevelRunnable = commandRunnable;
-            break;
-        case SWITCH:
-            val user = command.getUsername();
-            topLevelRunnable = ()->sudoService.sudo(user, commandRunnable);
-            break;
-        default:
-            throw new IllegalStateException("Probable framework error, unrecognized sudoPolicy: " + sudoPolicy);
-        }
-
         try {
-
-            transactionService.executeWithinTransaction(topLevelRunnable);
+            val bookmark = transactionService.executeWithinTransaction(
+                    () ->
+                            sudoPolicy == SudoPolicy.SWITCH
+                                ? sudoService.sudo(command.getUsername(), () -> doExecuteCommand(command))
+                                : doExecuteCommand(command));
 
             afterCommit(command, /*exception*/null);
+            return bookmark;
 
-        } catch (Exception e) {
-
-            log.warn("Exception when executing : {}", command.getLogicalMemberIdentifier(), e);
-            afterCommit(command, e);
+        } catch (Exception ex) {
+            log.warn("Exception when executing : {}", command.getLogicalMemberIdentifier(), ex);
+            afterCommit(command, ex);
+            return null;
         }
-
     }
 
-    protected void executeCommand(final Command command) {
+    private Bookmark doExecuteCommand(final Command command) {
 
         // setup for us by IsisTransactionManager; will have the transactionId of the backgroundCommand
         val interaction = interactionContextProvider.get().getInteraction();
@@ -157,12 +153,37 @@ public class CommandExecutorServiceDefault implements CommandExecutorService {
 
         val dto = command.getCommandDto();
 
-        val resultBookmark = executeCommand(dto);
+        val resultBookmark = doExecuteCommand(dto);
         command.internal().setResult(resultBookmark);
+
+        return resultBookmark;
     }
 
     @Override
-    public Bookmark executeCommand(CommandDto dto) {
+    public Bookmark executeCommand(final CommandDto commandDto) {
+        return executeCommand(SudoPolicy.NO_SWITCH, commandDto);
+    }
+
+    @Override
+    public Bookmark executeCommand(
+            final SudoPolicy sudoPolicy
+            , final CommandDto commandDto) {
+
+        try {
+            return transactionService.executeWithinTransaction(
+                    () -> sudoPolicy == SudoPolicy.SWITCH
+                        ? sudoService.sudo(
+                            commandDto.getUser(),
+                            () -> doExecuteCommand(commandDto))
+                        : doExecuteCommand(commandDto));
+
+        } catch (Exception ex) {
+            log.warn("Exception when executing : {}", commandDto.getMember().getLogicalMemberIdentifier(), ex);
+            return null;
+        }
+    }
+
+    private Bookmark doExecuteCommand(CommandDto dto) {
 
         final MemberDto memberDto = dto.getMember();
         final String memberId = memberDto.getMemberIdentifier();
@@ -227,7 +248,9 @@ public class CommandExecutorServiceDefault implements CommandExecutorService {
         return null;
     }
 
-    protected void afterCommit(final Command command, final Exception exceptionIfAny) {
+    protected void afterCommit(
+            final Command command
+            , final Exception exceptionIfAny) {
 
         val interaction = interactionContextProvider.get().getInteraction();
 

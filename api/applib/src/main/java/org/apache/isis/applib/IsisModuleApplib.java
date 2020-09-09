@@ -34,6 +34,7 @@ import org.apache.isis.applib.services.bookmark.BookmarkHolder_lookup;
 import org.apache.isis.applib.services.bookmark.BookmarkHolder_object;
 import org.apache.isis.applib.services.clock.ClockService;
 import org.apache.isis.applib.services.command.CommandContext;
+import org.apache.isis.applib.services.command.CommandService;
 import org.apache.isis.applib.services.confview.ConfigurationMenu;
 import org.apache.isis.applib.services.conmap.command.ContentMappingServiceForCommandDto;
 import org.apache.isis.applib.services.conmap.command.ContentMappingServiceForCommandsDto;
@@ -72,6 +73,7 @@ import org.apache.isis.schema.IsisModuleSchema;
         AuditerServiceLogging.class,
         ClockService.class,
         CommandContext.class,
+        CommandService.class,
         ContentMappingServiceForCommandDto.class,
         ContentMappingServiceForCommandsDto.class,
         InteractionContext.class,

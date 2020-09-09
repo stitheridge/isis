@@ -24,13 +24,9 @@ import org.apache.isis.core.metamodel.facetapi.FacetHolder;
 public class CommandFacetForActionAnnotationAsConfigured extends CommandFacetForActionAnnotation {
 
     CommandFacetForActionAnnotationAsConfigured(
-            final CommandPersistence persistence,
-            final CommandExecuteIn executeIn,
-            final Enablement enablement,
             final FacetHolder holder,
             final ServiceInjector servicesInjector) {
-        super(persistence, executeIn, enablement, null,
-                holder, servicesInjector);
+        super(null, holder, servicesInjector);
     }
 
 

@@ -52,8 +52,17 @@ public interface CommandExecutorService {
      * @return - any exception raised by the command.
      */
     // tag::refguide[]
-    void executeCommand(
+    Bookmark executeCommand(
             SudoPolicy sudoPolicy,          // <.>
+            Command command                 // <.>
+    );
+
+    Bookmark executeCommand(
+            SudoPolicy sudoPolicy,          // <.>
+            CommandDto commandDto           // <.>
+    );
+
+    Bookmark executeCommand(
             Command command                 // <.>
     );
 

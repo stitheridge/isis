@@ -31,6 +31,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import org.apache.isis.applib.annotation.OrderPrecedence;
+import org.apache.isis.applib.jaxb.JavaSqlXMLGregorianCalendarMarshalling;
 import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandDtoProcessor;
@@ -61,27 +62,27 @@ public class ContentMappingServiceForCommandDto implements ContentMappingService
     /**
      * Not part of the {@link ContentMappingService} API.
      */
-    public CommandDto map(final CommandWithDto commandWithDto) {
-        return asProcessedDto(commandWithDto);
+    public CommandDto map(final Command command) {
+        return asProcessedDto(command);
     }
 
     CommandDto asProcessedDto(final Object object) {
-        if (!(object instanceof CommandWithDto)) {
+        if (!(object instanceof Command)) {
             return null;
         }
-        final CommandWithDto commandWithDto = (CommandWithDto) object;
-        return asProcessedDto(commandWithDto);
+        final Command command = (Command) object;
+        return asProcessedDto(command);
     }
 
-    private CommandDto asProcessedDto(final CommandWithDto commandWithDto) {
-        if(commandWithDto == null) {
+    private CommandDto asProcessedDto(final Command command) {
+        if(command == null) {
             return null;
         }
-        CommandDto commandDto = commandWithDto.asDto();
+        CommandDto commandDto = command.getCommandDto();
 
         // global processors
         for (final CommandDtoProcessorService commandDtoProcessorService : commandDtoProcessorServices) {
-            commandDto = commandDtoProcessorService.process(commandWithDto, commandDto);
+            commandDto = commandDtoProcessorService.process(command, commandDto);
             if(commandDto == null) {
                 // any processor could return null, effectively breaking the chain.
                 return null;
@@ -94,7 +95,7 @@ public class ContentMappingServiceForCommandDto implements ContentMappingService
         if (commandDtoProcessor == null) {
             return commandDto;
         }
-        return commandDtoProcessor.process(commandWithDto, commandDto);
+        return commandDtoProcessor.process(command, commandDto);
     }
 
 
@@ -113,21 +114,14 @@ public class ContentMappingServiceForCommandDto implements ContentMappingService
         public CommandDto process(final Command command, CommandDto commandDto) {
 
             // for some reason this isn't being persisted initially, so patch it in.  TODO: should fix this
-            commandDto.setUser(command.getUser());
+            commandDto.setUser(command.getUsername());
 
             // the timestamp field was only introduced in v1.4 of cmd.xsd, so there's no guarantee
             // it will have been populated.  We therefore copy the value in from CommandWithDto entity.
             if(commandDto.getTimestamp() == null) {
                 final Timestamp timestamp = command.getTimestamp();
-                commandDto.setTimestamp(JavaSqlTimestampXmlGregorianCalendarAdapter.print(timestamp));
+                commandDto.setTimestamp(JavaSqlXMLGregorianCalendarMarshalling.toXMLGregorianCalendar(timestamp));
             }
-
-            CommandDtoUtils.setUserData(commandDto,
-                    CommandWithDto.USERDATA_KEY_TARGET_CLASS, command.getTargetClass());
-            CommandDtoUtils.setUserData(commandDto,
-                    CommandWithDto.USERDATA_KEY_TARGET_ACTION, command.getTargetAction());
-            CommandDtoUtils.setUserData(commandDto,
-                    CommandWithDto.USERDATA_KEY_ARGUMENTS, command.getArguments());
 
             final Bookmark result = command.getResult();
             CommandDtoUtils.setUserData(commandDto,
@@ -138,8 +132,8 @@ public class ContentMappingServiceForCommandDto implements ContentMappingService
                     CommandWithDto.USERDATA_KEY_EXCEPTION, command.getException());
 
             PeriodDto timings = CommandDtoUtils.timingsFor(commandDto);
-            timings.setStartedAt(JavaSqlTimestampXmlGregorianCalendarAdapter.print(command.getStartedAt()));
-            timings.setCompletedAt(JavaSqlTimestampXmlGregorianCalendarAdapter.print(command.getCompletedAt()));
+            timings.setStartedAt(JavaSqlXMLGregorianCalendarMarshalling.toXMLGregorianCalendar(command.getStartedAt()));
+            timings.setCompletedAt(JavaSqlXMLGregorianCalendarMarshalling.toXMLGregorianCalendar(command.getCompletedAt()));
 
             return commandDto;
         }

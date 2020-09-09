@@ -22,10 +22,7 @@
 	</parent>
 	
 	<artifactId>demo-domain</artifactId>
-
 	<name>Demo - Domain</name>
-
-	<packaging>jar</packaging>
 
 	<properties>
 	</properties>

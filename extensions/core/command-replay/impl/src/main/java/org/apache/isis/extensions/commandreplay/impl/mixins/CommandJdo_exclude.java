@@ -12,8 +12,8 @@ import lombok.extern.log4j.Log4j2;
 
 @Action(
         semantics = SemanticsOf.NON_IDEMPOTENT_ARE_YOU_SURE,
-        domainEvent = CommandJdo_exclude.ActionDomainEvent.class,
-        commandPersistence = CommandPersistence.NOT_PERSISTED
+        domainEvent = CommandJdo_exclude.ActionDomainEvent.class
+
 )
 @Log4j2
 public class CommandJdo_exclude {

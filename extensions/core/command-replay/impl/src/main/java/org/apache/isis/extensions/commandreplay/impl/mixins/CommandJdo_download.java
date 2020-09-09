@@ -11,12 +11,12 @@ import org.apache.isis.applib.value.Clob;
 import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
 import org.apache.isis.extensions.commandreplay.impl.IsisModuleExtCommandReplayImpl;
 
-import org.apache.isis.extensions.commandreplay.impl.ui.CommandReplayOnMasterService;
+import org.apache.isis.extensions.commandreplay.impl.ui.CommandReplayOnPrimaryService;
 
 @Action(
         semantics = SemanticsOf.NON_IDEMPOTENT,
-        domainEvent = CommandJdo_download.ActionDomainEvent.class,
-        commandPersistence = CommandPersistence.NOT_PERSISTED
+        domainEvent = CommandJdo_download.ActionDomainEvent.class
+
 )
 @ActionLayout(
         cssClassFa = "fa-download",
@@ -37,7 +37,7 @@ public class CommandJdo_download {
     public Clob act(
             @ParameterLayout(named="Filename prefix")
             final String fileNamePrefix) {
-        return commandReplayOnMasterService.downloadCommandById(commandJdo.getUniqueId(), fileNamePrefix);
+        return commandReplayOnPrimaryService.downloadCommandById(commandJdo.getUniqueId(), fileNamePrefix);
     }
     public String default0Act() {
         return "command";
@@ -45,5 +45,5 @@ public class CommandJdo_download {
 
 
     @Inject
-    CommandReplayOnMasterService commandReplayOnMasterService;
+    CommandReplayOnPrimaryService commandReplayOnPrimaryService;
 }

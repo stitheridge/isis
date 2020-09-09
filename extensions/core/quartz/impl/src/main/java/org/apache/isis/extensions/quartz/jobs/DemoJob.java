@@ -14,14 +14,13 @@ import lombok.val;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class RunBackgroundCommandsJob implements Job {
+public class DemoJob implements Job {
 
     public void execute(final JobExecutionContext context) {
 
         final AuthenticationSession authSession = newAuthSession(context);
 
-        log.debug("Running background commands");
-        backgroundCommandExecutionFromBackgroundCommandServiceJdo.execute(authSession, null);
+        log.debug("Running job");
     }
 
     protected AuthenticationSession newAuthSession(JobExecutionContext context) {
@@ -32,7 +31,6 @@ public class RunBackgroundCommandsJob implements Job {
         return new SimpleSession(user, roles);
     }
 
-    @Inject BackgroundCommandExecutionFromBackgroundCommandServiceJdo backgroundCommandExecutionFromBackgroundCommandServiceJdo;
     @Inject IsisConfiguration isisConfiguration;
 
 }

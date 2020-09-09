@@ -137,3 +137,8 @@ vaadin:
   urlMapping: "/vaadin/*"
   servlet:
       productionMode: true
+
+management:
+  endpoint:
+    health:
+      enabled: true

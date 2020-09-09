@@ -16,12 +16,13 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+package org.apache.isis.applib.layout.menubars;
 
-/**
- * The {@link org.apache.isis.applib.services.background.BackgroundService2} domain service, and also the companion
- * {@link org.apache.isis.applib.services.background.BackgroundCommandService2} SPI service, enable commands to be
- * persisted such that they may be invoked in the background
- *
- *
- */
-package org.apache.isis.applib.services.background;
+import org.apache.isis.applib.annotation.Programmatic;
+
+public interface HasNamed {
+
+    @Programmatic
+    String getNamed();
+    
+}

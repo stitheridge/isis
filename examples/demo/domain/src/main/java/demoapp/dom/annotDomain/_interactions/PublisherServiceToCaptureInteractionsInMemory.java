@@ -1,4 +1,4 @@
-package demoapp.dom.annotDomain.Action.publishing.spiimpl;
+package demoapp.dom.annotDomain._interactions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import lombok.val;
 
 //tag::class[]
 @Service
-public class PublisherServiceSpiForActions implements PublisherService {
+public class PublisherServiceToCaptureInteractionsInMemory implements PublisherService {
 
     private final List<InteractionDto> executions = new ArrayList<>();
 

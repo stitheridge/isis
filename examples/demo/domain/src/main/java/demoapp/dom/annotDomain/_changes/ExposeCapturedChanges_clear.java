@@ -1,4 +1,4 @@
-package demoapp.dom.annotDomain.DomainObject.publishing.spiimpl;
+package demoapp.dom.annotDomain._changes;
 
 import javax.inject.Inject;
 
@@ -10,26 +10,26 @@ import demoapp.dom.annotDomain.DomainObject.publishing.DomainObjectPublishingVm;
 //tag::class[]
 @Action(
     semantics = SemanticsOf.IDEMPOTENT
-    , associateWith = "publishedObjects"
+    , associateWith = "changes"
 )
-public class DomainObjectPublishingVm_clearPublishedObjects {
+public class ExposeCapturedChanges_clear {
     // ...
 //end::class[]
 
     private final DomainObjectPublishingVm domainObjectPublishingVm;
 
-    public DomainObjectPublishingVm_clearPublishedObjects(DomainObjectPublishingVm domainObjectPublishingVm) {
+    public ExposeCapturedChanges_clear(DomainObjectPublishingVm domainObjectPublishingVm) {
         this.domainObjectPublishingVm = domainObjectPublishingVm;
     }
 
 
     //tag::class[]
     public DomainObjectPublishingVm act() {
-        publisherServiceSpiForDomainObject.clear();
+        publisherServiceToCaptureChangesInMemory.clear();
         return domainObjectPublishingVm;
     }
 
     @Inject
-    PublisherServiceSpiForDomainObject publisherServiceSpiForDomainObject;
+    PublisherServiceToCaptureChangesInMemory publisherServiceToCaptureChangesInMemory;
 }
 //end::class[]

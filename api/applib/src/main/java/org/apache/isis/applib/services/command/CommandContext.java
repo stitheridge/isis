@@ -23,6 +23,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
@@ -30,7 +31,10 @@ import org.springframework.stereotype.Service;
 
 import org.apache.isis.applib.annotation.IsisInteractionScope;
 import org.apache.isis.applib.annotation.OrderPrecedence;
+import org.apache.isis.applib.services.TransactionScopeListener;
 import org.apache.isis.applib.services.inject.ServiceInjector;
+import org.apache.isis.applib.services.metrics.MetricsService;
+import org.apache.isis.applib.services.registry.ServiceRegistry;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -45,16 +49,17 @@ import lombok.RequiredArgsConstructor;
 // tag::refguide[]
 @Service
 @Named("isisApplib.CommandContext")
-@Order(OrderPrecedence.MIDPOINT)
+@Order(OrderPrecedence.EARLY - 10) // before ChangedObjectService
 @Primary
 @Qualifier("Default")
 @IsisInteractionScope
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 //@Log4j2
-public class CommandContext {
+public class CommandContext implements TransactionScopeListener, DisposableBean {
 
     private final ServiceInjector serviceInjector;
-    
+    private final MetricsService metricsService;
+
     @Getter
     private Command command;
 
@@ -68,6 +73,19 @@ public class CommandContext {
             serviceInjector.injectServicesInto(command);
         }
     }
+
+    @Override
+    public void destroy() throws Exception {
+        setCommand(null);
+    }
+
+    @Override
+    public void onTransactionEnded() {
+        getCommand().internal().setSystemStateChanged(
+                getCommand().isSystemStateChanged() ||
+                metricsService.numberObjectsDirtied() > 0);
+    }
+
     // tag::refguide[]
 }
 // end::refguide[]

@@ -5,9 +5,8 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.apache.isis.applib.annotation.Programmatic;
-import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.core.config.metamodel.facets.Util;
-import org.apache.isis.schema.cmd.v2.CommandDto;
+import org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo;
 
 public abstract class CommandReplayAnalyserAbstract implements CommandReplayAnalyser {
 
@@ -33,16 +32,16 @@ public abstract class CommandReplayAnalyserAbstract implements CommandReplayAnal
 
 
     @Programmatic
-    public final String analyzeReplay(final Command command, final CommandDto dto) {
+    public final String analyzeReplay(final CommandJdo commandJdo) {
 
         if(!enabled) {
             return null;
         }
-        return doAnalyzeReplay(command, dto);
+        return doAnalyzeReplay(commandJdo);
 
     }
 
-    protected abstract String doAnalyzeReplay(final Command command, final CommandDto dto);
+    protected abstract String doAnalyzeReplay(final CommandJdo command);
 
     private static String getPropertyElse(final Map<String, String> properties, final String key, final String dflt) {
         final String str = properties.get(key);

@@ -35,7 +35,7 @@ import org.apache.isis.applib.events.domain.ActionDomainEvent;
 import org.apache.isis.applib.services.clock.ClockService;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandContext;
-import org.apache.isis.applib.services.command.spi.CommandService;
+import org.apache.isis.applib.services.command.CommandService;
 import org.apache.isis.applib.services.iactn.Interaction;
 import org.apache.isis.applib.services.iactn.Interaction.ActionInvocation;
 import org.apache.isis.applib.services.iactn.InteractionContext;
@@ -43,7 +43,6 @@ import org.apache.isis.applib.services.metrics.MetricsService;
 import org.apache.isis.applib.services.queryresultscache.QueryResultsCache;
 import org.apache.isis.applib.services.registry.ServiceRegistry;
 import org.apache.isis.core.commons.collections.Can;
-import org.apache.isis.core.commons.exceptions.IsisException;
 import org.apache.isis.core.commons.internal.assertions._Assert;
 import org.apache.isis.core.commons.internal.base._Casts;
 import org.apache.isis.core.commons.internal.base._Strings;
@@ -159,86 +158,68 @@ implements ImperativeFacet {
         
         // similar code in PropertySetterOrClearFacetFDEA
         
-        final CommandContext commandContext = getCommandContext();
-        final Command command = commandContext.getCommand();
+        val commandContext = getCommandContext();
+        val command = commandContext.getCommand();
 
 
-        final InteractionContext interactionContext = getInteractionContext();
-        final Interaction interaction = interactionContext.getInteraction();
+        val interactionContext = getInteractionContext();
+        val interaction = interactionContext.getInteraction();
 
-        final String actionId = owningAction.getIdentifier().toClassAndNameIdentityString();
+        val actionId = owningAction.getIdentifier().toClassAndNameIdentityString();
 
-        final ManagedObject returnedAdapter;
-        if( command.getExecutor() == Command.Executor.USER &&
-                command.getExecuteIn() == org.apache.isis.applib.annotation.CommandExecuteIn.BACKGROUND) {
 
-            // deal with background commands
+        val targetAdapter = head.getTarget();
+        val mixedInAdapter = head.getMixedIn().orElse(null);
 
-            // persist command so can it can subsequently be invoked in the 'background'
-            final CommandService commandService = getCommandService();
-            if (!commandService.persistIfPossible(command)) {
-                throw new IsisException(String.format(
-                        "Unable to persist command for action '%s'; CommandService does not support persistent commands ",
-                        actionId));
-            }
-            returnedAdapter = getObjectManager().adapt(command);
+        val targetPojo = UnwrapUtil.single(targetAdapter);
 
-        } else {
-            // otherwise, go ahead and execute action in the 'foreground'
-            
-            val targetAdapter = head.getTarget();
-            val mixedInAdapter = head.getMixedIn().orElse(null);
+        val argumentPojos = argumentAdapters.stream()
+                .map(UnwrapUtil::single)
+                .collect(_Lists.toUnmodifiable());
 
-            final Object targetPojo = UnwrapUtil.single(targetAdapter);
+        val targetMemberName = targetNameFor(owningAction, mixedInAdapter);
+        val targetClass = CommandUtil.targetClassNameFor(targetAdapter);
 
-            final List<Object> argumentPojos = argumentAdapters.stream()
-                    .map(UnwrapUtil::single)
-                    .collect(_Lists.toUnmodifiable());
+        val actionInvocation =
+                new Interaction.ActionInvocation(
+                        interaction, actionId, targetPojo, argumentPojos, targetMemberName,
+                        targetClass);
+        final Interaction.MemberExecutor<Interaction.ActionInvocation> memberExecutor =
+                new DomainEventMemberExecutor(
+                        argumentAdapters, targetAdapter, command, owningAction,
+                        targetAdapter, mixedInAdapter, actionInvocation);
 
-            final String targetMember = targetNameFor(owningAction, mixedInAdapter);
-            final String targetClass = CommandUtil.targetClassNameFor(targetAdapter);
+        // sets up startedAt and completedAt on the execution, also manages the execution call graph
+        interaction.execute(memberExecutor, actionInvocation, getClockService(), getMetricsService());
 
-            final Interaction.ActionInvocation execution =
-                    new Interaction.ActionInvocation(
-                            interaction, actionId, targetPojo, argumentPojos, targetMember,
-                            targetClass);
-            final Interaction.MemberExecutor<Interaction.ActionInvocation> callable =
-                    new DomainEventMemberExecutor(
-                            argumentAdapters, targetAdapter, command, owningAction,
-                            targetAdapter, mixedInAdapter, execution);
+        // handle any exceptions
+        final Interaction.Execution<ActionInvocationDto, ?> priorExecution =
+                _Casts.uncheckedCast(interaction.getPriorExecution());
 
-            // sets up startedAt and completedAt on the execution, also manages the execution call graph
-            interaction.execute(callable, execution, getClockService(), getMetricsService());
+        val executionExceptionIfAny = priorExecution.getThrew();
 
-            // handle any exceptions
-            final Interaction.Execution<ActionInvocationDto, ?> priorExecution =
-                    _Casts.uncheckedCast(interaction.getPriorExecution());
+        // TODO: should also sync DTO's 'threw' attribute here...?
 
-            final Exception executionExceptionIfAny = priorExecution.getThrew();
+        if(executionExceptionIfAny != null) {
+            throw executionExceptionIfAny instanceof RuntimeException
+            ? ((RuntimeException)executionExceptionIfAny)
+                    : new RuntimeException(executionExceptionIfAny);
+        }
 
-            // TODO: should also sync DTO's 'threw' attribute here...?
+        val returnedPojo = priorExecution.getReturned();
+        val returnedAdapter = getObjectManager().adapt(returnedPojo);
 
-            if(executionExceptionIfAny != null) {
-                throw executionExceptionIfAny instanceof RuntimeException
-                ? ((RuntimeException)executionExceptionIfAny)
-                        : new RuntimeException(executionExceptionIfAny);
-            }
+        // sync DTO with result
+        getInteractionDtoServiceInternal()
+        .updateResult(priorExecution.getDto(), owningAction, returnedPojo);
 
-            final Object returnedPojo = priorExecution.getReturned();
-            returnedAdapter = getObjectManager().adapt(returnedPojo);
+        // update Command (if required)
+        setCommandResultIfEntity(command, returnedAdapter);
 
-            // sync DTO with result
-            getInteractionDtoServiceInternal()
-            .updateResult(priorExecution.getDto(), owningAction, returnedPojo);
-
-            // update Command (if required)
-            setCommandResultIfEntity(command, returnedAdapter);
-
-            // publish (if not a contributed association, query-only mixin)
-            final PublishedActionFacet publishedActionFacet = getIdentified().getFacet(PublishedActionFacet.class);
-            if (publishedActionFacet != null) {
-                getPublishingServiceInternal().publishAction(priorExecution);
-            }
+        // publish (if not a contributed association, query-only mixin)
+        val publishedActionFacet = getIdentified().getFacet(PublishedActionFacet.class);
+        if (publishedActionFacet != null) {
+            getPublishingServiceInternal().publishAction(priorExecution);
         }
 
 

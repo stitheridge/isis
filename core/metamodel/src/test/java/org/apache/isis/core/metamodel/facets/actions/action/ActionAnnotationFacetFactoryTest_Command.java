@@ -30,7 +30,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.isis.applib.annotation.Action;
 import org.apache.isis.applib.annotation.SemanticsOf;
-import org.apache.isis.core.config.metamodel.facets.CommandActionsConfiguration;
 import org.apache.isis.core.metamodel.facetapi.Facet;
 import org.apache.isis.core.metamodel.facets.FacetFactory.ProcessMethodContext;
 import org.apache.isis.core.metamodel.facets.actions.action.command.CommandFacetForActionAnnotation;
@@ -61,219 +60,18 @@ public class ActionAnnotationFacetFactoryTest_Command extends ActionAnnotationFa
         // then
         final Facet facet = facetedMethod.getFacet(CommandFacet.class);
         assertNull(facet);
-
     }
 
     @Test
-    public void given_noAnnotation_and_configurationSetToIgnoreQueryOnly_andSafeSemantics_thenNone() {
-
-        // given
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.IGNORE_QUERY_ONLY);
-        final Method actionMethod = findMethod(ActionAnnotationFacetFactoryTest.Customer.class, "someAction");
-
-        facetedMethod.addFacet(new ActionSemanticsFacetAbstract(SemanticsOf.SAFE, facetedMethod) {});
-
-        // when
-        processCommand(facetFactory, new ProcessMethodContext(ActionAnnotationFacetFactoryTest.Customer.class, null,
-                actionMethod, mockMethodRemover, facetedMethod));
-
-        // then
-        final Facet facet = facetedMethod.getFacet(CommandFacet.class);
-        assertNull(facet);
-    }
-
-    @Test
-    public void given_noAnnotation_and_configurationSetToIgnoreQueryOnly_andNonSafeSemantics_thenAdded() {
-
-        // given
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.IGNORE_QUERY_ONLY);
-        final Method actionMethod = findMethod(ActionAnnotationFacetFactoryTest.Customer.class, "someAction");
-
-        facetedMethod.addFacet(new ActionSemanticsFacetAbstract(SemanticsOf.IDEMPOTENT, facetedMethod) {});
-
-        // when
-        processCommand(facetFactory, new ProcessMethodContext(ActionAnnotationFacetFactoryTest.Customer.class, null,
-                actionMethod, mockMethodRemover, facetedMethod));
-
-        // then
-        final Facet facet = facetedMethod.getFacet(CommandFacet.class);
-        assertNotNull(facet);
-        assertTrue(facet instanceof  CommandFacetFromConfiguration);
-        final CommandFacetFromConfiguration facetImpl = (CommandFacetFromConfiguration) facet;
-        assertThat(facetImpl.persistence(), is(org.apache.isis.applib.annotation.CommandPersistence.PERSISTED));
-        assertThat(facetImpl.executeIn(), is(org.apache.isis.applib.annotation.CommandExecuteIn.FOREGROUND));
-    }
-
-    @Test(expected=IllegalStateException.class)
-    public void given_noAnnotation_and_configurationSetToIgnoreQueryOnly_andNoSemantics_thenException() {
-
-        // given
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.IGNORE_QUERY_ONLY);
-        final Method actionMethod = findMethod(ActionAnnotationFacetFactoryTest.Customer.class, "someAction");
-
-        // when
-        processCommand(facetFactory, new ProcessMethodContext(ActionAnnotationFacetFactoryTest.Customer.class, null,
-                actionMethod, mockMethodRemover, facetedMethod));
-    }
-
-    @Test
-    public void given_noAnnotation_and_configurationSetToNone_thenNone() {
-
-        // given
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.NONE);
-        final Method actionMethod = findMethod(ActionAnnotationFacetFactoryTest.Customer.class, "someAction");
-
-        // when
-        processCommand(facetFactory, new ProcessMethodContext(ActionAnnotationFacetFactoryTest.Customer.class, null,
-                actionMethod, mockMethodRemover, facetedMethod));
-
-        // then
-        final Facet facet = facetedMethod.getFacet(PublishedActionFacet.class);
-        assertNull(facet);
-    }
-
-    @Test
-    public void given_noAnnotation_and_configurationSetToAll_thenFacetAdded() {
-
-        // given
-        final Method actionMethod = findMethod(ActionAnnotationFacetFactoryTest.Customer.class, "someAction");
-
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.ALL);
-
-        // when
-        processCommand(facetFactory, new ProcessMethodContext(ActionAnnotationFacetFactoryTest.Customer.class, null,
-                actionMethod, mockMethodRemover, facetedMethod));
-
-        // then
-        final Facet facet = facetedMethod.getFacet(CommandFacet.class);
-        assertNotNull(facet);
-        assert(facet instanceof CommandFacetFromConfiguration);
-    }
-
-    @Test
-    public void given_asConfigured_and_configurationSetToIgnoreQueryOnly_andSafeSemantics_thenNone() {
-
-        class Customer {
-            @Action(command = CommandReification.AS_CONFIGURED)
-            public void someAction() {
-            }
-        }
-
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.IGNORE_QUERY_ONLY);
-        final Method actionMethod = findMethod(Customer.class, "someAction");
-
-        facetedMethod.addFacet(new ActionSemanticsFacetAbstract(SemanticsOf.SAFE, facetedMethod) {});
-
-        processCommand(facetFactory, new ProcessMethodContext(Customer.class, null, actionMethod, mockMethodRemover, facetedMethod));
-
-        final Facet facet = facetedMethod.getFacet(CommandFacet.class);
-        assertNull(facet);
-    }
-
-    @Test
-    public void given_asConfigured_and_configurationSetToIgnoreQueryOnly_andNonSafeSemantics_thenAdded() {
+    public void given_annotation_then_facet_added() {
 
         // given
         class Customer {
-            @Action(
-                    command = CommandReification.AS_CONFIGURED,
-                    commandPersistence = CommandPersistence.IF_HINTED,
-                    commandExecuteIn = CommandExecuteIn.BACKGROUND
-                    )
-            public void someAction() {
-            }
-        }
-
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.IGNORE_QUERY_ONLY);
-        final Method actionMethod = findMethod(Customer.class, "someAction");
-
-        facetedMethod.addFacet(new ActionSemanticsFacetAbstract(SemanticsOf.IDEMPOTENT, facetedMethod) {});
-
-        // when
-        processCommand(facetFactory, new ProcessMethodContext(Customer.class, null, actionMethod, mockMethodRemover, facetedMethod));
-
-        // then
-        final Facet facet = facetedMethod.getFacet(CommandFacet.class);
-        assertNotNull(facet);
-        final CommandFacetForActionAnnotationAsConfigured facetImpl = (CommandFacetForActionAnnotationAsConfigured) facet;
-        assertThat(facetImpl.persistence(), is(org.apache.isis.applib.annotation.CommandPersistence.IF_HINTED));
-        assertThat(facetImpl.executeIn(), is(org.apache.isis.applib.annotation.CommandExecuteIn.BACKGROUND));
-    }
-
-    @Test(expected=IllegalStateException.class)
-    public void given_asConfigured_and_configurationSetToIgnoreQueryOnly_andNoSemantics_thenException() {
-
-        class Customer {
-            @Action(command = CommandReification.AS_CONFIGURED)
-            public void someAction() {
-            }
-        }
-
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.IGNORE_QUERY_ONLY);
-        final Method actionMethod = findMethod(Customer.class, "someAction");
-
-        processCommand(facetFactory, new ProcessMethodContext(Customer.class, null, actionMethod, mockMethodRemover, facetedMethod));
-    }
-
-    @Test
-    public void given_asConfigured_and_configurationSetToNone_thenNone() {
-
-        class Customer {
-            @Action(command = CommandReification.AS_CONFIGURED)
-            public void someAction() {
-            }
-        }
-
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.NONE);
-        final Method actionMethod = findMethod(Customer.class, "someAction");
-
-        processCommand(facetFactory, new ProcessMethodContext(Customer.class, null, actionMethod, mockMethodRemover, facetedMethod));
-
-        final Facet facet = facetedMethod.getFacet(CommandFacet.class);
-        assertNull(facet);
-    }
-
-    @Test
-    public void given_asConfigured_and_configurationSetToAll_thenFacetAdded() {
-
-        // given
-        class Customer {
-            @Action(
-                    command = CommandReification.AS_CONFIGURED,
-                    commandPersistence = CommandPersistence.IF_HINTED,
-                    commandExecuteIn = CommandExecuteIn.BACKGROUND
-                    )
+            @Action()
             public void someAction() {
             }
         }
         final Method actionMethod = findMethod(Customer.class, "someAction");
-
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.ALL);
-
-        // when
-        processCommand(facetFactory, new ProcessMethodContext(Customer.class, null, actionMethod, mockMethodRemover, facetedMethod));
-
-        // then
-        final Facet facet = facetedMethod.getFacet(CommandFacet.class);
-        assertNotNull(facet);
-        final CommandFacetForActionAnnotationAsConfigured facetImpl = (CommandFacetForActionAnnotationAsConfigured) facet;
-        assertThat(facetImpl.persistence(), is(org.apache.isis.applib.annotation.CommandPersistence.IF_HINTED));
-        assertThat(facetImpl.executeIn(), is(org.apache.isis.applib.annotation.CommandExecuteIn.BACKGROUND));
-    }
-
-    @Test
-    public void given_enabled_irrespectiveOfConfiguration_thenFacetAdded() {
-
-        // given
-        class Customer {
-            @Action(command = CommandReification.ENABLED)
-            public void someAction() {
-            }
-        }
-        final Method actionMethod = findMethod(Customer.class, "someAction");
-
-        // even though configuration is disabled
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.NONE);
 
         // when
         processCommand(facetFactory, new ProcessMethodContext(Customer.class, null, actionMethod, mockMethodRemover, facetedMethod));
@@ -284,27 +82,6 @@ public class ActionAnnotationFacetFactoryTest_Command extends ActionAnnotationFa
         assertTrue(facet instanceof CommandFacetForActionAnnotation);
     }
 
-    @Test
-    public void given_disabled_irrespectiveOfConfiguration_thenNone() {
-
-        // given
-        class Customer {
-            @Action(command = CommandReification.DISABLED)
-            public void someAction() {
-            }
-        }
-        final Method actionMethod = findMethod(Customer.class, "someAction");
-
-        // even though configuration is disabled
-        allowingCommandConfigurationToReturn(CommandActionsConfiguration.NONE);
-
-        // when
-        processCommand(facetFactory, new ProcessMethodContext(Customer.class, null, actionMethod, mockMethodRemover, facetedMethod));
-
-        // then
-        final Facet facet = facetedMethod.getFacet(CommandFacet.class);
-        assertNull(facet);
-    }
 
 
 }

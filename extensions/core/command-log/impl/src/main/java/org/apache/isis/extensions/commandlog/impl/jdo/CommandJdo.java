@@ -18,23 +18,24 @@
  */
 package org.apache.isis.extensions.commandlog.impl.jdo;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import javax.inject.Inject;
 import javax.jdo.annotations.IdentityType;
+
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Service;
 
 import org.apache.isis.applib.annotation.DomainObject;
 import org.apache.isis.applib.annotation.DomainObjectLayout;
 import org.apache.isis.applib.annotation.Editing;
+import org.apache.isis.applib.annotation.OrderPrecedence;
 import org.apache.isis.applib.annotation.Programmatic;
 import org.apache.isis.applib.annotation.Property;
 import org.apache.isis.applib.annotation.PropertyLayout;
@@ -43,17 +44,21 @@ import org.apache.isis.applib.jaxb.JavaSqlXMLGregorianCalendarMarshalling;
 import org.apache.isis.applib.services.DomainChangeRecord;
 import org.apache.isis.applib.services.bookmark.Bookmark;
 import org.apache.isis.applib.services.command.Command;
-import org.apache.isis.applib.services.jaxb.JaxbService;
+import org.apache.isis.applib.services.conmap.command.UserDataKeys;
+import org.apache.isis.applib.services.tablecol.TableColumnOrderForCollectionTypeAbstract;
 import org.apache.isis.applib.types.MemberIdentifierType;
 import org.apache.isis.applib.util.ObjectContracts;
 import org.apache.isis.applib.util.TitleBuffer;
+import org.apache.isis.core.commons.internal.base._Strings;
 import org.apache.isis.core.commons.internal.exceptions._Exceptions;
 import org.apache.isis.extensions.commandlog.impl.IsisModuleExtCommandLogImpl;
-import org.apache.isis.extensions.commandlog.impl.api.UserDataKeys;
+import org.apache.isis.extensions.commandlog.impl.util.BigDecimalUtils;
+import org.apache.isis.extensions.commandlog.impl.util.StringUtils;
 import org.apache.isis.schema.cmd.v2.CommandDto;
 import org.apache.isis.schema.cmd.v2.MapDto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.val;
 import lombok.extern.log4j.Log4j2;
@@ -75,10 +80,10 @@ import lombok.extern.log4j.Log4j2;
         table = "Command")
 @javax.jdo.annotations.Queries( {
     @javax.jdo.annotations.Query(
-            name="findByUniqueId",
+            name="findByUniqueIdStr",
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE uniqueId == :uniqueId "),
+                    + "WHERE uniqueIdStr == :uniqueIdStr "),
     @javax.jdo.annotations.Query(
             name="findByParent",
             value="SELECT "
@@ -95,14 +100,13 @@ import lombok.extern.log4j.Log4j2;
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE completedAt != null "
-                    + "&& executeIn == 'FOREGROUND' "
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
             name="findRecentByTarget",
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "WHERE targetStr == :targetStr "
-                    + "ORDER BY this.timestamp DESC, uniqueId DESC "
+                    + "ORDER BY this.timestamp DESC, uniqueIdStr DESC "
                     + "RANGE 0,30"),
     @javax.jdo.annotations.Query(
             name="findByTargetAndTimestampBetween",
@@ -157,18 +161,17 @@ import lombok.extern.log4j.Log4j2;
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
                     + "ORDER BY this.timestamp DESC"),
     @javax.jdo.annotations.Query(
-            name="findRecentByUser",
+            name="findRecentByUsername",
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE user == :user "
+                    + "WHERE username == :username "
                     + "ORDER BY this.timestamp DESC "
                     + "RANGE 0,30"),
     @javax.jdo.annotations.Query(
             name="findFirst",
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE timestamp   != null "
-                    + "   && startedAt   != null "
+                    + "WHERE startedAt   != null "
                     + "   && completedAt != null "
                     + "ORDER BY this.timestamp ASC "
                     + "RANGE 0,2"),
@@ -182,102 +185,95 @@ import lombok.extern.log4j.Log4j2;
                     + "   && startedAt != null "
                     + "   && completedAt != null "
                     + "ORDER BY this.timestamp ASC"),
+    // most recent replayable command previously replicated from primary to
+    // secondary.  This should always exist except for the very first times
+    // (after restored the prod DB to secondary).
     @javax.jdo.annotations.Query(
-            name="findReplayableHwm",
+            name="findReplayedHwm",
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE executeIn == 'REPLAYABLE' "
+                    + "WHERE (replayState == 'OK' || replayState == 'FAILED')"
                     + "ORDER BY this.timestamp DESC "
-                    + "RANGE 0,2"),
-        // this should be RANGE 0,1 but results in DataNucleus submitting "FETCH NEXT ROW ONLY"
-        // which SQL Server doesn't understand.  However, as workaround, SQL Server *does* understand FETCH NEXT 2 ROWS ONLY
+                    + "RANGE 0,2"), // this should be RANGE 0,1 but results in DataNucleus submitting "FETCH NEXT ROW ONLY"
+                                    // which SQL Server doesn't understand.  However, as workaround, SQL Server *does* understand FETCH NEXT 2 ROWS ONLY
+    // otherwise, the most recent completed command, as queried on the
+    // secondary, corresponding to the last command run on primary before the
+    // production database was restored to the secondary
     @javax.jdo.annotations.Query(
-            name="findForegroundHwm",
+            name="findHwm",
             value="SELECT "
                     + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE executeIn == 'FOREGROUND' "
-                    + "   && startedAt   != null "
+                    + "WHERE startedAt   != null "
                     + "   && completedAt != null "
                     + "ORDER BY this.timestamp DESC "
                     + "RANGE 0,2"),
         // this should be RANGE 0,1 but results in DataNucleus submitting "FETCH NEXT ROW ONLY"
         // which SQL Server doesn't understand.  However, as workaround, SQL Server *does* understand FETCH NEXT 2 ROWS ONLY
-    @javax.jdo.annotations.Query(
-            name="findBackgroundCommandsNotYetStarted",
-            value="SELECT "
-                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE executeIn == 'BACKGROUND' "
-                    + "   && startedAt == null "
-                    + "ORDER BY this.timestamp ASC "),
-        @javax.jdo.annotations.Query(
-                name="findReplayableInErrorMostRecent",
-                value="SELECT "
-                        + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                        + "WHERE executeIn   == 'REPLAYABLE' "
-                        + "  && (replayState != 'PENDING' || "
-                        + "      replayState != 'OK'      || "
-                        + "      replayState != 'EXCLUDED'   ) "
-                        + "ORDER BY this.timestamp DESC "
-                        + "RANGE 0,2"),
-    @javax.jdo.annotations.Query(
-            name="findReplayableMostRecentStarted",
-            value="SELECT "
-                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
-                    + "WHERE executeIn == 'REPLAYABLE' "
-                    + "   && startedAt != null "
-                    + "ORDER BY this.timestamp DESC "
-                    + "RANGE 0,20"),
+//    @javax.jdo.annotations.Query(
+//            name="findNotYetStarted",
+//            value="SELECT "
+//                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
+//                    + "WHERE startedAt == null "
+//                    + "ORDER BY this.timestamp ASC "),
+//        @javax.jdo.annotations.Query(
+//                name="findReplayableInErrorMostRecent",
+//                value="SELECT "
+//                        + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
+//                        + "WHERE replayState == 'FAILED' "
+//                        + "ORDER BY this.timestamp DESC "
+//                        + "RANGE 0,2"),
+//    @javax.jdo.annotations.Query(
+//            name="findReplayableMostRecentStarted",
+//            value="SELECT "
+//                    + "FROM org.apache.isis.extensions.commandlog.impl.jdo.CommandJdo "
+//                    + "WHERE replayState = 'PENDING' "
+//                    + "ORDER BY this.timestamp DESC "
+//                    + "RANGE 0,20"),
 })
 @javax.jdo.annotations.Indices({
-        @javax.jdo.annotations.Index(name = "CommandJdo_timestamp_e_s_IDX", members = {"timestamp", "executeIn", "startedAt"}),
-        @javax.jdo.annotations.Index(name = "CommandJdo_startedAt_e_c_IDX", members = {"startedAt", "executeIn", "completedAt"}),
+        @javax.jdo.annotations.Index(name = "CommandJdo__startedAt__timestamp__IDX", members = { "startedAt", "timestamp" }),
+        @javax.jdo.annotations.Index(name = "CommandJdo__timestamp__IDX", members = { "timestamp" }),
+//        @javax.jdo.annotations.Index(name = "CommandJdo__replayState__timestamp__startedAt_IDX", members = { "replayState", "timestamp", "startedAt"}),
+//        @javax.jdo.annotations.Index(name = "CommandJdo__replayState__startedAt__completedAt_IDX", members = {"startedAt", "replayState", "completedAt"}),
 })
 @DomainObject(
         objectType = "isisExtensionsCommandLog.Command",
         editing = Editing.DISABLED
 )
-@DomainObjectLayout(named = "Command")
+@DomainObjectLayout(
+        named = "Command",
+        titleUiEvent = CommandJdo.TitleUiEvent.class,
+        iconUiEvent = CommandJdo.IconUiEvent.class,
+        cssClassUiEvent = CommandJdo.CssClassUiEvent.class,
+        layoutUiEvent = CommandJdo.LayoutUiEvent.class
+)
 @Log4j2
+@NoArgsConstructor
 public class CommandJdo
         implements DomainChangeRecord, Comparable<CommandJdo> {
 
+    public static class TitleUiEvent extends IsisModuleExtCommandLogImpl.TitleUiEvent<CommandJdo> { }
+    public static class IconUiEvent extends IsisModuleExtCommandLogImpl.IconUiEvent<CommandJdo> { }
+    public static class CssClassUiEvent extends IsisModuleExtCommandLogImpl.CssClassUiEvent<CommandJdo> { }
+    public static class LayoutUiEvent extends IsisModuleExtCommandLogImpl.LayoutUiEvent<CommandJdo> { }
 
     public static abstract class PropertyDomainEvent<T> extends IsisModuleExtCommandLogImpl.PropertyDomainEvent<CommandJdo, T> { }
     public static abstract class CollectionDomainEvent<T> extends IsisModuleExtCommandLogImpl.CollectionDomainEvent<CommandJdo, T> { }
     public static abstract class ActionDomainEvent extends IsisModuleExtCommandLogImpl.ActionDomainEvent<CommandJdo> { }
 
-    public CommandJdo() {
-        this(UUID.randomUUID());
-    }
-
-    private CommandJdo(final UUID uniqueId) {
-        super();
-        this.uniqueId = uniqueId;
-    }
-
     /**
      * Intended for use on primary system.
      *
      * @param command
-     * @param commandJdoRepository
      */
-    public CommandJdo(
-            final Command command
-            , final CommandJdoRepository commandJdoRepository) {
-        this();
-
-        setUniqueId(command.getUniqueId());
+    public CommandJdo(final Command command) {
+        setUniqueIdStr(command.getUniqueId().toString());
         setUsername(command.getUsername());
         setTimestamp(command.getTimestamp());
 
         setCommandDto(command.getCommandDto());
         setTarget(command.getTarget());
         setLogicalMemberIdentifier(command.getLogicalMemberIdentifier());
-
-        val parent = command.getParent();
-        if(parent != null) {
-            setParent(commandJdoRepository.findByUniqueId(parent.getUniqueId()).orElse(null));
-        }
 
         setStartedAt(command.getStartedAt());
         setCompletedAt(command.getCompletedAt());
@@ -298,9 +294,8 @@ public class CommandJdo
      * @param targetIndex - if the command represents a bulk action, then it is flattened out when replayed; this indicates which target to execute against.
      */
     public CommandJdo(final CommandDto commandDto, final ReplayState replayState, final int targetIndex) {
-        this();
 
-        setUniqueId(UUID.fromString(commandDto.getTransactionId()));
+        setUniqueIdStr(commandDto.getTransactionId());
         setUsername(commandDto.getUser());
         setTimestamp(JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(commandDto.getTimestamp()));
 
@@ -314,19 +309,21 @@ public class CommandJdo
         setStartedAt(JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(commandDto.getTimings().getStartedAt()));
         setCompletedAt(JavaSqlXMLGregorianCalendarMarshalling.toTimestamp(commandDto.getTimings().getCompletedAt()));
 
-        set(commandDto, UserDataKeys.RESULT, value -> setResult(Bookmark.parse(value).orElse(null)));
-        set(commandDto, UserDataKeys.EXCEPTION, this::setException);
+        copyOver(commandDto, UserDataKeys.RESULT, value -> this.setResult(Bookmark.parse(value).orElse(null)));
+        copyOver(commandDto, UserDataKeys.EXCEPTION, this::setException);
 
         setReplayState(replayState);
     }
 
-    private void set(CommandDto commandDto, String key, Consumer<String> consumer) {
+    static void copyOver(
+            final CommandDto commandDto,
+            final String key, final Consumer<String> consume) {
         commandDto.getUserData().getEntry()
                 .stream()
-                .filter(x -> Objects.equals(x.getKey(), UserDataKeys.RESULT))
+                .filter(x -> Objects.equals(x.getKey(), key))
                 .map(MapDto.Entry::getValue)
                 .findFirst()
-                .ifPresent(consumer::accept);
+                .ifPresent(consume);
     }
 
     public String title() {
@@ -341,12 +338,21 @@ public class CommandJdo
     }
 
 
-    public static class UniqueIdDomainEvent extends PropertyDomainEvent<UUID> { }
+    public static class UniqueIdDomainEvent extends PropertyDomainEvent<String> { }
+    /**
+     * Implementation note: persisted as a string rather than a UUID as fails
+     * to persist if using h2 (perhaps would need to be mapped differently).
+     * @see <a href="https://www.datanucleus.org/products/accessplatform/jdo/mapping.html#_other_types">DN documentation</a>.
+     */
+    @javax.jdo.annotations.PrimaryKey
     @javax.jdo.annotations.Persistent
-    @javax.jdo.annotations.Column(allowsNull="false", length = 36)
+    @javax.jdo.annotations.Column(allowsNull="false", name = "uniqueId", length = 36)
     @Property(domainEvent = UniqueIdDomainEvent.class)
+    @PropertyLayout(named = "UniqueId")
     @Getter @Setter
-    private UUID uniqueId;
+    private String uniqueIdStr;
+    @Programmatic
+    public UUID getUniqueId() {return UUID.fromString(getUniqueIdStr());}
 
 
     public static class UsernameDomainEvent extends PropertyDomainEvent<String> { }
@@ -461,7 +467,7 @@ public class CommandJdo
     @javax.validation.constraints.Digits(integer=5, fraction=3)
     @Property(domainEvent = DurationDomainEvent.class)
     public BigDecimal getDuration() {
-        return durationBetween(getStartedAt(), getCompletedAt());
+        return BigDecimalUtils.durationBetween(getStartedAt(), getCompletedAt());
     }
 
 
@@ -482,7 +488,7 @@ public class CommandJdo
         if(getCompletedAt() == null) {
             return "";
         }
-        if(getException() != null) {
+        if(!_Strings.isNullOrEmpty(getException())) {
             return "EXCEPTION";
         }
         if(getResult() != null) {
@@ -519,10 +525,7 @@ public class CommandJdo
         this.exception = exception;
     }
     public void setException(final Throwable exception) {
-        val stackTraceStr =
-                _Exceptions.streamStacktraceLines(exception, 1000)
-                .collect(Collectors.joining("\n"));
-        setException(stackTraceStr);
+        setException(_Exceptions.asStacktrace(exception));
     }
 
     public static class IsCausedExceptionDomainEvent extends PropertyDomainEvent<Boolean> { }
@@ -531,6 +534,28 @@ public class CommandJdo
     @PropertyLayout(hidden = Where.OBJECT_FORMS)
     public boolean isCausedException() {
         return getException() != null;
+    }
+
+
+    @Override
+    public String getPreValue() {
+        return null;
+    }
+
+    @Override
+    public String getPostValue() {
+        return null;
+    }
+
+
+    public void saveAnalysis(String analysis) {
+        if (analysis == null) {
+            setReplayState(ReplayState.OK);
+        } else {
+            setReplayState(ReplayState.FAILED);
+            setReplayStateFailureReason(StringUtils.trimmed(analysis, 255));
+        }
+
     }
 
 
@@ -552,38 +577,29 @@ public class CommandJdo
         return this.getTimestamp().compareTo(other.getTimestamp());
     }
 
+    @Service
+    @Order(OrderPrecedence.LATE - 10) // before the framework's own default.
+    public static class TableColumnOrderDefault extends TableColumnOrderForCollectionTypeAbstract<CommandJdo> {
 
-    /**
-     * @return in seconds, to 3 decimal places.
-     */
-    private static BigDecimal durationBetween(Timestamp startedAt, Timestamp completedAt) {
-        if (completedAt == null) {
-            return null;
-        } else {
-            long millis = completedAt.getTime() - startedAt.getTime();
-            return toSeconds(millis);
+        public TableColumnOrderDefault() { super(CommandJdo.class); }
+
+        @Override
+        protected List<String> orderParented(Object parent, String collectionId, List<String> propertyIds) {
+            return ordered(propertyIds);
+        }
+
+        @Override
+        protected List<String> orderStandalone(List<String> propertyIds) {
+            return ordered(propertyIds);
+        }
+
+        private List<String> ordered(List<String> propertyIds) {
+            return Arrays.asList(
+                "timestamp", "target", "commandDto", "targetMember", "username", "complete", "resultSummary", "uniqueIdStr"
+            );
         }
     }
 
-    private static final BigDecimal DIVISOR = new BigDecimal(1000);
-
-    private static BigDecimal toSeconds(long millis) {
-        return new BigDecimal(millis)
-                    .divide(DIVISOR, RoundingMode.HALF_EVEN)
-                    .setScale(3, RoundingMode.HALF_EVEN);
-    }
-
-
-    @Override
-    public String getPreValue() {
-        return null;
-    }
-
-    @Override
-    public String getPostValue() {
-        return null;
-    }
-
-    @Inject JaxbService jaxbService;
 
 }
+

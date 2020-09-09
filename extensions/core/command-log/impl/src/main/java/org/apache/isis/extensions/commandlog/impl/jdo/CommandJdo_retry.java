@@ -25,6 +25,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.isis.applib.annotation.Action;
+import org.apache.isis.applib.annotation.CommandReification;
 import org.apache.isis.applib.annotation.MemberOrder;
 import org.apache.isis.applib.annotation.SemanticsOf;
 import org.apache.isis.applib.services.command.CommandContext;
@@ -39,6 +40,7 @@ import lombok.val;
 @Action(
     semantics = SemanticsOf.NON_IDEMPOTENT_ARE_YOU_SURE
     , domainEvent = CommandJdo_retry.ActionDomainEvent.class
+    , command = CommandReification.DISABLED
 )
 public class CommandJdo_retry {
 

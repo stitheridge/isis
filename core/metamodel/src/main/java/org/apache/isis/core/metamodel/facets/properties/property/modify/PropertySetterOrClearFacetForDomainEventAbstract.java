@@ -27,11 +27,10 @@ import org.apache.isis.applib.events.domain.PropertyDomainEvent;
 import org.apache.isis.applib.services.clock.ClockService;
 import org.apache.isis.applib.services.command.Command;
 import org.apache.isis.applib.services.command.CommandContext;
-import org.apache.isis.applib.services.command.spi.CommandService;
+import org.apache.isis.applib.services.command.CommandService;
 import org.apache.isis.applib.services.iactn.Interaction;
 import org.apache.isis.applib.services.iactn.InteractionContext;
 import org.apache.isis.applib.services.metrics.MetricsService;
-import org.apache.isis.core.commons.exceptions.IsisException;
 import org.apache.isis.core.metamodel.consent.InteractionInitiatedBy;
 import org.apache.isis.core.metamodel.facetapi.Facet;
 import org.apache.isis.core.metamodel.facetapi.FacetHolder;
@@ -49,7 +48,6 @@ import org.apache.isis.core.metamodel.services.publishing.PublisherDispatchServi
 import org.apache.isis.core.metamodel.spec.ManagedObject;
 import org.apache.isis.core.metamodel.spec.ManagedObjects.UnwrapUtil;
 import org.apache.isis.core.metamodel.spec.feature.OneToOneAssociation;
-import org.apache.isis.schema.ixn.v2.PropertyEditDto;
 
 import static org.apache.isis.core.commons.internal.base._Casts.uncheckedCast;
 
@@ -180,41 +178,21 @@ extends SingleValueFacetAbstract<Class<? extends PropertyDomainEvent<?,?>>> {
             return head.getTarget();
         }
 
-        final InteractionContext interactionContext = getInteractionContext();
-        final Interaction interaction = interactionContext.getInteraction();
+        val interactionContext = getInteractionContext();
+        val interaction = interactionContext.getInteraction();
 
-        final String propertyId = owningProperty.getIdentifier().toClassAndNameIdentityString();
+        val propertyId = owningProperty.getIdentifier().toClassAndNameIdentityString();
 
-        if( command.getExecutor() == Command.Executor.USER
-                && command.getExecuteIn() == org.apache.isis.applib.annotation.CommandExecuteIn.BACKGROUND) {
+        val targetManagedObject = head.getTarget();
+        val target = UnwrapUtil.single(targetManagedObject);
+        val argValue = UnwrapUtil.single(newValueAdapter);
 
-            // deal with background commands
+        val targetMemberName = CommandUtil.targetMemberNameFor(owningProperty);
+        val targetClass = CommandUtil.targetClassNameFor(targetManagedObject);
 
-            // persist command so can it can subsequently be invoked in the 'background'
-            final CommandService commandService = getCommandService();
-            if (!commandService.persistIfPossible(command)) {
-                throw new IsisException(String.format(
-                        "Unable to persist command for property '%s'; CommandService does not support persistent commands ",
-                        propertyId));
-            }
-
-            return head.getTarget();
-
-        } else {
-
-            val targetAdapter = head.getTarget();
-            final Object target = UnwrapUtil.single(targetAdapter);
-            final Object argValue = UnwrapUtil.single(newValueAdapter);
-
-            final String targetMember = CommandUtil.targetMemberNameFor(owningProperty);
-            final String targetClass = CommandUtil.targetClassNameFor(targetAdapter);
-
-            final Interaction.PropertyEdit execution =
-                    new Interaction.PropertyEdit(interaction, propertyId, target, argValue, targetMember, targetClass);
-            final Interaction.MemberExecutor<Interaction.PropertyEdit> executor =
-                    new Interaction.MemberExecutor<Interaction.PropertyEdit>() {
-                @Override
-                public Object execute(final Interaction.PropertyEdit currentExecution) {
+        val propertyEdit = new Interaction.PropertyEdit(interaction, propertyId, target, argValue, targetMemberName, targetClass);
+        final Interaction.MemberExecutor<Interaction.PropertyEdit> executor =
+                currentExecution -> {
 
                     // TODO: REVIEW - is this safe to do?
                     ManagedObject newValueAdapterMutatable = newValueAdapter;
@@ -222,62 +200,62 @@ extends SingleValueFacetAbstract<Class<? extends PropertyDomainEvent<?,?>>> {
                     try {
 
                         // update the current execution with the DTO (memento)
-                        final PropertyEditDto editDto =
+                        val propertyEditDto =
                                 getInteractionDtoServiceInternal().asPropertyEditDto(
-                                        owningProperty, targetAdapter, newValueAdapterMutatable);
-                        currentExecution.setDto(editDto);
+                                        owningProperty, targetManagedObject, newValueAdapterMutatable);
+                        currentExecution.setDto(propertyEditDto);
 
 
                         // set the startedAt (and update command if this is the top-most member execution)
                         // (this isn't done within Interaction#execute(...) because it requires the DTO
                         // to have been set on the current execution).
-                        val startedAt = execution.start(getClockService(), getMetricsService());
+                        val startedAt = propertyEdit.start(getClockService(), getMetricsService());
                         if(command.getStartedAt() == null) {
                             command.internal().setStartedAt(startedAt);
                         }
 
                         // ... post the executing event
-                        final Object oldValue = getterFacet.getProperty(targetAdapter, interactionInitiatedBy);
-                        final Object newValue = UnwrapUtil.single(newValueAdapterMutatable);
+                        val oldValuePojo = getterFacet.getProperty(targetManagedObject, interactionInitiatedBy);
+                        val newValuePojo = UnwrapUtil.single(newValueAdapterMutatable);
 
-                        final PropertyDomainEvent<?, ?> event =
+                        val propertyDomainEvent =
                                 domainEventHelper.postEventForProperty(
                                         AbstractDomainEvent.Phase.EXECUTING,
                                         getEventType(), null,
                                         getIdentified(), head,
-                                        oldValue, newValue);
+                                        oldValuePojo, newValuePojo);
 
-                        Object newValuePossiblyUpdated = event.getNewValue();
-                        if(!Objects.equals(newValuePossiblyUpdated, newValue)) {
-                            newValueAdapterMutatable = newValuePossiblyUpdated != null
-                                    ? getObjectManager().adapt(newValuePossiblyUpdated)
+                        val newValuePojoPossiblyUpdated = propertyDomainEvent.getNewValue();
+                        if(!Objects.equals(newValuePojoPossiblyUpdated, newValuePojo)) {
+                            newValueAdapterMutatable = newValuePojoPossiblyUpdated != null
+                                    ? getObjectManager().adapt(newValuePojoPossiblyUpdated)
                                     : null;
                         }
 
                         // set event onto the execution
-                        currentExecution.setEvent(event);
+                        currentExecution.setEvent(propertyDomainEvent);
 
                         // invoke method
                         style.invoke(PropertySetterOrClearFacetForDomainEventAbstract.this, owningProperty,
-                                targetAdapter, newValueAdapterMutatable, interactionInitiatedBy);
+                                targetManagedObject, newValueAdapterMutatable, interactionInitiatedBy);
 
 
                         // reading the actual value from the target object, playing it safe...
-                        final Object actualNewValue = getterFacet.getProperty(targetAdapter, interactionInitiatedBy);
-                        if (!Objects.equals(oldValue, actualNewValue)) {
+                        val actualNewValue = getterFacet.getProperty(targetManagedObject, interactionInitiatedBy);
+                        if (!Objects.equals(oldValuePojo, actualNewValue)) {
 
                             // ... post the executed event
                             domainEventHelper.postEventForProperty(
                                     AbstractDomainEvent.Phase.EXECUTED,
-                                    getEventType(), uncheckedCast(event),
+                                    getEventType(), uncheckedCast(propertyDomainEvent),
                                     getIdentified(), head,
-                                    oldValue, actualNewValue);
+                                    oldValuePojo, actualNewValue);
                         }
 
-                        ManagedObject targetAdapterPossiblyCloned =
-                                cloneIfViewModelCloneable(targetAdapter);
+                        val targetManagedObjectPossiblyCloned =
+                                cloneIfViewModelCloneable(targetManagedObject);
 
-                        return targetAdapterPossiblyCloned.getPojo();
+                        return targetManagedObjectPossiblyCloned.getPojo();
 
                         //
                         // REVIEW: the corresponding action has a whole bunch of error handling here.
@@ -287,33 +265,30 @@ extends SingleValueFacetAbstract<Class<? extends PropertyDomainEvent<?,?>>> {
                     } finally {
 
                     }
-                }
-            };
+                };
 
-            // sets up startedAt and completedAt on the execution, also manages the execution call graph
-            Object targetPojo = interaction.execute(executor, execution, getClockService(), getMetricsService());
+        // sets up startedAt and completedAt on the execution, also manages the execution call graph
+        val targetPojo = interaction.execute(executor, propertyEdit, getClockService(), getMetricsService());
 
-            // handle any exceptions
-            final Interaction.Execution<?, ?> priorExecution = interaction.getPriorExecution();
+        // handle any exceptions
+        final Interaction.Execution<?, ?> priorExecution = interaction.getPriorExecution();
 
-            // TODO: should also sync DTO's 'threw' attribute here...?
+        // TODO: should also sync DTO's 'threw' attribute here...?
 
-            final Exception executionExceptionIfAny = priorExecution.getThrew();
-            if(executionExceptionIfAny != null) {
-                throw executionExceptionIfAny instanceof RuntimeException
-                ? ((RuntimeException)executionExceptionIfAny)
-                        : new RuntimeException(executionExceptionIfAny);
-            }
-
-
-            // publish (if not a contributed association, query-only mixin)
-            final PublishedPropertyFacet publishedPropertyFacet = getIdentified().getFacet(PublishedPropertyFacet.class);
-            if (publishedPropertyFacet != null) {
-                getPublishingServiceInternal().publishProperty(priorExecution);
-            }
-
-            return getObjectManager().adapt(targetPojo);
+        val executionExceptionIfAny = priorExecution.getThrew();
+        if(executionExceptionIfAny != null) {
+            throw executionExceptionIfAny instanceof RuntimeException
+            ? ((RuntimeException)executionExceptionIfAny)
+                    : new RuntimeException(executionExceptionIfAny);
         }
+
+        // publish (if not a contributed association, query-only mixin)
+        val publishedPropertyFacet = getIdentified().getFacet(PublishedPropertyFacet.class);
+        if (publishedPropertyFacet != null) {
+            getPublishingServiceInternal().publishProperty(priorExecution);
+        }
+
+        return getObjectManager().adapt(targetPojo);
     }
 
     private ManagedObject cloneIfViewModelCloneable(final ManagedObject adapter) {
@@ -325,8 +300,7 @@ extends SingleValueFacetAbstract<Class<? extends PropertyDomainEvent<?,?>>> {
         final ViewModelFacet viewModelFacet = adapter.getSpecification().getFacet(ViewModelFacet.class);
         final Object clone = viewModelFacet.clone(adapter.getPojo());
 
-        final ManagedObject clonedAdapter = getObjectManager().adapt(clone);
-        return clonedAdapter;
+        return getObjectManager().adapt(clone);
     }
 
     public <S, T> Class<? extends PropertyDomainEvent<S, T>> getEventType() {
