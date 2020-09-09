@@ -19,34 +19,38 @@
 package org.apache.isis.applib.annotation;
 
 /**
- * Whether the command should be persisted.
+ * The available policies as to whether action invocations are reified into commands.
  */
 // tag::refguide[]
-public enum CommandPersistence {
-
+public enum CommandReification {
     // end::refguide[]
     /**
-     * (If the configured {@link org.apache.isis.applib.services.command.spi.CommandService} supports it), indicates that the
-     * {@link org.apache.isis.applib.services.command.Command Command} object should be persisted.
+     * Whether the action should be handled as a command as per the default command configured in <tt>applicationp.properties</tt>.
+     *
+     * <p>
+     *     If no command policy is configured, then the action is <i>not</i> treated as a command.
+     * </p>
      */
     // tag::refguide[]
-    PERSISTED,
+    AS_CONFIGURED,
     // end::refguide[]
     /**
-     * (If the configured {@link org.apache.isis.applib.services.command.spi.CommandService} supports it), indicates that the
-     * {@link org.apache.isis.applib.services.command.Command Command} object should only be persisted if
-     * another service, such as the {@link org.apache.isis.applib.services.background.BackgroundCommandService}, hints that it should.
+     * Handle the action as a command, irrespective of any configuration settings.
      */
     // tag::refguide[]
-    IF_HINTED,
+    ENABLED,
     // end::refguide[]
     /**
-     * (Even if the configured {@link org.apache.isis.applib.services.command.spi.CommandService} supports it), indicates that the
-     * {@link org.apache.isis.applib.services.command.Command Command} object should <i>not</i> be persisted (even if
-     * another service, such as the {@link org.apache.isis.applib.services.background.BackgroundCommandService}, hints that it should).
+     * Do not handle the action as a command, irrespective of any configuration settings.
      */
     // tag::refguide[]
-    NOT_PERSISTED
-
+    DISABLED,
+    // end::refguide[]
+    /**
+     * Ignore the value provided by this annotation (meaning that the framework will keep searching, in meta
+     * annotations or superclasses/interfaces).
+     */
+    // tag::refguide[]
+    NOT_SPECIFIED
 }
 // end::refguide[]

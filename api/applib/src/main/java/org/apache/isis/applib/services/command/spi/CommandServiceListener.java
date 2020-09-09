@@ -16,20 +16,25 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.isis.applib.services.command;
+package org.apache.isis.applib.services.command.spi;
 
-import org.apache.isis.applib.annotation.Programmatic;
-import org.apache.isis.schema.cmd.v2.CommandDto;
+import org.apache.isis.applib.services.command.Command;
 
+/**
+ * SPI
+ */
 // tag::refguide[]
-public interface CommandWithDto extends Command {
+public interface CommandServiceListener {
 
-    String USERDATA_KEY_TARGET_CLASS = "targetClass";
-    String USERDATA_KEY_TARGET_ACTION = "targetAction";
-    String USERDATA_KEY_ARGUMENTS = "arguments";
-    String USERDATA_KEY_RETURN_VALUE = "returnValue";
-    String USERDATA_KEY_EXCEPTION = "exception";
-
-    CommandDto asDto();
+    /**
+     * Notifies that the command has completed.
+     *
+     * <p>
+     *     This is an opportunity for implementations to process the command,
+     *     for example to persist a representation of it.
+     * </p>
+     */
+    // tag::refguide[]
+    void onComplete(final Command command);           // <.>
 }
 // end::refguide[]
