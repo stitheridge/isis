@@ -18,7 +18,7 @@ For help and support, join our https://cwiki.apache.org/confluence/display/ISIS/
 
 toc::[]
 
-== Core Features
+== Core Features -ZZ
 
 Apache Isis automatically generates the UI from the domain classes.
 
