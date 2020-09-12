@@ -1,0 +1,10 @@
+
+#Commit changes to local repo
+git commit -a -m "Commit message here"
+
+#Push commit to github repo
+git push
+
+#Single module build
+mvn clean install -pl extensions/security/secman/shiro-realm
+
